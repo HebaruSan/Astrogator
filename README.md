@@ -40,7 +40,6 @@ Try compiling it in Visual Studio, I guess? Hopefully the `csproj` file will ope
 
 - Blizzy's toolbar is not and will not be supported. 0.23.5 was a long time ago, folks.
 - Only the phase angle approximation is used for performance reasons.
-- Assumes starting orbits have low inclination
 
 ## Future plans
 
@@ -58,7 +57,6 @@ Try compiling it in Visual Studio, I guess? Hopefully the `csproj` file will ope
     - Model/view
     - Settings
 - Source control
-  - Git repository
   - Push to Github
   - Announce on forums
     - New thread

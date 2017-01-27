@@ -31,11 +31,24 @@ namespace Astrogator {
 			return angle;
 		}
 
+		/// <returns>
+		/// Magnitude of velocity needed to escape a body with a given speed.
+		/// </returns>
+		/// <param name="parent">The body we're trying to escape</param>
+		/// <param name="radiusAtBurn">The distance from parent's center at which to determine the velocity</param>
+		/// <param name="speedatInfinity">The desired speed left over after we escape</param>
 		public static double SpeedToEscape(CelestialBody parent, double radiusAtBurn, double speedatInfinity)
 		{
 			return Math.Sqrt(2.0 * parent.gravParameter / radiusAtBurn + speedatInfinity * speedatInfinity);
 		}
 
+		/// <returns>
+		/// Delta V needed to escape a body with various constraints.
+		/// </returns>
+		/// <param name="parent">The body we're escaping</param>
+		/// <param name="fromOrbit">The orbit of the craft that's escaping</param>
+		/// <param name="speedatInfinity">The desired speed left over after we escape</param>
+		/// <param name="burnTime">The time when we want to execute the burn</param>
 		public static double BurnToEscape(CelestialBody parent, Orbit fromOrbit, double speedatInfinity, double burnTime)
 		{
 			Vector3d preBurnVelocity, preBurnPosition;
@@ -105,6 +118,42 @@ namespace Astrogator {
 					2.0 / apoapsis - 2.0 / (apoapsis + periapsis)
 				)
 			);
+		}
+
+		/// <returns>
+		/// Distance from center of parent body at a given time.
+		/// </returns>
+		/// <param name="o">Orbit to analyze</param>
+		/// <param name="t">Time at which to calculate the distance</param>
+		public static double RadiusAtTime(Orbit o, double t)
+		{
+			Vector3d pos, v;
+			o.GetOrbitalStateVectorsAtUT(t, out pos, out v);
+			return pos.magnitude;
+		}
+
+		/// <returns>
+		/// Magnitude of velocity at a given time.
+		/// </returns>
+		/// <param name="o">Orbit to analyze</param>
+		/// <param name="t">Time at which to calculate the speed</param>
+		public static double SpeedAtTime(Orbit o, double t)
+		{
+			Vector3d pos, v;
+			o.GetOrbitalStateVectorsAtUT(t, out pos, out v);
+			return v.magnitude;
+		}
+
+		/// <returns>
+		/// Period of an orbit with the given characteristics.
+		/// </returns>
+		/// <param name="parent">Body around which to orbit</param>
+		/// <param name="apoapsis">Greatest distance from center of parent</param>
+		/// <param name="periapsis">Smallest distance from center of parent</param>
+		public static double OrbitalPeriod(CelestialBody parent, double apoapsis, double periapsis)
+		{
+			double r = 0.5 * (apoapsis + periapsis);
+			return Tau * Math.Sqrt(r * r * r / parent.gravParameter);
 		}
 
 		/// Determine the burn needed to enter an orbit at burnTime, with a periaps at

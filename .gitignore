@@ -155,5 +155,12 @@ $RECYCLE.BIN/
 # Mac desktop service store files
 .DS_Store
 
+# Binary files
+*.dll
+
 # Compiled mod file
 *.zip
+Astrogator/*
+
+# Our special symlink to the game DLLs
+src/KSP_x64_Data

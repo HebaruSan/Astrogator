@@ -22,11 +22,6 @@ namespace Astrogator {
 		/// </summary>
 		public const int buttonIconWidth = 16;
 
-		/// <summary>
-		/// Height of the main window.
-		/// </summary>
-		public const int mainWindowHeight = 280;
-
 		/// <returns>
 		/// The full relative path from the main KSP folder to a given resource from this mod.
 		/// </returns>
@@ -136,6 +131,13 @@ namespace Astrogator {
 		/// </summary>
 		public static UIStyleState numberFont = new UIStyleState() {
 			textColor	= Color.HSVToRGB(0.3f, 0.2f, 0.8f)
+		};
+
+		/// <summary>
+		/// Text color for the line under the title.
+		/// </summary>
+		public static UIStyleState subTitleFont = new UIStyleState() {
+			textColor	= Color.HSVToRGB(0.3f, 0.2f, 0.6f)
 		};
 
 		/// <summary>
@@ -274,6 +276,19 @@ namespace Astrogator {
 		};
 
 		/// <summary>
+		/// A centered variant of the normal content font.
+		/// </summary>
+		public static UIStyle subTitleStyle = new UIStyle() {
+			normal	= subTitleFont,
+			active	= subTitleFont,
+			disabled	= subTitleFont,
+			highlight	= subTitleFont,
+			alignment	= TextAnchor.MiddleCenter,
+			fontSize	= fontSize,
+			fontStyle	= FontStyle.Normal,
+		};
+
+		/// <summary>
 		/// The skin we use for our tooltip and main window.
 		/// </summary>
 		public static UISkinDef AstrogatorSkin = new UISkinDef() {
@@ -281,7 +296,7 @@ namespace Astrogator {
 			window	= windowStyle,
 			box	= UISkinManager.defaultSkin.box,
 			font	= UISkinManager.defaultSkin.font,
-			label	= UISkinManager.defaultSkin.label,
+			label	= subTitleStyle,
 		};
 
 		/// <summary>
@@ -360,6 +375,33 @@ namespace Astrogator {
 		/// Calculated from the widths of the columns and the padding.
 		/// </summary>
 		public static int RowWidth = Columns.Select(x => x.width + 6).Sum();
+
+		/// <summary>
+		/// Minimum width of the main window.
+		/// </summary>
+		public static int mainWindowMinWidth = RowWidth;
+
+		/// <summary>
+		/// Minimum height of the main window.
+		/// Unity will auto expand it for us! :)
+		/// </summary>
+		public const int mainWindowMinHeight = 10;
+
+		/// <summary>
+		/// Pixels between elements of the window (?)
+		/// </summary>
+		public const int mainWindowSpacing = 4;
+
+		/// <summary>
+		/// Extra space around the edges of the window (?)
+		/// </summary>
+		public static RectOffset mainWindowPadding = new RectOffset(6, 6, 10, 10);
+
+		/// <summary>
+		/// Window-relative coordinate of the spot that stays fixed in place when the size changes.
+		/// This choice is equivalent to UpperCenter anchoring.
+		/// </summary>
+		public static Vector2 mainWindowAnchor = new Vector2(0.5f, 1f);
 
 		/// <summary>
 		/// Wrapper around stock label constructor to allow specification of style.

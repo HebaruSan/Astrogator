@@ -29,6 +29,11 @@ namespace Astrogator {
 			#endif
 		}
 
+		/// <summary>
+		/// Show a formattable string to the user.
+		/// </summary>
+		/// <param name="format">String.Format format string</param>
+		/// <param name="args">Parameters for the format string, if any</param>
 		public static void ScreenFmt(string format, params string[] args)
 		{
 			#if DEBUG

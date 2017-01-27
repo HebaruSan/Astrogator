@@ -99,14 +99,20 @@ namespace Astrogator {
 				if (angleToMakeUp < 0 && PhaseAnglePerSecond < 0)
 					angleToMakeUp += Tau;
 
-				double timeTillBurn = Math.Floor(Math.Abs(angleToMakeUp / PhaseAnglePerSecond));
+				double timeTillBurn = Math.Abs(angleToMakeUp / PhaseAnglePerSecond);
+				double ejectionBurnTime = Planetarium.GetUniversalTime() + timeTillBurn;
+				double arrivalTime = ejectionBurnTime + 0.5 * OrbitalPeriod(
+					destination.orbit.referenceBody,
+					destination.orbit.semiMajorAxis,
+					originOrbit.semiMajorAxis
+				);
 
 				if (origin != null) {
 					// We are starting from a sub-SoI of the transfer, so we can't just burn at the designated time.
 
 					double mu = destination.referenceBody.gravParameter,
-						r1 = originOrbit.semiMajorAxis,
-						r2 = destination.orbit.semiMajorAxis;
+						r1 = RadiusAtTime(originOrbit, ejectionBurnTime),
+						r2 = RadiusAtTime(destination.orbit, arrivalTime);
 
 					if (vessel != null) {
 						// If we have a vessel, then we can burn when it's at the right part of its orbit
@@ -117,6 +123,8 @@ namespace Astrogator {
 
 						if (destination.orbit.semiMajorAxis < originOrbit.semiMajorAxis) {
 							double speedAtInfinity = Math.Abs(
+								//SpeedAtPeriapsis(destination.orbit.referenceBody, r1, r2)
+								//	- SpeedAtTime(originOrbit, ejectionBurnTime)
 								Math.Sqrt(mu / r2) * (1 - Math.Sqrt(2 * r1 / (r1 + r2)))
 							);
 							// Adjust maneuverTime to day side
@@ -124,16 +132,18 @@ namespace Astrogator {
 								EJECTION_FUDGE_FACTOR + TimeAtNextNoon(
 									originOrbit,
 									vessel.orbit,
-									Planetarium.GetUniversalTime() + timeTillBurn),
+									ejectionBurnTime),
 								BurnToEscape(
 									origin,
 									vessel.orbit,
 									speedAtInfinity,
-									Planetarium.GetUniversalTime() + timeTillBurn),
+									ejectionBurnTime),
 								0, 0
 							);
 						} else {
 							double speedAtInfinity = Math.Abs(
+								//SpeedAtApoapsis(destination.orbit.referenceBody, r2, r1)
+								//	- SpeedAtTime(originOrbit, ejectionBurnTime)
 								Math.Sqrt(mu / r1) * (Math.Sqrt(2 * r2 / (r1 + r2)) - 1)
 							);
 							// Adjust maneuverTime to night side
@@ -141,12 +151,12 @@ namespace Astrogator {
 								EJECTION_FUDGE_FACTOR + TimeAtNextMidnight(
 									originOrbit,
 									vessel.orbit,
-									Planetarium.GetUniversalTime() + timeTillBurn),
+									ejectionBurnTime),
 								BurnToEscape(
 									origin,
 									vessel.orbit,
 									speedAtInfinity,
-									Planetarium.GetUniversalTime() + timeTillBurn),
+									ejectionBurnTime),
 								0, 0
 							);
 						}
@@ -155,13 +165,13 @@ namespace Astrogator {
 
 						if (destination.orbit.semiMajorAxis < originOrbit.semiMajorAxis) {
 							ejectionBurn = new BurnModel(
-								Planetarium.GetUniversalTime() + timeTillBurn,
+								ejectionBurnTime,
 								Math.Sqrt(mu / r2) * (1 - Math.Sqrt(2 * r1 / (r1 + r2))),
 								0, 0
 							);
 						} else {
 							ejectionBurn = new BurnModel(
-								Planetarium.GetUniversalTime() + timeTillBurn,
+								ejectionBurnTime,
 								Math.Sqrt(mu / r1) * (Math.Sqrt(2 * r2 / (r1 + r2)) - 1),
 								0, 0
 							);
@@ -172,11 +182,11 @@ namespace Astrogator {
 
 					// Already in the destination sphere of influence
 					if (originOrbit.semiMajorAxis < destination.orbit.semiMajorAxis) {
-						ejectionBurn = new BurnModel(Planetarium.GetUniversalTime() + timeTillBurn,
-							BurnToNewAp(originOrbit, Planetarium.GetUniversalTime() + timeTillBurn, destination), 0, 0);
+						ejectionBurn = new BurnModel(ejectionBurnTime,
+							BurnToNewAp(originOrbit, ejectionBurnTime, destination), 0, 0);
 					} else {
-						ejectionBurn = new BurnModel(Planetarium.GetUniversalTime() + timeTillBurn,
-							BurnToNewPe(originOrbit, Planetarium.GetUniversalTime() + timeTillBurn, destination), 0, 0);
+						ejectionBurn = new BurnModel(ejectionBurnTime,
+							BurnToNewPe(originOrbit, ejectionBurnTime, destination), 0, 0);
 					}
 
 				}

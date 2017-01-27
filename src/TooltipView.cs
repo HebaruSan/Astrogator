@@ -10,6 +10,8 @@ namespace Astrogator {
 	class TooltipView : MultiOptionDialog {
 		public PopupDialog dialog { get; set; }
 
+		private const float tooltipWidth = 200, tooltipHeight = 10;
+
 		public TooltipView(string title, string description, Rect where)
 			: base(
 				description,
@@ -30,10 +32,10 @@ namespace Astrogator {
 				title,
 				description,
 				new Rect(
-					rt.x / Screen.width + 0.5f,
+					rt.x / Screen.width  + 0.5f,
 					rt.y / Screen.height + 0.5f,
-					200,
-					10
+					tooltipWidth,
+					tooltipHeight
 				)
 			);
 		}

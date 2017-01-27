@@ -29,6 +29,8 @@ namespace Astrogator {
 	/// Our main plugin behavior.
 	public class Astrogator : MonoBehavior {
 
+		private bool VesselMode { get; set; }
+
 		/// <summary>
 		/// Machine-readable name for this mod.
 		/// Use this for directory/file names, etc.
@@ -56,6 +58,8 @@ namespace Astrogator {
 
 			// This event fires on SOI change
 			if (FlightGlobals.ActiveVessel != null) {
+				VesselMode = true;
+
 				OrbitDriver orbDrv = FlightGlobals.ActiveVessel.GetOrbitDriver();
 				orbDrv.OnReferenceBodyChange += SOIChanged;
 			}
@@ -79,7 +83,7 @@ namespace Astrogator {
 			RemoveLauncher();
 
 			// This event fires on SOI change
-			if (FlightGlobals.ActiveVessel != null) {
+			if (VesselMode) {
 				OrbitDriver orbDrv = FlightGlobals.ActiveVessel.GetOrbitDriver();
 				orbDrv.OnReferenceBodyChange -= SOIChanged;
 			}
@@ -188,36 +192,41 @@ namespace Astrogator {
 			}
 
 			// Avoid running multiple background jobs at the same time
-			if (bw == null) {
+			if (bgworker == null) {
 
 				DbgFmt("Delegating load to background");
 
-				bw = new BackgroundWorker();
-				bw.DoWork += bw_LoadModel;
-				bw.RunWorkerCompleted += bw_DoneLoadingModel;
-				bw.RunWorkerAsync();
+				bgworker = new BackgroundWorker();
+				bgworker.DoWork += bw_LoadModel;
+				bgworker.RunWorkerCompleted += bw_DoneLoadingModel;
+				bgworker.RunWorkerAsync();
 
 				DbgFmt("Launched background");
 			}
 		}
 
-		private const int UPDATE_DELAY_MS = 100;
+		private const int INITIAL_LOAD_DELAY_MS = 250,
+			PER_TRANSFER_DELAY_MS = 50;
 
 		private void bw_LoadModel(object sender, DoWorkEventArgs e)
 		{
 			DbgFmt("Beginning background model load");
 
+			if (VesselMode) {
+				// Wait a bit till it's safe to make our temporary maneuver nodes
+				Thread.Sleep(INITIAL_LOAD_DELAY_MS);
+			}
+
 			for (int i = 0; i < model.transfers.Count; ++i) {
 				try {
-					// It looks like we can't activate maneuver nodes right away(?).
-					// Wait half a second once we're in the background.
-					Thread.Sleep(UPDATE_DELAY_MS);
+					if (VesselMode) {
+						Thread.Sleep(PER_TRANSFER_DELAY_MS);
+					}
 
 					model.transfers[i].UpdateManeuvers();
+
 				} catch (Exception ex) {
 					DbgFmt("Problem with background load: {0}\n{1}",
-						ex.Message, ex.StackTrace);
-					ScreenFmt("Problem with background load: {0}\n{1}",
 						ex.Message, ex.StackTrace);
 
 					// If a route calculation crashes, it can leave behind a temporary node.
@@ -230,7 +239,7 @@ namespace Astrogator {
 		private void bw_DoneLoadingModel(object sender, RunWorkerCompletedEventArgs e)
 		{
 			DbgFmt("Background load complete");
-			bw = null;
+			bgworker = null;
 		}
 
 		#endregion Background loading
@@ -239,7 +248,7 @@ namespace Astrogator {
 
 		private AstrogationModel model { get; set; }
 		private AstrogationView view { get; set; }
-		private BackgroundWorker bw { get; set; }
+		private BackgroundWorker bgworker { get; set; }
 
 		private static bool visible {
 			get {
@@ -308,7 +317,7 @@ namespace Astrogator {
 		/// </summary>
 		public void TrackingStationTargetChanged(MapObject target)
 		{
-			if (FlightGlobals.ActiveVessel == null
+			if (!VesselMode
 					&& model != null
 					&& target != null) {
 
