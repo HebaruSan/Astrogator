@@ -1,43 +1,46 @@
 using System;
 using System.Linq;
 using UnityEngine;
+using KSP.UI.TooltipTypes;
 
 namespace Astrogator {
 
 	/// Anything UI-related that needs to be used from multiple places.
 	public static class ViewTools {
 
-		/// <summary>
+		/// <value>
 		/// Height of a row of our table.
-		/// </summary>
+		/// </value>
 		public const int rowHeight = 16;
 
-		/// <summary>
+		/// <value>
 		/// Size of font to use in our table.
-		/// </summary>
+		/// </value>
 		public const int fontSize = 12;
 
-		/// <summary>
+		/// <value>
 		/// Size of button icons to use in our table.
-		/// </summary>
+		/// </value>
 		public const int buttonIconWidth = 16;
 
 		/// <returns>
 		/// The full relative path from the main KSP folder to a given resource from this mod.
 		/// </returns>
+		/// <param name="filename">Name of file located in our plugin folder</param>
 		public static string FilePath(string filename)
 		{
 			return String.Format("GameData/{0}/{1}", Astrogator.Name, filename);
 		}
 
-		/// <summary>
+		/// <value>
 		/// The icon to show for this mod in the app launcher.
-		/// </summary>
+		/// </value>
 		public static Texture2D AppIcon = GetImage(FilePath("Astrogator.png"));
 
 		/// <returns>
 		/// A texture object for the image file at the given path.
 		/// </returns>
+		/// <param name="filepath">Path to image file to load</param>
 		public static Texture2D GetImage(string filepath)
 		{
 			Texture2D tex = new Texture2D(38, 38, TextureFormat.ARGB32, false);
@@ -86,95 +89,95 @@ namespace Astrogator {
 			return SpriteFromTexture(SolidColorTexture(c));
 		}
 
-		/// <summary>
+		/// <value>
 		/// Icon for normal state of maneuver node creation button.
-		/// </summary>
+		/// </value>
 		public static Sprite maneuverIcon = GetSprite(FilePath("maneuver.png"));
 
-		/// <summary>
+		/// <value>
 		/// Icon for hovered state of maneuver node creation button.
-		/// </summary>
+		/// </value>
 		public static Sprite maneuverHoverIcon = GetSprite(FilePath("maneuverHover.png"));
 
-		/// <summary>
+		/// <value>
 		/// Icon for normal state of warp button.
-		/// </summary>
+		/// </value>
 		public static Sprite warpIcon = GetSprite(FilePath("warp.png"));
 
-		/// <summary>
+		/// <value>
 		/// Icon for hovered state of warp button.
-		/// </summary>
+		/// </value>
 		public static Sprite warpHoverIcon = GetSprite(FilePath("warpHover.png"));
 
-		/// <summary>
+		/// <value>
 		/// Black image with 50% opacity.
-		/// </summary>
+		/// </value>
 		public static Sprite halfTransparentBlack = SolidColorSprite(new Color(0.0f, 0.0f, 0.0f, 0.5f));
 
-		/// <summary>
+		/// <value>
 		/// Backgrounds and text colors for the tooltip and main window.
-		/// </summary>
+		/// </value>
 		public static UIStyleState windowStyleState = new UIStyleState() {
 			background	= halfTransparentBlack,
 			textColor	= Color.HSVToRGB(0.3f, 0.8f, 0.8f)
 		};
 
-		/// <summary>
+		/// <value>
 		/// Text color for table headers.
-		/// </summary>
+		/// </value>
 		public static UIStyleState headingFont = new UIStyleState() {
 			textColor	= Color.HSVToRGB(0.3f, 0.8f, 0.8f)
 		};
 
-		/// <summary>
+		/// <value>
 		/// Text color for main table content.
-		/// </summary>
+		/// </value>
 		public static UIStyleState numberFont = new UIStyleState() {
 			textColor	= Color.HSVToRGB(0.3f, 0.2f, 0.8f)
 		};
 
-		/// <summary>
+		/// <value>
 		/// Text color for the line under the title.
-		/// </summary>
+		/// </value>
 		public static UIStyleState subTitleFont = new UIStyleState() {
 			textColor	= Color.HSVToRGB(0.3f, 0.2f, 0.6f)
 		};
 
-		/// <summary>
+		/// <value>
 		/// Icon for normal state of maneuver creation button.
-		/// </summary>
+		/// </value>
 		public static UIStyleState maneuverStyleState = new UIStyleState() {
 			background	= maneuverIcon,
 			textColor	= Color.black
 		};
 
-		/// <summary>
+		/// <value>
 		/// Icon for hovered state of maneuver creation button.
-		/// </summary>
+		/// </value>
 		public static UIStyleState maneuverHoverStyleState = new UIStyleState() {
 			background	= maneuverHoverIcon,
 			textColor	= Color.black
 		};
 
-		/// <summary>
+		/// <value>
 		/// Icon for normal state of warp button.
-		/// </summary>
+		/// </value>
 		public static UIStyleState warpStyleState = new UIStyleState() {
 			background	= warpIcon,
 			textColor	= Color.black
 		};
 
-		/// <summary>
+		/// <value>
 		/// Icon for hovered state of warp button.
-		/// </summary>
+		/// </value>
 		public static UIStyleState warpHoverStyleState = new UIStyleState() {
 			background	= warpHoverIcon,
 			textColor	= Color.black
 		};
 
-		/// <summary>
+		/// <value>
 		/// Font sizes, normal/highlight styles, and alignment for the tooltip and main window.
-		/// </summary>
+		/// </value>
 		public static UIStyle windowStyle = new UIStyle() {
 			normal	= windowStyleState,
 			active	= windowStyleState,
@@ -185,9 +188,9 @@ namespace Astrogator {
 			fontStyle	= FontStyle.Bold,
 		};
 
-		/// <summary>
+		/// <value>
 		/// Font sizes, normal/highlight styles, and alignment for planet header.
-		/// </summary>
+		/// </value>
 		public static UIStyle leftHdrStyle = new UIStyle() {
 			normal	= headingFont,
 			active	= headingFont,
@@ -199,9 +202,9 @@ namespace Astrogator {
 			fixedHeight	= rowHeight
 		};
 
-		/// <summary>
+		/// <value>
 		/// Font sizes, normal/highlight styles, and alignment for the time header.
-		/// </summary>
+		/// </value>
 		public static UIStyle midHdrStyle = new UIStyle() {
 			normal	= headingFont,
 			active	= headingFont,
@@ -213,9 +216,9 @@ namespace Astrogator {
 			fixedHeight	= rowHeight
 		};
 
-		/// <summary>
+		/// <value>
 		/// Font sizes, normal/highlight styles, and alignment for the delta V header.
-		/// </summary>
+		/// </value>
 		public static UIStyle rightHdrStyle = new UIStyle() {
 			normal	= headingFont,
 			active	= headingFont,
@@ -227,9 +230,9 @@ namespace Astrogator {
 			fixedHeight	= rowHeight
 		};
 
-		/// <summary>
+		/// <value>
 		/// Font sizes, normal/highlight styles, and alignment for the planet names.
-		/// </summary>
+		/// </value>
 		public static UIStyle planetStyle = new UIStyle() {
 			normal	= headingFont,
 			active	= headingFont,
@@ -241,9 +244,9 @@ namespace Astrogator {
 			fixedHeight	= rowHeight
 		};
 
-		/// <summary>
+		/// <value>
 		/// Font sizes, normal/highlight styles, and alignment for normal content.
-		/// </summary>
+		/// </value>
 		public static UIStyle numberStyle = new UIStyle() {
 			normal	= numberFont,
 			active	= numberFont,
@@ -255,9 +258,9 @@ namespace Astrogator {
 			fixedHeight	= rowHeight
 		};
 
-		/// <summary>
+		/// <value>
 		/// Normal/highlight icons for the maneuver creation button.
-		/// </summary>
+		/// </value>
 		public static UIStyle maneuverStyle = new UIStyle() {
 			normal	= maneuverStyleState,
 			highlight	= maneuverHoverStyleState,
@@ -275,9 +278,9 @@ namespace Astrogator {
 			disabled	= warpStyleState,
 		};
 
-		/// <summary>
+		/// <value>
 		/// A centered variant of the normal content font.
-		/// </summary>
+		/// </value>
 		public static UIStyle subTitleStyle = new UIStyle() {
 			normal	= subTitleFont,
 			active	= subTitleFont,
@@ -288,9 +291,9 @@ namespace Astrogator {
 			fontStyle	= FontStyle.Normal,
 		};
 
-		/// <summary>
+		/// <value>
 		/// The skin we use for our tooltip and main window.
-		/// </summary>
+		/// </value>
 		public static UISkinDef AstrogatorSkin = new UISkinDef() {
 			name	= "Astrogator Skin",
 			window	= windowStyle,
@@ -299,13 +302,13 @@ namespace Astrogator {
 			label	= subTitleStyle,
 		};
 
-		/// <summary>
+		/// <value>
 		/// Columns for our table.
-		/// </summary>
+		/// </value>
 		public static ColumnDefinition[] Columns = new ColumnDefinition[] {
 			new ColumnDefinition() {
 				header	= "",
-				width	= 50,
+				width	= 45,
 				headerColSpan	= 1,
 				headerStyle	= leftHdrStyle,
 				contentStyle	= planetStyle,

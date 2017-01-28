@@ -223,7 +223,8 @@ namespace Astrogator {
 						Thread.Sleep(PER_TRANSFER_DELAY_MS);
 					}
 
-					model.transfers[i].UpdateManeuvers();
+					model.transfers[i].CalculateEjectionBurn();
+					model.transfers[i].CalculatePlaneChangeBurn();
 
 				} catch (Exception ex) {
 					DbgFmt("Problem with background load: {0}\n{1}",

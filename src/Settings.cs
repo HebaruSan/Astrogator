@@ -14,21 +14,24 @@ namespace Astrogator {
 		private static string filename = FilePath(Astrogator.Name + ".settings");
 
 		private const string
+			RootKey = "SETTINGS",
 			MainWindowPositionKey = "MainWindowPosition",
 			MainWindowVisibleKey = "MainWindowVisible";
 
 		/// <summary>
-		/// Singleton instance for our settings object.
 		/// We don't want multiple copies of this floating around clobbering one another.
 		/// </summary>
-		public static Settings Instance = new Settings();
+		/// <value>
+		/// Singleton instance for our settings object.
+		/// </value>
+		public static Settings Instance { get; private set; } = new Settings();
 
 		private Settings()
 		{
 			if (System.IO.File.Exists(filename)) {
 				config = ConfigNode.Load(filename);
 			} else {
-				config = new ConfigNode("SETTINGS");
+				config = new ConfigNode(RootKey);
 			}
 		}
 
@@ -40,9 +43,9 @@ namespace Astrogator {
 			return config.Save(filename);
 		}
 
-		/// <summary>
+		/// <value>
 		/// Screen position of the main window.
-		/// </summary>
+		/// </value>
 		public Vector2 MainWindowPosition {
 			get {
 				Vector2 pos = new Vector2(0.98f, 0.95f);
@@ -58,9 +61,9 @@ namespace Astrogator {
 			}
 		}
 
-		/// <summary>
+		/// <value>
 		/// Whether main window is visible or not.
-		/// </summary>
+		/// </value>
 		public bool MainWindowVisible {
 			get {
 				bool visible = false;

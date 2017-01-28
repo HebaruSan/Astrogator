@@ -49,13 +49,9 @@ Try compiling it in Visual Studio, I guess? Hopefully the `csproj` file will ope
   - Create useful numbers for launches and KSC
   - Return to LKO burns from Mun and Minmus
     - Lowest warp altitude limit + 5km
-  - Recursion for model to support Laythe -> Kerbin
-- Code style
-  - Break up TransferModel and UpdateManeuvers
-  - Factor a TypicalMod<> class out of Astrogator.cs
-    - App launcher w/ Tooltip
-    - Model/view
-    - Settings
+- Settings pop-up or checkboxes in main window
+  - Generate plane change maneuvers
+  - Delete existing maneuvers
 - Source control
   - Push to Github
   - Announce on forums

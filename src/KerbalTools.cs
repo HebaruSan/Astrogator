@@ -59,6 +59,23 @@ namespace Astrogator {
 		}
 
 		/// <summary>
+		/// Find the orbit that contains the given orbit.
+		/// Wrapper around Orbit.referenceBody that returns
+		/// null for the sun instead of the sun.
+		/// </summary>
+		/// <param name="currentOrbit">Orbit where we're starting</param>
+		/// <returns>
+		/// Parent orbit or null.
+		/// </returns>
+		public static Orbit ParentOrbit(Orbit currentOrbit) {
+			if (currentOrbit.referenceBody.orbit == currentOrbit) {
+				return null;
+			} else {
+				return currentOrbit.referenceBody.orbit;
+			}
+		}
+
+		/// <summary>
 		/// Delete all the maneuver nodes for the active vessel.
 		/// </summary>
 		public static void ClearManeuverNodes()

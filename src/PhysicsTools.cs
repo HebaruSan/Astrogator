@@ -19,7 +19,13 @@ namespace Astrogator {
 		/// How long before a burn to abort time warp by default
 		public const double BURN_PADDING = 5 * 60;
 
+		/// <summary>
 		/// Force an angle to be within 0 and Tau (2PI)
+		/// </summary>
+		/// <param name="angle">Angle in radians to clamp</param>
+		/// <returns>
+		/// An angle in [0,2PI] that has the same sin and cos as the param.
+		/// </returns>
 		public static double clamp(double angle)
 		{
 			while (angle > Tau) {
@@ -159,16 +165,14 @@ namespace Astrogator {
 		/// Determine the burn needed to enter an orbit at burnTime, with a periaps at
 		/// current altitude in fromOrbit and apoaps at destination body.
 		/// This pretty well nails Mun and Minmus transfers every time.
-		public static double BurnToNewAp(Orbit fromOrbit, double burnTime, CelestialBody destination)
+		public static double BurnToNewAp(Orbit fromOrbit, double burnTime, double newApoapsis)
 		{
-			double newApoapsis = destination.orbit.semiMajorAxis - 0.25 * destination.sphereOfInfluence;
-
 			Vector3d preBurnVelocity, preBurnPosition;
 			fromOrbit.GetOrbitalStateVectorsAtUT(burnTime, out preBurnPosition, out preBurnVelocity);
 			// GetOrbitalSpeedAtUT seems to be unreliable and not agree with the velocity magnitude.
 			double preBurnRadius = preBurnPosition.magnitude,
 				preBurnSpeed = preBurnVelocity.magnitude;
-			double postBurnSpeed = SpeedAtPeriapsis(destination.orbit.referenceBody, newApoapsis, preBurnRadius);
+			double postBurnSpeed = SpeedAtPeriapsis(fromOrbit.referenceBody, newApoapsis, preBurnRadius);
 
 			return postBurnSpeed - preBurnSpeed;
 		}
@@ -176,16 +180,14 @@ namespace Astrogator {
 		/// Determine the burn needed to enter an orbit at burnTime, with an apoaps at
 		/// current altitude in fromOrbit and periaps at destination body.
 		/// Just like the previous function but for when you're starting higher.
-		public static double BurnToNewPe(Orbit fromOrbit, double burnTime, CelestialBody destination)
+		public static double BurnToNewPe(Orbit fromOrbit, double burnTime, double newPeriapsis)
 		{
-			double newPeriapsis = destination.orbit.semiMajorAxis + 0.25 * destination.sphereOfInfluence;
-
 			Vector3d preBurnVelocity, preBurnPosition;
 			fromOrbit.GetOrbitalStateVectorsAtUT(burnTime, out preBurnPosition, out preBurnVelocity);
 			// GetOrbitalSpeedAtUT seems to be unreliable and not agree with the velocity magnitude.
 			double preBurnRadius = preBurnPosition.magnitude,
 				preBurnSpeed = preBurnVelocity.magnitude;
-			double postBurnSpeed = SpeedAtApoapsis(destination.orbit.referenceBody, preBurnRadius, newPeriapsis);
+			double postBurnSpeed = SpeedAtApoapsis(fromOrbit.referenceBody, preBurnRadius, newPeriapsis);
 
 			return postBurnSpeed - preBurnSpeed;
 		}

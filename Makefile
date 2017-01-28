@@ -11,6 +11,7 @@ DEBUGDLL=$(SOURCEDIR)/bin/Debug/Astrogator.dll
 RELEASEDLL=$(SOURCEDIR)/bin/Release/Astrogator.dll
 DISTDIR=Astrogator
 RELEASEZIP=Astrogator.zip
+DLLDOCS=$(SOURCEDIR)/bin/Debug/Astrogator.xml
 
 TARGETS=$(DEBUGDLL) $(RELEASEDLL) $(RELEASEZIP)
 
@@ -22,7 +23,7 @@ $(DEBUGDLL): $(SOURCE) $(GAMELINK)
 $(RELEASEDLL): $(SOURCE) $(GAMELINK)
 	cd $(SOURCEDIR) && xbuild /p:Configuration=Release
 
-$(RELEASEZIP): $(DEBUGDLL) $(ICONS) $(README)
+$(RELEASEZIP): $(DEBUGDLL) $(ICONS) $(README) $(DLLDOCS)
 	mkdir -p $(DISTDIR)
 	cp $^ $(DISTDIR)
 	zip -r $@ $(DISTDIR)

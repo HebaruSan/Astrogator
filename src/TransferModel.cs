@@ -10,194 +10,173 @@ namespace Astrogator {
 	/// An object representing everything we need to know about a particular transfer.
 	public class TransferModel {
 
-		// XXX - Some of this needs to be re-worked.
-		// We cannot currently handle a craft orbiting Laythe that wants to get home
-		// to Kerbin, because we assume there will only be one main grandparent
-		// and zero or one initial parents.
+		/// <summary>
+		/// The body we're transferring to.
+		/// </summary>
+		public CelestialBody destination     { get; private set; }
 
-		// Therefore, I am not going to add ///XML to this yet.
+		/// <summary>
+		/// The body we're transferring from.
+		/// </summary>
+		public CelestialBody origin          { get; private set; }
 
-		// Maybe we need to split this into multiple derived classes, one per scenario.
-		// Cases:
-		//   1. LKO -> Mun/Minmus (vessel, start SOI contains dest SOI)
-		//   2. LKO -> Jool (vessel, start SOI's parent SOI contains dest SOI)
-		//   3. Laythe orbit -> Kerbin (vessel, start SOI's grandparent SOI contains dest SOI)
-		//   4. Kerbin -> Jool (no vessel, start SOI's parent SOI contains dest SOI)
-		//   5. Laythe -> Kerbin (no vessel, start SOI's grandparent SOI contains dest SOI)
-		//   6. Mun -> LKO (vessel, start SOI is contained within dest SOI)
-		//   7. Launch / landed (vessel, not a real orbit)
-		//   8. KSC (no vessel, act like it's a launch)
+		/// <summary>
+		/// The vessel we're flying, if any.
+		/// </summary>
+		public Vessel        vessel          { get; private set; }
 
-		public Orbit originOrbit { get; private set; }
-		public CelestialBody origin { get; private set; }
-		public CelestialBody destination { get; private set; }
-		public Vessel vessel { get; private set; }
-		public BurnModel ejectionBurn { get; private set; }
-		public BurnModel planeChangeBurn { get; private set; }
+		/// <summary>
+		/// Representation of the initial burn to start the transfer.
+		/// </summary>
+		public BurnModel     ejectionBurn    { get; private set; }
 
-		public double OptimalPhaseAngle { get; private set; }
-		public double PhaseAnglePerSecond { get; private set; }
+		/// <summary>
+		/// Representation of the burn to change into the destination's orbital plane.
+		/// </summary>
+		public BurnModel     planeChangeBurn { get; private set; }
 
+		/// <summary>
+		/// Construct a model object.
+		/// </summary>
 		public TransferModel(CelestialBody org, CelestialBody dest, Vessel v)
 		{
 			origin = org;
 			destination = dest;
 			vessel = v;
+		}
 
-			DbgFmt("Charting transfer to {0}", dest.theName);
+		private BurnModel GenerateEjectionBurn(Orbit currentOrbit)
+		{
+			if (currentOrbit == null || destination == null) {
+				// Sanity check just in case something unexpected happens.
+				return null;
 
-			if (origin != null) {
-				originOrbit = origin.orbit;
-			} else if (v != null) {
-				originOrbit = vessel.orbit;
-			} else {
-				// No ship or planet; try to simulate an orbit based on launching from KSC?
-				// Could be a low circular orbit 30deg behind.
-			}
+			} else if (currentOrbit.referenceBody == destination.referenceBody) {
+				// Our normal recursive base case - just a normal transfer
 
-			if (originOrbit != null) {
-				OptimalPhaseAngle = clamp(Math.PI * (
+				double optimalPhaseAngle = clamp(Math.PI * (
 					1 - Math.Pow(
-						(originOrbit.semiMajorAxis + destination.orbit.semiMajorAxis)
+						(currentOrbit.semiMajorAxis + destination.orbit.semiMajorAxis)
 							/ (2 * destination.orbit.semiMajorAxis),
 						1.5)
 				));
 
 				// How many radians the phase angle increases or decreases by each second
-				PhaseAnglePerSecond =
-					   (Tau / destination.orbit.period)
-					 - (Tau / originOrbit.period);
-			}
-		}
+				double phaseAnglePerSecond =
+					  (Tau / destination.orbit.period)
+					- (Tau / currentOrbit.period);
 
-		public void UpdateManeuvers()
-		{
-			DbgFmt("Specifying maneuvers to {0}", destination.theName);
-
-			if (originOrbit != null) {
-
-				// Longitude of Ascending Node: Angle between an absolute direction and the ascending node.
-				// Argument of Periapsis: Angle between ascending node and periapsis.
-				// True Anomaly: Angle between periapsis and current location of the body.
-				// Sum: Angle describing absolute location of the body.
-				// Only the True Anomaly is in radians by default.
 				double currentPhaseAngle = clamp(
 					Mathf.Deg2Rad * (
 						  destination.orbit.LAN
 						+ destination.orbit.argumentOfPeriapsis
-						- originOrbit.LAN
-						- originOrbit.argumentOfPeriapsis
+						- currentOrbit.LAN
+						- currentOrbit.argumentOfPeriapsis
 					)
 					+ destination.orbit.trueAnomaly
-					- originOrbit.trueAnomaly
+					- currentOrbit.trueAnomaly
 				);
 
 				// This whole section borrowed from Kerbal Alarm Clock; thanks, TriggerAu!
-				double angleToMakeUp = currentPhaseAngle - OptimalPhaseAngle;
-				if (angleToMakeUp > 0 && PhaseAnglePerSecond > 0)
+				double angleToMakeUp = currentPhaseAngle - optimalPhaseAngle;
+				if (angleToMakeUp > 0 && phaseAnglePerSecond > 0)
 					angleToMakeUp -= Tau;
-				if (angleToMakeUp < 0 && PhaseAnglePerSecond < 0)
+				if (angleToMakeUp < 0 && phaseAnglePerSecond < 0)
 					angleToMakeUp += Tau;
 
-				double timeTillBurn = Math.Abs(angleToMakeUp / PhaseAnglePerSecond);
+				double timeTillBurn = Math.Abs(angleToMakeUp / phaseAnglePerSecond);
 				double ejectionBurnTime = Planetarium.GetUniversalTime() + timeTillBurn;
 				double arrivalTime = ejectionBurnTime + 0.5 * OrbitalPeriod(
 					destination.orbit.referenceBody,
 					destination.orbit.semiMajorAxis,
-					originOrbit.semiMajorAxis
+					currentOrbit.semiMajorAxis
 				);
 
-				if (origin != null) {
-					// We are starting from a sub-SoI of the transfer, so we can't just burn at the designated time.
-
-					double mu = destination.referenceBody.gravParameter,
-						r1 = RadiusAtTime(originOrbit, ejectionBurnTime),
-						r2 = RadiusAtTime(destination.orbit, arrivalTime);
-
-					if (vessel != null) {
-						// If we have a vessel, then we can burn when it's at the right part of its orbit
-
-						// Temporary hack: make exits slightly smoother by going 5 minutes earlier.
-						// Eventually we'll use a real hyperbolic orbit calculation here.
-						const double EJECTION_FUDGE_FACTOR = -5 * 60;
-
-						if (destination.orbit.semiMajorAxis < originOrbit.semiMajorAxis) {
-							double speedAtInfinity = Math.Abs(
-								//SpeedAtPeriapsis(destination.orbit.referenceBody, r1, r2)
-								//	- SpeedAtTime(originOrbit, ejectionBurnTime)
-								Math.Sqrt(mu / r2) * (1 - Math.Sqrt(2 * r1 / (r1 + r2)))
-							);
-							// Adjust maneuverTime to day side
-							ejectionBurn = new BurnModel(
-								EJECTION_FUDGE_FACTOR + TimeAtNextNoon(
-									originOrbit,
-									vessel.orbit,
-									ejectionBurnTime),
-								BurnToEscape(
-									origin,
-									vessel.orbit,
-									speedAtInfinity,
-									ejectionBurnTime),
-								0, 0
-							);
-						} else {
-							double speedAtInfinity = Math.Abs(
-								//SpeedAtApoapsis(destination.orbit.referenceBody, r2, r1)
-								//	- SpeedAtTime(originOrbit, ejectionBurnTime)
-								Math.Sqrt(mu / r1) * (Math.Sqrt(2 * r2 / (r1 + r2)) - 1)
-							);
-							// Adjust maneuverTime to night side
-							ejectionBurn = new BurnModel(
-								EJECTION_FUDGE_FACTOR + TimeAtNextMidnight(
-									originOrbit,
-									vessel.orbit,
-									ejectionBurnTime),
-								BurnToEscape(
-									origin,
-									vessel.orbit,
-									speedAtInfinity,
-									ejectionBurnTime),
-								0, 0
-							);
-						}
-					} else {
-						// Without a vessel, we just burn when the orbits align
-
-						if (destination.orbit.semiMajorAxis < originOrbit.semiMajorAxis) {
-							ejectionBurn = new BurnModel(
-								ejectionBurnTime,
-								Math.Sqrt(mu / r2) * (1 - Math.Sqrt(2 * r1 / (r1 + r2))),
-								0, 0
-							);
-						} else {
-							ejectionBurn = new BurnModel(
-								ejectionBurnTime,
-								Math.Sqrt(mu / r1) * (Math.Sqrt(2 * r2 / (r1 + r2)) - 1),
-								0, 0
-							);
-						}
-					}
-
+				if (currentOrbit.semiMajorAxis < destination.orbit.semiMajorAxis) {
+					return new BurnModel(
+						ejectionBurnTime,
+						BurnToNewAp(
+							currentOrbit,
+							ejectionBurnTime,
+							RadiusAtTime(destination.orbit, arrivalTime)
+								- 0.25 * destination.sphereOfInfluence
+						),
+						0, 0
+					);
 				} else {
-
-					// Already in the destination sphere of influence
-					if (originOrbit.semiMajorAxis < destination.orbit.semiMajorAxis) {
-						ejectionBurn = new BurnModel(ejectionBurnTime,
-							BurnToNewAp(originOrbit, ejectionBurnTime, destination), 0, 0);
-					} else {
-						ejectionBurn = new BurnModel(ejectionBurnTime,
-							BurnToNewPe(originOrbit, ejectionBurnTime, destination), 0, 0);
-					}
-
+					return new BurnModel(
+						ejectionBurnTime,
+						BurnToNewPe(
+							currentOrbit,
+							ejectionBurnTime,
+							RadiusAtTime(destination.orbit, arrivalTime)
+								+ 0.25 * destination.sphereOfInfluence
+						),
+						0, 0
+					);
 				}
-			} else {
-				DbgFmt("Punting on this orbit because we lack a craft");
-				// TODO: Do something useful for KSC and tracking station
-				ejectionBurn = new BurnModel(
-					Planetarium.GetUniversalTime() + destination.orbit.period,
-					0, 0, 0);
-			}
 
+			} else {
+				// Recursive case - get an orbit from the parent body and adjust it for ejection from here
+
+				BurnModel outerBurn = GenerateEjectionBurn(ParentOrbit(currentOrbit));
+				if (outerBurn != null) {
+
+					// Temporary hack: make exits slightly smoother by going 5 minutes earlier.
+					// Eventually we'll use a real hyperbolic orbit calculation here.
+					const double EJECTION_FUDGE_FACTOR = -5 * 60;
+
+					if (outerBurn.prograde < 0) {
+						// Adjust maneuverTime to day side
+						return new BurnModel(
+							EJECTION_FUDGE_FACTOR + TimeAtNextNoon(
+								currentOrbit.referenceBody.orbit,
+								currentOrbit,
+								outerBurn.atTime),
+							BurnToEscape(
+								currentOrbit.referenceBody,
+								currentOrbit,
+								outerBurn.totalDeltaV,
+								outerBurn.atTime),
+							0, 0
+						);
+					} else {
+						// Adjust maneuverTime to night side
+						return new BurnModel(
+							EJECTION_FUDGE_FACTOR + TimeAtNextMidnight(
+								currentOrbit.referenceBody.orbit,
+								currentOrbit,
+								outerBurn.atTime),
+							BurnToEscape(
+								currentOrbit.referenceBody,
+								currentOrbit,
+								outerBurn.totalDeltaV,
+								outerBurn.atTime),
+							0, 0
+						);
+					}
+				}
+				return outerBurn;
+			}
+		}
+
+		/// <summary>
+		/// Calculate the time and delta V of the burn needed to transfer.
+		/// </summary>
+		public void CalculateEjectionBurn()
+		{
+			if (vessel != null) {
+				ejectionBurn = GenerateEjectionBurn(vessel.orbit);
+			} else if (origin != null) {
+				ejectionBurn = GenerateEjectionBurn(origin.orbit);
+			}
+		}
+
+		/// <summary>
+		/// Calculate the time and delta V of the burn needed to change planes.
+		/// </summary>
+		public void CalculatePlaneChangeBurn()
+		{
 			if (FlightGlobals.ActiveVessel == vessel
 					&& vessel != null
 					&& vessel.patchedConicSolver != null
@@ -259,10 +238,12 @@ namespace Astrogator {
 		}
 
 		/// Returns true if UI needs an update
-		public bool Refresh() {
+		public bool Refresh()
+		{
 			if (ejectionBurn != null) {
 				if (ejectionBurn.atTime < Planetarium.GetUniversalTime()) {
-					UpdateManeuvers();
+					CalculateEjectionBurn();
+					CalculatePlaneChangeBurn();
 					return true;
 				} else {
 					return false;
