@@ -4,24 +4,7 @@ Go interplanetary without maneuver nodes or porkchop plots.
 
 A space-navigational aide for [Kerbal Space Program](http://www.kerbalspaceprogram.com/).
 
-## Usage
-
-Click the toolbar icon to open the window.
-
-## Installation
-
-### Manual
-
-1. Download the release package
-2. Unzip it into your KSP folder's GameData directory
-
-### CKAN
-
-```sh
-mono ckan install Astrogator
-```
-
-## Compilation
+## Building
 
 ### Linux
 
@@ -32,28 +15,22 @@ ln -s /path/to/KSP/KSP_x64_Data src
 make
 ```
 
-### Windows
-
-Try compiling it in Visual Studio, I guess? Hopefully the `csproj` file will open.
-
 ## Known limitations
 
 - Blizzy's toolbar is not and will not be supported. 0.23.5 was a long time ago, folks.
 - Only the phase angle approximation is used for performance reasons.
+- I can't get the maneuver / warp buttons to show their built-in tooltipText property, and they don't seem to have onHover events to set one up manually like we did for the app launcher.
 
 ## Future plans
 
 - Robustness
-  - Warnings for high inclinations
   - Intelligent updates during burns
   - Create useful numbers for launches and KSC
   - Return to LKO burns from Mun and Minmus
     - Lowest warp altitude limit + 5km
-- Settings pop-up or checkboxes in main window
-  - Generate plane change maneuvers
-  - Delete existing maneuvers
 - Source control
   - Push to Github
+    - Add screenshots to README
   - Announce on forums
     - New thread
     - [DialogGUI* thread](http://forum.kerbalspaceprogram.com/index.php?/topic/149324-popupdialog-and-the-dialoggui-classes/)

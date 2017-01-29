@@ -92,5 +92,8 @@
   <ItemGroup>
     <Compile Include="Settings.cs" />
   </ItemGroup>
+  <ItemGroup>
+    <Compile Include="SettingsView.cs" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

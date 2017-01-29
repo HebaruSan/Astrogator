@@ -14,14 +14,24 @@ namespace Astrogator {
 	public class AstrogationView : DialogGUIVerticalLayout {
 		private AstrogationModel model { get; set; }
 		private PopupDialog dialog { get; set; }
+		private Callback resetCallback { get; set; }
+
 		private static Rect geometry {
 			get {
 				Vector2 pos = Settings.Instance.MainWindowPosition;
 				return new Rect(pos.x, pos.y, mainWindowMinWidth, mainWindowMinHeight);
 			}
 			set {
-				Settings.Instance.MainWindowPosition =
-					new Vector2(value.x, value.y);
+				Settings.Instance.MainWindowPosition = new Vector2(value.x, value.y);
+			}
+		}
+
+		private bool ShowSettings {
+			get {
+				return Settings.Instance.ShowSettings;
+			}
+			set {
+				Settings.Instance.ShowSettings = value;
 			}
 		}
 
@@ -40,7 +50,8 @@ namespace Astrogator {
 		/// Construct a view for the given model.
 		/// </summary>
 		/// <param name="m">Model object for which to make a view</param>
-		public AstrogationView(AstrogationModel m)
+		/// <param name="reset">Function to call when the view needs to be re-initiated</param>
+		public AstrogationView(AstrogationModel m, Callback reset)
 			: base(
 				mainWindowMinWidth,
 				mainWindowMinHeight,
@@ -50,9 +61,28 @@ namespace Astrogator {
 			)
 		{
 			model = m;
+			resetCallback = reset;
 
-			createHeaders();
-			createRows();
+			if (!model.badInclination) {
+				createHeaders();
+				createRows();
+			}
+			AddChild(new DialogGUIHorizontalLayout(
+				mainWindowMinWidth, 10,
+				mainWindowSpacing, mainWindowPadding,
+				TextAnchor.UpperRight,
+				new DialogGUIFlexibleSpace(),
+				iconButton(settingsIcon, settingsStyle, "Settings", toggleSettingsVisible)
+			));
+			if (ShowSettings) {
+				AddChild(new SettingsView());
+			}
+		}
+
+		private void toggleSettingsVisible()
+		{
+			ShowSettings = !ShowSettings;
+			resetCallback();
 		}
 
 		private void createHeaders()
@@ -83,6 +113,30 @@ namespace Astrogator {
 			}
 		}
 
+		private string subTitle {
+			get {
+				if (model != null && model.badInclination) {
+					return String.Format(
+						"Inclination is {0:0.0}°, accuracy too low past {1:0.}°",
+						Math.Abs(model.vessel.orbit.inclination),
+						AstrogationModel.maxInclination * Mathf.Rad2Deg
+					);
+				} else {
+					return String.Format("Transfers from {0}", model.OriginDescription);
+				}
+			}
+		}
+
+		private UISkinDef skinToUse {
+			get {
+				if (model != null && model.badInclination) {
+					return AstrogatorErrorSkin;
+				} else {
+					return AstrogatorSkin;
+				}
+			}
+		}
+
 		/// <summary>
 		/// Launch a PopupDialog containing the view.
 		/// Use Dismiss() to get rid of it.
@@ -93,14 +147,14 @@ namespace Astrogator {
 				mainWindowAnchor,
 				mainWindowAnchor,
 				new MultiOptionDialog(
-					String.Format("Transfers from {0}", model.OriginDescription()),
+					subTitle,
 					DisplayName,
-					AstrogatorSkin,
+					skinToUse,
 					geometry,
 					this
 				),
 				false,
-				AstrogatorSkin,
+				skinToUse,
 				false
 			);
 		}

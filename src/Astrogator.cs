@@ -56,6 +56,10 @@ namespace Astrogator {
 			// This event fires when switching focus in the tracking station
 			GameEvents.onPlanetariumTargetChanged.Add(TrackingStationTargetChanged);
 
+			// This is called in the flight scene when the vessel is fully loaded.
+			// We need that to be able to calculate plane changes.
+			GameEvents.onFlightReady.Add(OnFlightReady);
+
 			// This event fires on SOI change
 			if (FlightGlobals.ActiveVessel != null) {
 				VesselMode = true;
@@ -68,6 +72,10 @@ namespace Astrogator {
 		/// This is called at destroy
 		public void OnDisable()
 		{
+			// Tear down the window (saves the position as a side effect)
+			HideMainWindow(false);
+
+			// Save the persistent attributes to our settings file
 			Settings.Instance.Save();
 
 			// The "dead" copy of our object will re-add itself if we don't unsubscribe to this!
@@ -78,6 +86,10 @@ namespace Astrogator {
 
 			// This event fires when switching focus in the tracking station
 			GameEvents.onPlanetariumTargetChanged.Remove(TrackingStationTargetChanged);
+
+			// This is called in the flight scene when the vessel is fully loaded.
+			// We need that to be able to calculate plane changes.
+			GameEvents.onFlightReady.Remove(OnFlightReady);
 
 			// The launcher destroyed event doesn't always fire when we need it (?)
 			RemoveLauncher();
@@ -179,7 +191,18 @@ namespace Astrogator {
 
 		#endregion App launcher
 
+		private bool flightReady { get; set; }
+
 		#region Background loading
+
+		private void OnFlightReady()
+		{
+			flightReady = true;
+			if (Settings.Instance.GeneratePlaneChangeBurns) {
+				StartLoadingModel(model.body, model.vessel, false);
+				ResetView();
+			}
+		}
 
 		private void StartLoadingModel(CelestialBody b = null, Vessel v = null, bool fromScratch = false)
 		{
@@ -205,26 +228,19 @@ namespace Astrogator {
 			}
 		}
 
-		private const int INITIAL_LOAD_DELAY_MS = 250,
-			PER_TRANSFER_DELAY_MS = 50;
-
 		private void bw_LoadModel(object sender, DoWorkEventArgs e)
 		{
 			DbgFmt("Beginning background model load");
 
-			if (VesselMode) {
-				// Wait a bit till it's safe to make our temporary maneuver nodes
-				Thread.Sleep(INITIAL_LOAD_DELAY_MS);
-			}
-
 			for (int i = 0; i < model.transfers.Count; ++i) {
 				try {
-					if (VesselMode) {
-						Thread.Sleep(PER_TRANSFER_DELAY_MS);
-					}
-
 					model.transfers[i].CalculateEjectionBurn();
-					model.transfers[i].CalculatePlaneChangeBurn();
+
+					if (flightReady && Settings.Instance.GeneratePlaneChangeBurns) {
+						model.transfers[i].CalculatePlaneChangeBurn();
+
+						Thread.Sleep(100);
+					}
 
 				} catch (Exception ex) {
 					DbgFmt("Problem with background load: {0}\n{1}",
@@ -269,7 +285,7 @@ namespace Astrogator {
 
 			visible = true;
 			if (view == null) {
-				view = new AstrogationView(model);
+				view = new AstrogationView(model, ResetView);
 				DbgFmt("View mated to booster");
 			}
 			view.Show();
@@ -280,13 +296,16 @@ namespace Astrogator {
 		/// <summary>
 		/// Close the main window.
 		/// </summary>
-		public void HideMainWindow()
+		public void HideMainWindow(bool userInitiated = true)
 		{
 			if (view != null) {
 				view.Dismiss();
 				view = null;
 			}
-			visible = false;
+			if (userInitiated) {
+				// If we close the window because we're exiting, don't set the setting.
+				visible = false;
+			}
 		}
 
 		#endregion Main window

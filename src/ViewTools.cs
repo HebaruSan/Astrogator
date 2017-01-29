@@ -90,26 +90,6 @@ namespace Astrogator {
 		}
 
 		/// <value>
-		/// Icon for normal state of maneuver node creation button.
-		/// </value>
-		public static Sprite maneuverIcon = GetSprite(FilePath("maneuver.png"));
-
-		/// <value>
-		/// Icon for hovered state of maneuver node creation button.
-		/// </value>
-		public static Sprite maneuverHoverIcon = GetSprite(FilePath("maneuverHover.png"));
-
-		/// <value>
-		/// Icon for normal state of warp button.
-		/// </value>
-		public static Sprite warpIcon = GetSprite(FilePath("warp.png"));
-
-		/// <value>
-		/// Icon for hovered state of warp button.
-		/// </value>
-		public static Sprite warpHoverIcon = GetSprite(FilePath("warpHover.png"));
-
-		/// <value>
 		/// Black image with 50% opacity.
 		/// </value>
 		public static Sprite halfTransparentBlack = SolidColorSprite(new Color(0.0f, 0.0f, 0.0f, 0.5f));
@@ -144,35 +124,10 @@ namespace Astrogator {
 		};
 
 		/// <value>
-		/// Icon for normal state of maneuver creation button.
+		/// Text color for the line under the title when it's an error message.
 		/// </value>
-		public static UIStyleState maneuverStyleState = new UIStyleState() {
-			background	= maneuverIcon,
-			textColor	= Color.black
-		};
-
-		/// <value>
-		/// Icon for hovered state of maneuver creation button.
-		/// </value>
-		public static UIStyleState maneuverHoverStyleState = new UIStyleState() {
-			background	= maneuverHoverIcon,
-			textColor	= Color.black
-		};
-
-		/// <value>
-		/// Icon for normal state of warp button.
-		/// </value>
-		public static UIStyleState warpStyleState = new UIStyleState() {
-			background	= warpIcon,
-			textColor	= Color.black
-		};
-
-		/// <value>
-		/// Icon for hovered state of warp button.
-		/// </value>
-		public static UIStyleState warpHoverStyleState = new UIStyleState() {
-			background	= warpHoverIcon,
-			textColor	= Color.black
+		public static UIStyleState subTitleErrorFont = new UIStyleState() {
+			textColor	= Color.HSVToRGB(0f, 0.9f, 0.9f)
 		};
 
 		/// <value>
@@ -259,6 +214,69 @@ namespace Astrogator {
 		};
 
 		/// <value>
+		/// Icon for normal state of settings button.
+		/// </value>
+		public static Sprite settingsIcon = GetSprite(FilePath("settings.png"));
+
+		/// <value>
+		/// Icon for normal state of settings button.
+		/// </value>
+		public static UIStyleState settingsStyleState = new UIStyleState() {
+			background	= settingsIcon,
+			textColor	= Color.black
+		};
+
+		/// <value>
+		/// Icon for hovered state of settings button.
+		/// </value>
+		public static Sprite settingsHoverIcon = GetSprite(FilePath("settingsHover.png"));
+
+		/// <value>
+		/// Icon for hovered state of settings button.
+		/// </value>
+		public static UIStyleState settingsHoverStyleState = new UIStyleState() {
+			background	= settingsHoverIcon,
+			textColor	= Color.black
+		};
+
+		/// <value>
+		/// Normal/highlight icons for the settings button.
+		/// </value>
+		public static UIStyle settingsStyle = new UIStyle() {
+			normal	= settingsStyleState,
+			highlight	= settingsHoverStyleState,
+			active	= settingsHoverStyleState,
+			disabled	= settingsStyleState,
+			alignment	 = TextAnchor.UpperRight,
+		};
+
+		/// <value>
+		/// Icon for normal state of maneuver node creation button.
+		/// </value>
+		public static Sprite maneuverIcon = GetSprite(FilePath("maneuver.png"));
+
+		/// <value>
+		/// Icon for normal state of maneuver creation button.
+		/// </value>
+		public static UIStyleState maneuverStyleState = new UIStyleState() {
+			background	= maneuverIcon,
+			textColor	= Color.black
+		};
+
+		/// <value>
+		/// Icon for hovered state of maneuver node creation button.
+		/// </value>
+		public static Sprite maneuverHoverIcon = GetSprite(FilePath("maneuverHover.png"));
+
+		/// <value>
+		/// Icon for hovered state of maneuver creation button.
+		/// </value>
+		public static UIStyleState maneuverHoverStyleState = new UIStyleState() {
+			background	= maneuverHoverIcon,
+			textColor	= Color.black
+		};
+
+		/// <value>
 		/// Normal/highlight icons for the maneuver creation button.
 		/// </value>
 		public static UIStyle maneuverStyle = new UIStyle() {
@@ -266,6 +284,32 @@ namespace Astrogator {
 			highlight	= maneuverHoverStyleState,
 			active	= maneuverHoverStyleState,
 			disabled	= maneuverStyleState,
+		};
+
+		/// <value>
+		/// Icon for normal state of warp button.
+		/// </value>
+		public static Sprite warpIcon = GetSprite(FilePath("warp.png"));
+
+		/// <value>
+		/// Icon for normal state of warp button.
+		/// </value>
+		public static UIStyleState warpStyleState = new UIStyleState() {
+			background	= warpIcon,
+			textColor	= Color.black
+		};
+
+		/// <value>
+		/// Icon for hovered state of warp button.
+		/// </value>
+		public static Sprite warpHoverIcon = GetSprite(FilePath("warpHover.png"));
+
+		/// <value>
+		/// Icon for hovered state of warp button.
+		/// </value>
+		public static UIStyleState warpHoverStyleState = new UIStyleState() {
+			background	= warpHoverIcon,
+			textColor	= Color.black
 		};
 
 		/// <summary>
@@ -292,6 +336,19 @@ namespace Astrogator {
 		};
 
 		/// <value>
+		/// A red, centered variant of the normal content font for error messages.
+		/// </value>
+		public static UIStyle subTitleErrorStyle = new UIStyle() {
+			normal	= subTitleErrorFont,
+			active	= subTitleErrorFont,
+			disabled	= subTitleErrorFont,
+			highlight	= subTitleErrorFont,
+			alignment	= TextAnchor.MiddleCenter,
+			fontSize	= windowStyle.fontSize,
+			fontStyle	= FontStyle.Bold,
+		};
+
+		/// <value>
 		/// The skin we use for our tooltip and main window.
 		/// </value>
 		public static UISkinDef AstrogatorSkin = new UISkinDef() {
@@ -300,6 +357,19 @@ namespace Astrogator {
 			box	= UISkinManager.defaultSkin.box,
 			font	= UISkinManager.defaultSkin.font,
 			label	= subTitleStyle,
+			toggle	= UISkinManager.defaultSkin.toggle,
+		};
+
+		/// <value>
+		/// The skin we use for our tooltip and main window.
+		/// </value>
+		public static UISkinDef AstrogatorErrorSkin = new UISkinDef() {
+			name	= "Astrogator Error Skin",
+			window	= windowStyle,
+			box	= UISkinManager.defaultSkin.box,
+			font	= UISkinManager.defaultSkin.font,
+			label	= subTitleErrorStyle,
+			toggle	= UISkinManager.defaultSkin.toggle,
 		};
 
 		/// <value>
@@ -317,7 +387,7 @@ namespace Astrogator {
 				header	= "Time Till Burn",
 				width	= 30,
 				headerColSpan	= 5,
-				headerStyle	= rightHdrStyle,
+				headerStyle	= midHdrStyle,
 				contentStyle	= numberStyle,
 				content	= ContentEnum.YearsTillBurn
 			}, new ColumnDefinition() {

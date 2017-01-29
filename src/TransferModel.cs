@@ -180,8 +180,15 @@ namespace Astrogator {
 			if (FlightGlobals.ActiveVessel == vessel
 					&& vessel != null
 					&& vessel.patchedConicSolver != null
-					&& vessel.patchedConicSolver.maneuverNodes != null
-					&& vessel.patchedConicSolver.maneuverNodes.Count == 0) {
+					&& vessel.patchedConicSolver.maneuverNodes != null) {
+
+				if (vessel.patchedConicSolver.maneuverNodes.Count > 0) {
+					if (Settings.Instance.DeleteExistingManeuvers) {
+						ClearManeuverNodes();
+					} else {
+						return;
+					}
+				}
 
 				DbgFmt("Temporarily activating ejection burn to {0}", destination.theName);
 

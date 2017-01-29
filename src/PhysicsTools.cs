@@ -254,13 +254,28 @@ namespace Astrogator {
 			// We assume without checking that burning 1000 m/s south will give you
 			// a big descending node, and 1000 m/s north will give you a big ascending node.
 			const double tolerance = 0.01;
+			const double epsilon = 0.01;
+			const double goodEnoughInclination = 0.05; // (degrees)
 			double minDeltaV = -1000,
 				maxDeltaV = 1000;
 
 			for (int numReps = 0; numReps < 100; ++numReps) {
 
-				double midDeltaV = 0.5 * (minDeltaV + maxDeltaV),
-					midSlope = inclinationSlope(targetOrbit, nodeTime, midDeltaV);
+				double midDeltaV = 0.5 * (minDeltaV + maxDeltaV);
+
+				double inc1 = inclinationAfterBurn(targetOrbit, nodeTime, midDeltaV - epsilon);
+
+				if (inc1 < goodEnoughInclination) {
+					return midDeltaV - epsilon;
+				}
+
+				double inc2 = inclinationAfterBurn(targetOrbit, nodeTime, midDeltaV + epsilon);
+
+				if (inc2 < goodEnoughInclination) {
+					return midDeltaV + epsilon;
+				}
+
+				double midSlope = (inc2 - inc1) / (epsilon + epsilon);
 
 				if (midSlope < 0) {
 					// Zoom in on the right segment

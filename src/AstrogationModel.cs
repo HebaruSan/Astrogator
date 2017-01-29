@@ -1,4 +1,6 @@
+using System;
 using System.Collections.Generic;
+using UnityEngine;
 
 namespace Astrogator {
 
@@ -25,6 +27,24 @@ namespace Astrogator {
 		public Vessel vessel { get; private set; }
 
 		/// <summary>
+		/// The inclination past which we refuse to do any calculations.
+		/// Most of our approximations and heuristics work best at equatorial
+		/// and get less accurate rapidly.
+		/// </summary>
+		public const double maxInclination = Tau / 12.0;
+
+		/// <summary>
+		/// True if the vessel's inclination is too big to be worth bothering.
+		/// </summary>
+		public bool badInclination {
+			get {
+				// Orbit.inclination is in degrees
+				return vessel != null
+					&& Math.Abs(vessel.orbit.inclination * Mathf.Deg2Rad) > maxInclination;
+			}
+		}
+
+		/// <summary>
 		/// Construct a model object for the given origin objects.
 		/// </summary>
 		/// <param name="b">Body to start at, overridden by v</param>
@@ -33,7 +53,11 @@ namespace Astrogator {
 		{
 			body = b;
 			vessel = v;
-			CreateTransfers(b, v);
+			transfers = new List<TransferModel>();
+
+			if (!badInclination) {
+				CreateTransfers(b, v);
+			}
 		}
 
 		/// <summary>
@@ -45,20 +69,25 @@ namespace Astrogator {
 		{
 			body = b;
 			vessel = v;
-			CreateTransfers(b, v);
+			transfers = new List<TransferModel>();
+
+			if (!badInclination) {
+				CreateTransfers(b, v);
+			}
 		}
 
 		/// <returns>
 		/// Description of the transfers contained in this model.
 		/// </returns>
-		public string OriginDescription()
-		{
-			if (vessel != null) {
-				return vessel.GetName();
-			} else if (body != null) {
-				return body.theName;
-			} else {
-				return "";
+		public string OriginDescription {
+			get {
+				if (vessel != null) {
+					return vessel.GetName();
+				} else if (body != null) {
+					return body.theName;
+				} else {
+					return "";
+				}
 			}
 		}
 
@@ -66,9 +95,9 @@ namespace Astrogator {
 		{
 			DbgFmt("Fabricating transfers");
 
-			transfers = new List<TransferModel>();
+			CelestialBody origin = StartBody(body, vessel);
 
-			for (CelestialBody b = StartBody(body, vessel), toSkip = null;
+			for (CelestialBody b = origin, toSkip = null;
 					b != null;
 					toSkip = b, b = ParentBody(b)) {
 
@@ -77,11 +106,11 @@ namespace Astrogator {
 				int numBodies = b.orbitingBodies.Count;
 				for (int i = 0; i < numBodies; ++i) {
 					CelestialBody satellite = b.orbitingBodies[i];
-					DbgFmt("Plotting transfer to {0}", satellite.theName);
 					if (satellite != toSkip) {
-						transfers.Add(new TransferModel(toSkip, satellite, vessel));
+						DbgFmt("Plotting transfer to {0}", satellite.theName);
+						transfers.Add(new TransferModel(origin, satellite, vessel));
+						DbgFmt("Finalized transfer to {0}", satellite.theName);
 					}
-					DbgFmt("Finalized transfer to {0}", satellite.theName);
 				}
 				DbgFmt("Exhausted transfers around {0}", b.theName);
 			}

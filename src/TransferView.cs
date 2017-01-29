@@ -33,7 +33,7 @@ namespace Astrogator {
 				ColumnDefinition col = Columns[i];
 
 				// Skip columns that require an active vessel if we don't have one
-				if (!col.vesselSpecific || model.vessel != null) {
+				if (!col.vesselSpecific || FlightGlobals.ActiveVessel != null) {
 					switch (col.content) {
 
 						case ContentEnum.PlanetName:
@@ -201,21 +201,33 @@ namespace Astrogator {
 				// Remove all maneuver nodes because they'd conflict with the ones we're about to add
 				ClearManeuverNodes();
 
-				// Switch to target mode, targeting the destination body
-				FlightGlobals.fetch.SetVesselTarget(model.destination);
+				if (Settings.Instance.AutoTargetDestination) {
+					// Switch to target mode, targeting the destination body
+					FlightGlobals.fetch.SetVesselTarget(model.destination);
+				}
 
 				// Create a maneuver node for the ejection burn
 				model.ejectionBurn.ToActiveManeuver();
 
-				if (model.planeChangeBurn != null) {
+				if (Settings.Instance.GeneratePlaneChangeBurns && model.planeChangeBurn != null) {
 					model.planeChangeBurn.ToActiveManeuver();
+				} else {
+					DbgFmt("Skipping plane change burn.");
 				}
 
-				// Open the initial node for fine tuning
-				model.ejectionBurn.EditNode();
+				if (Settings.Instance.AutoEditEjectionNode) {
+					// Open the initial node for fine tuning
+					model.ejectionBurn.EditNode();
+				} else if (Settings.Instance.AutoEditPlaneChangeNode) {
+					if (model.planeChangeBurn != null) {
+						model.planeChangeBurn.EditNode();
+					}
+				}
 
-				// Move the map to the target
-				FocusMap(model.destination);
+				if (Settings.Instance.AutoFocusDestination) {
+					// Move the map to the target
+					FocusMap(model.destination);
+				}
 			}
 		}
 
