@@ -36,6 +36,12 @@ namespace Astrogator {
 				));
 
 				AddChild(new DialogGUIToggle(
+					() => Settings.Instance.AddPlaneChangeDeltaV,
+					"Include plane change burns in Δv display",
+					(bool b) => { Settings.Instance.AddPlaneChangeDeltaV = b; }
+				));
+
+				AddChild(new DialogGUIToggle(
 					() => Settings.Instance.DeleteExistingManeuvers,
 					"Delete existing maneuvers",
 					(bool b) => { Settings.Instance.DeleteExistingManeuvers = b; }

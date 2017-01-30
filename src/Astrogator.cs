@@ -232,22 +232,28 @@ namespace Astrogator {
 		{
 			DbgFmt("Beginning background model load");
 
+			// Blast through the ejection burns so the popup has numbers ASAP
 			for (int i = 0; i < model.transfers.Count; ++i) {
 				try {
 					model.transfers[i].CalculateEjectionBurn();
-
-					if (flightReady && Settings.Instance.GeneratePlaneChangeBurns) {
-						model.transfers[i].CalculatePlaneChangeBurn();
-
-						Thread.Sleep(100);
-					}
-
 				} catch (Exception ex) {
 					DbgFmt("Problem with background load: {0}\n{1}",
 						ex.Message, ex.StackTrace);
+				}
+			}
+			// Now get the plane change burns.
+			if (flightReady && Settings.Instance.GeneratePlaneChangeBurns) {
+				for (int i = 0; i < model.transfers.Count; ++i) {
+					try {
+						Thread.Sleep(750);
+						model.transfers[i].CalculatePlaneChangeBurn();
+					} catch (Exception ex) {
+						DbgFmt("Problem with background load: {0}\n{1}",
+							ex.Message, ex.StackTrace);
 
-					// If a route calculation crashes, it can leave behind a temporary node.
-					ClearManeuverNodes();
+						// If a route calculation crashes, it can leave behind a temporary node.
+						ClearManeuverNodes();
+					}
 				}
 			}
 			DbgFmt("Finished background model load");
@@ -263,8 +269,8 @@ namespace Astrogator {
 
 		#region Main window
 
-		private AstrogationModel model { get; set; }
-		private AstrogationView view { get; set; }
+		private AstrogationModel model    { get; set; }
+		private AstrogationView  view     { get; set; }
 		private BackgroundWorker bgworker { get; set; }
 
 		private static bool visible {
@@ -315,6 +321,55 @@ namespace Astrogator {
 			if (view != null) {
 				HideMainWindow();
 				ShowMainWindow();
+			}
+		}
+
+		/// <summary>
+		/// Called by the framework for each physics tick.
+		/// </summary>
+		public void FixedUpdate()
+		{
+			if (VesselMode) {
+				// Check for changes in vessel's orbit
+
+				if (OrbitChanged()) {
+
+					OnOrbitChanged();
+
+					prevOrbit = new OrbitModel(FlightGlobals.ActiveVessel.orbit);
+				}
+			}
+		}
+
+		private OrbitModel prevOrbit { get; set; }
+
+		private bool OrbitChanged()
+		{
+			return VesselMode
+				&& (prevOrbit == null
+					|| !prevOrbit.Equals(FlightGlobals.ActiveVessel.orbit));
+		}
+
+		private void OnOrbitChanged() {
+			if (prevOrbit == null) {
+				DbgFmt("No previous orbit.");
+			} else {
+				// Comment this later to save a bunch of divisions and abs operations
+				DbgFmt(prevOrbit.ComparisonDescription(FlightGlobals.ActiveVessel.orbit));
+			}
+
+			if (model != null) {
+
+				// Just recalculate the ejection burns since those are relatively simple
+				for (int i = 0; i < model.transfers.Count; ++i) {
+					try {
+						model.transfers[i].CalculateEjectionBurn();
+					} catch (Exception ex) {
+						DbgFmt("Problem after orbit change: {0}\n{1}",
+							ex.Message, ex.StackTrace);
+					}
+				}
+
 			}
 		}
 

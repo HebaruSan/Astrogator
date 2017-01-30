@@ -8,7 +8,11 @@ namespace Astrogator {
 	/// An object representing a maneuver, but without creating an
 	/// actual maneuver node, so we can store the data and use it later.
 	public class BurnModel {
-		private ManeuverNode node { get; set; }
+
+		/// <value>
+		/// Maneuver node created from this burn, if any.
+		/// </value>
+		public ManeuverNode node { get; private set; }
 
 		/// <summary>
 		/// The UT of the burn.

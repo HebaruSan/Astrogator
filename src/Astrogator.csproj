@@ -60,6 +60,15 @@
     <Compile Include="Astrogator.cs" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="KerbalTools.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="ViewTools.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="PhysicsTools.cs" />
+  </ItemGroup>
+  <ItemGroup>
     <Compile Include="AstrogationModel.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -75,19 +84,13 @@
     <Compile Include="BurnModel.cs" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="OrbitModel.cs" />
+  </ItemGroup>
+  <ItemGroup>
     <Compile Include="TooltipView.cs" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="DebugTools.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Include="KerbalTools.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Include="ViewTools.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Include="PhysicsTools.cs" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Settings.cs" />

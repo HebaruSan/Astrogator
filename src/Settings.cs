@@ -21,6 +21,7 @@ namespace Astrogator {
 			ShowSettingsKey             = "ShowSettings",
 
 			GeneratePlaneChangeBurnsKey = "GeneratePlaneChangeBurns",
+			AddPlaneChangeDeltaVKey     = "AddPlaneChangeDeltaV",
 			DeleteExistingManeuversKey  = "DeleteExistingManeuvers",
 
 			AutoTargetDestinationKey    = "AutoTargetDestination",
@@ -109,6 +110,7 @@ namespace Astrogator {
 
 		/// <value>
 		/// Whether to delete maneuvers in order to determine plane changes.
+		/// False by default because this could be very disruptive.
 		/// </value>
 		public bool DeleteExistingManeuvers {
 			get {
@@ -127,6 +129,7 @@ namespace Astrogator {
 
 		/// <value>
 		/// Whether to generate plane change maneuvers.
+		/// On by default because otherwise the ejection maneuver may not be enough.
 		/// </value>
 		public bool GeneratePlaneChangeBurns {
 			get {
@@ -143,12 +146,36 @@ namespace Astrogator {
 				if (!value) {
 					DeleteExistingManeuvers = false;
 					AutoEditPlaneChangeNode = false;
+					AddPlaneChangeDeltaV = false;
+				}
+			}
+		}
+
+		/// <value>
+		/// Whether to include the delta V of plane change maneuvers in the display.
+		/// Default to false because otherwise people might burn the total amount to eject.
+		/// </value>
+		public bool AddPlaneChangeDeltaV {
+			get {
+				bool include = false;
+				config.TryGetValue(AddPlaneChangeDeltaVKey, ref include);
+				return include;
+			}
+			set {
+				if (config.HasValue(AddPlaneChangeDeltaVKey)) {
+					config.SetValue(AddPlaneChangeDeltaVKey, value);
+				} else {
+					config.AddValue(AddPlaneChangeDeltaVKey, value);
+				}
+				if (value) {
+					GeneratePlaneChangeBurns = true;
 				}
 			}
 		}
 
 		/// <value>
 		/// Whether the destination should be set as target when creeating maneuvers.
+		/// On by default because it's almost always what you'd want.
 		/// </value>
 		public bool AutoTargetDestination {
 			get {
@@ -167,6 +194,9 @@ namespace Astrogator {
 
 		/// <value>
 		/// Whether the destination should be set as focus when creating maneuvers.
+		/// On by default because it's convenient to be able to fine tune your arrival.
+		/// Note that if our maneuvers don't give you an encounter, we'll focus
+		/// the parent body of the transfer instead (usually Sun).
 		/// </value>
 		public bool AutoFocusDestination {
 			get {
@@ -185,6 +215,7 @@ namespace Astrogator {
 
 		/// <value>
 		/// Whether to open the ejection maneuver node for editing upon creation.
+		/// On by default because it's the first one you'll want to use for fine tuning.
 		/// </value>
 		public bool AutoEditEjectionNode {
 			get {
@@ -206,6 +237,7 @@ namespace Astrogator {
 
 		/// <value>
 		/// Whether to open the plane change maneuver node for editing upon creation.
+		/// Off by default because usually you'd want to edit the ejection node instead.
 		/// </value>
 		public bool AutoEditPlaneChangeNode {
 			get {

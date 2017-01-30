@@ -105,6 +105,8 @@ namespace Astrogator {
 			return false;
 		}
 
+		private const string LoadingText = "---";
+
 		/// <returns>
 		/// String representing years till burn.
 		/// </returns>
@@ -112,7 +114,7 @@ namespace Astrogator {
 		{
 			Refresh();
 			if (timeToWait == null) {
-				return "Loadi";
+				return LoadingText;
 			} else {
 				return TimePieceString("{0}y", timeToWait.years, timeToWait.needYears);
 			}
@@ -125,7 +127,7 @@ namespace Astrogator {
 		{
 			Refresh();
 			if (timeToWait == null) {
-				return "ng...";
+				return LoadingText;
 			} else {
 				return TimePieceString("{0}d", timeToWait.days, timeToWait.needDays);
 			}
@@ -138,7 +140,7 @@ namespace Astrogator {
 		{
 			Refresh();
 			if (timeToWait == null) {
-				return "...";
+				return LoadingText;
 			} else {
 				return TimePieceString("{0}h", timeToWait.hours, timeToWait.needHours);
 			}
@@ -151,7 +153,7 @@ namespace Astrogator {
 		{
 			Refresh();
 			if (timeToWait == null) {
-				return "...";
+				return LoadingText;
 			} else {
 				return TimePieceString("{0}m", timeToWait.minutes, timeToWait.needMinutes);
 			}
@@ -164,7 +166,7 @@ namespace Astrogator {
 		{
 			Refresh();
 			if (timeToWait == null) {
-				return "...";
+				return LoadingText;
 			} else {
 				return TimePieceString("{0}s", timeToWait.seconds, true);
 			}
@@ -178,8 +180,8 @@ namespace Astrogator {
 			Refresh();
 
 			if (model.ejectionBurn == null) {
-				return "...";
-			} else if (model.planeChangeBurn == null) {
+				return LoadingText;
+			} else if (model.planeChangeBurn == null || !Settings.Instance.AddPlaneChangeDeltaV) {
 				return TimePieceString("{0} m/s",
 					Math.Abs(Math.Floor(model.ejectionBurn.totalDeltaV)),
 					false, "N/A");
@@ -225,8 +227,13 @@ namespace Astrogator {
 				}
 
 				if (Settings.Instance.AutoFocusDestination) {
-					// Move the map to the target
-					FocusMap(model.destination);
+					if (model.HaveEncounter()) {
+						// Move the map to the target for fine-tuning if we have an encounter
+						FocusMap(model.destination);
+					} else {
+						// Otherwise focus on the parent of the transfer orbit so we can get an encounter
+						FocusMap(model.destination.orbit.referenceBody);
+					}
 				}
 			}
 		}

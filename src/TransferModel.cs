@@ -204,7 +204,7 @@ namespace Astrogator {
 						}
 
 						// Find the orbit patch that intersects the target orbit
-						for (Orbit o = eNode.nextPatch; o != null; o = o.nextPatch) {
+						for (Orbit o = eNode.nextPatch; o != null; o = NextPatch(o)) {
 							// Skip the patches that are in the wrong SoI
 							if (o.referenceBody == destination.orbit.referenceBody) {
 
@@ -216,9 +216,15 @@ namespace Astrogator {
 								DbgFmt("Pinpointed plane change for {0}", destination.theName);
 
 								if (planeTime > 0 && planeTime > ejectionBurn.atTime) {
-									// Add a maneuver node to change planes
-									planeChangeBurn = new BurnModel(planeTime, 0,
-										FindPlaneChangeMagnitude(o, destination.orbit, planeTime), 0);
+									double magnitude = FindPlaneChangeMagnitude(o, destination.orbit, planeTime);
+									// Don't bother to create tiny maneuver nodes
+									if (magnitude > 0.05) {
+										// Add a maneuver node to change planes
+										planeChangeBurn = new BurnModel(planeTime, 0,
+											magnitude, 0);
+									} else {
+										planeChangeBurn = null;
+									}
 
 									DbgFmt("Transmitted correction burn for {0}", destination.theName);
 
@@ -242,6 +248,29 @@ namespace Astrogator {
 			} else {
 				DbgFmt("Can't do a plane change without a vessel");
 			}
+		}
+
+		/// <summary>
+		/// Check whether the current vessel currently has an encounter with this transfer's destination.
+		/// Assumes that all of our maneuver nodes have been placed.
+		/// </summary>
+		/// <returns>
+		///
+		/// </returns>
+		public bool HaveEncounter()
+		{
+			if (FlightGlobals.ActiveVessel == vessel
+					&& vessel != null
+					&& vessel.patchedConicSolver != null
+					&& vessel.patchedConicSolver.maneuverNodes != null) {
+
+				for (Orbit o = ejectionBurn.node.nextPatch; o != null; o = NextPatch(o)) {
+					if (o.referenceBody == destination) {
+						return true;
+					}
+				}
+			}
+			return false;
 		}
 
 		/// Returns true if UI needs an update
