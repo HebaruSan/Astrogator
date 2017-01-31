@@ -122,36 +122,42 @@ namespace Astrogator {
 				BurnModel outerBurn = GenerateEjectionBurn(ParentOrbit(currentOrbit));
 				if (outerBurn != null) {
 
-					// Temporary hack: make exits slightly smoother by going 5 minutes earlier.
-					// Eventually we'll use a real hyperbolic orbit calculation here.
-					const double EJECTION_FUDGE_FACTOR = -5 * 60;
-
+					double ejectionAngle = EjectionAngle(
+						currentOrbit.referenceBody,
+						currentOrbit.semiMajorAxis,
+						outerBurn.totalDeltaV
+					);
 					if (outerBurn.prograde < 0) {
-						// Adjust maneuverTime to day side
+						// Adjust maneuverTime to day side plus the ejection angle
+						double burnTime = TimeAtAngleFromMidnight(
+							currentOrbit.referenceBody.orbit,
+							currentOrbit,
+							outerBurn.atTime,
+							ejectionAngle
+						);
 						return new BurnModel(
-							EJECTION_FUDGE_FACTOR + TimeAtNextNoon(
-								currentOrbit.referenceBody.orbit,
-								currentOrbit,
-								outerBurn.atTime),
+							burnTime,
 							BurnToEscape(
 								currentOrbit.referenceBody,
 								currentOrbit,
 								outerBurn.totalDeltaV,
-								outerBurn.atTime),
+								burnTime),
 							0, 0
 						);
 					} else {
-						// Adjust maneuverTime to night side
+						// Adjust maneuverTime to night side plus the ejection angle
+						double burnTime = TimeAtAngleFromMidnight(
+							currentOrbit.referenceBody.orbit,
+							currentOrbit,
+							outerBurn.atTime,
+							-Math.PI + ejectionAngle);
 						return new BurnModel(
-							EJECTION_FUDGE_FACTOR + TimeAtNextMidnight(
-								currentOrbit.referenceBody.orbit,
-								currentOrbit,
-								outerBurn.atTime),
+							burnTime,
 							BurnToEscape(
 								currentOrbit.referenceBody,
 								currentOrbit,
 								outerBurn.totalDeltaV,
-								outerBurn.atTime),
+								burnTime),
 							0, 0
 						);
 					}
@@ -218,15 +224,15 @@ namespace Astrogator {
 								if (planeTime > 0 && planeTime > ejectionBurn.atTime) {
 									double magnitude = FindPlaneChangeMagnitude(o, destination.orbit, planeTime);
 									// Don't bother to create tiny maneuver nodes
-									if (magnitude > 0.05) {
+									if (Math.Abs(magnitude) > 0.05) {
 										// Add a maneuver node to change planes
 										planeChangeBurn = new BurnModel(planeTime, 0,
 											magnitude, 0);
+										DbgFmt("Transmitted correction burn for {0}", destination.theName);
 									} else {
 										planeChangeBurn = null;
+										DbgFmt("No plane change neede for {0}", destination.theName);
 									}
-
-									DbgFmt("Transmitted correction burn for {0}", destination.theName);
 
 									// Stop looping through orbit patches since we found what we want
 									break;

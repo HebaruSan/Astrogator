@@ -6,17 +6,24 @@ namespace Astrogator {
 	using static DebugTools;
 	using static PhysicsTools;
 
+	/// <summary>
 	/// A bunch of calculations based on Keplerian orbits and so forth.
 	///
 	/// Some of these have user-visible side effects, such as creating and deleting
 	/// several maneuver nodes rapidly! Examine before using.
+	/// </summary>
 	public static class PhysicsTools {
 
+		/// <summary>
 		/// Nice to avoid having to multiply PI by 2.
 		/// I prefer using radians over degrees when possible.
+		/// </summary>
 		public const double Tau = 2.0 * Math.PI;
 
-		/// How long before a burn to abort time warp by default
+		/// <summary>
+		/// How long before a burn to abort time warp by default.
+		/// Should be roughly half the longest reasonble burn time.
+		/// </summary>
 		public const double BURN_PADDING = 5 * 60;
 
 		/// <summary>
@@ -37,15 +44,51 @@ namespace Astrogator {
 			return angle;
 		}
 
+		/// <summary>
+		/// Calculate ejection angle of a hyperbolic orbit with the given parameters
+		/// </summary>
+		/// <param name="parent">Parent body we're escaping</param>
+		/// <param name="periapsis">Radius at closest point to parent</param>
+		/// <param name="speedAtInfinity">Desired relative escape velocity</param>
+		/// <returns>
+		/// Angle in radians between parent-prograde and the periapsis
+		/// </returns>
+		public static double EjectionAngle(CelestialBody parent, double periapsis, double speedAtInfinity)
+		{
+			// Vinf ^ 2
+			double speed2 = speedAtInfinity * speedAtInfinity;
+
+			// https://en.wikipedia.org/wiki/Hyperbolic_trajectory#Hyperbolic_excess_velocity
+			// Negative; more thrust = closer to zero
+			double semiMajorAxis = -parent.gravParameter / speed2;
+
+			// http://www.bogan.ca/orbits/kepler/orbteqtn.html
+			// Standard orbital parameter describing how curved this orbit is
+			// >1; more thrust = bigger.
+			double eccentricity = 1.0 - periapsis / semiMajorAxis;
+
+			// https://en.wikipedia.org/wiki/Hyperbolic_trajectory#Angle_between_approach_and_departure
+			// http://www.rapidtables.com/math/trigonometry/arccos/arccos-graph.png
+			// Angle between departure vector and vector opposite the periapsis point
+			// (half the angle between injection and ejection asymptotes)
+			// More thrust = closer to PI/2 (from above)
+			// Less thrust = closer to PI (from below)
+			double theta = Math.Acos(-1.0 / eccentricity);
+
+			// Angle between parent's prograde and the vessel's prograde at burn
+			// Should be between PI/2 and PI
+			return theta;
+		}
+
 		/// <returns>
 		/// Magnitude of velocity needed to escape a body with a given speed.
 		/// </returns>
 		/// <param name="parent">The body we're trying to escape</param>
 		/// <param name="radiusAtBurn">The distance from parent's center at which to determine the velocity</param>
-		/// <param name="speedatInfinity">The desired speed left over after we escape</param>
-		public static double SpeedToEscape(CelestialBody parent, double radiusAtBurn, double speedatInfinity)
+		/// <param name="speedAtInfinity">The desired speed left over after we escape</param>
+		public static double SpeedToEscape(CelestialBody parent, double radiusAtBurn, double speedAtInfinity)
 		{
-			return Math.Sqrt(2.0 * parent.gravParameter / radiusAtBurn + speedatInfinity * speedatInfinity);
+			return Math.Sqrt(2.0 * parent.gravParameter / radiusAtBurn + speedAtInfinity * speedAtInfinity);
 		}
 
 		/// <returns>
@@ -53,9 +96,9 @@ namespace Astrogator {
 		/// </returns>
 		/// <param name="parent">The body we're escaping</param>
 		/// <param name="fromOrbit">The orbit of the craft that's escaping</param>
-		/// <param name="speedatInfinity">The desired speed left over after we escape</param>
+		/// <param name="speedAtInfinity">The desired speed left over after we escape</param>
 		/// <param name="burnTime">The time when we want to execute the burn</param>
-		public static double BurnToEscape(CelestialBody parent, Orbit fromOrbit, double speedatInfinity, double burnTime)
+		public static double BurnToEscape(CelestialBody parent, Orbit fromOrbit, double speedAtInfinity, double burnTime)
 		{
 			Vector3d preBurnVelocity, preBurnPosition;
 			fromOrbit.GetOrbitalStateVectorsAtUT(burnTime, out preBurnPosition, out preBurnVelocity);
@@ -63,13 +106,21 @@ namespace Astrogator {
 			double preBurnRadius = preBurnPosition.magnitude,
 				preBurnSpeed = preBurnVelocity.magnitude;
 
-			return SpeedToEscape(parent, preBurnRadius, speedatInfinity) - preBurnSpeed;
+			return SpeedToEscape(parent, preBurnRadius, speedAtInfinity) - preBurnSpeed;
 		}
 
-		/// Given a parent body orbit, a satellite orbit, and a start time,
-		/// calculate when the satellite passes the opposite side of the parent from the grandparent.
-		/// We do this by solving for when the phase angle between the two orbits is zero.
-		public static double TimeAtNextMidnight(Orbit parentOrbit, Orbit satOrbit, double minTime)
+		/// <summary>
+		/// Calculate the absolute time when a satellite will be a given angle away from
+		/// its local midnight position.
+		/// </summary>
+		/// <param name="parentOrbit">Orbit of the parent body</param>
+		/// <param name="satOrbit">Orbit of the satellite around the parent body</param>
+		/// <param name="minTime">Absolute time to use as a minimum for the calculation</param>
+		/// <param name="angle">0 for exactly midnight, PI/2 for parent-prograde, PI for exactly noon, 3PI/2 for parent-retrograde</param>
+		/// <returns>
+		/// Absolute time when craft is in desired position
+		/// </returns>
+		public static double TimeAtAngleFromMidnight(Orbit parentOrbit, Orbit satOrbit, double minTime, double angle)
 		{
 			double satTrueAnomaly = clamp(
 				Mathf.Deg2Rad * (
@@ -79,33 +130,23 @@ namespace Astrogator {
 					- satOrbit.argumentOfPeriapsis
 				)
 				+ parentOrbit.TrueAnomalyAtUT(minTime)
+				+ angle
 			);
-
-			double nextTime = satOrbit.GetUTforTrueAnomaly(satTrueAnomaly, satOrbit.period);
+			double nextTime = satOrbit.GetUTforTrueAnomaly(satTrueAnomaly, Planetarium.GetUniversalTime());
 			int numOrbits = (int)Math.Ceiling((minTime - nextTime) / satOrbit.period);
 			return nextTime + numOrbits * satOrbit.period;
 		}
 
-		/// Similar to above, except rotated around to the day side.
-		public static double TimeAtNextNoon(Orbit parentOrbit, Orbit satOrbit, double minTime)
-		{
-			double satTrueAnomaly = clamp(
-				Mathf.Deg2Rad * (
-					  parentOrbit.LAN
-					+ parentOrbit.argumentOfPeriapsis
-					- satOrbit.LAN
-					- satOrbit.argumentOfPeriapsis
-				)
-				+ parentOrbit.TrueAnomalyAtUT(minTime)
-				+ Math.PI
-			);
-			double nextTime = satOrbit.GetUTforTrueAnomaly(satTrueAnomaly, satOrbit.period);
-			int numOrbits = (int)Math.Ceiling((minTime - nextTime) / satOrbit.period);
-			return nextTime + numOrbits * satOrbit.period;
-		}
-
+		/// <summary>
 		/// How fast would a ship with the given Ap and Pe around the given body
 		/// be moving at its Pe?
+		/// </summary>
+		/// <param name="parent">Body around which we're orbiting</param>
+		/// <param name="apoapsis">Maximum radius of orbit</param>
+		/// <param name="periapsis">Minimum radius of orbit</param>
+		/// <returns>
+		/// Magnitude of velocity in m/s
+		/// </returns>
 		public static double SpeedAtPeriapsis(CelestialBody parent, double apoapsis, double periapsis)
 		{
 			return Math.Sqrt(
@@ -115,8 +156,16 @@ namespace Astrogator {
 			);
 		}
 
+		/// <summary>
 		/// How fast would a ship with the given Ap and Pe around the given body
 		/// be moving at its Ap?
+		/// </summary>
+		/// <param name="parent">Body around which we're orbiting</param>
+		/// <param name="apoapsis">Maximum radius of orbit</param>
+		/// <param name="periapsis">Minimum radius of orbit</param>
+		/// <returns>
+		/// Magnitude of velocity in m/s
+		/// </returns>
 		public static double SpeedAtApoapsis(CelestialBody parent, double apoapsis, double periapsis)
 		{
 			return Math.Sqrt(

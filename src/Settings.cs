@@ -59,7 +59,7 @@ namespace Astrogator {
 		/// </value>
 		public Vector2 MainWindowPosition {
 			get {
-				Vector2 pos = new Vector2(0.98f, 0.95f);
+				Vector2 pos = new Vector2(0.75f, 0.75f);
 				config.TryGetValue(MainWindowPositionKey, ref pos);
 				return pos;
 			}

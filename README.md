@@ -18,18 +18,19 @@ make
 ## Known limitations
 
 - Blizzy's toolbar is not and will not be supported. 0.23.5 was a long time ago, folks.
+- It's not going to fly your ship for you, ever.
 - Only the phase angle approximation is used for performance reasons.
 - I don't know how to calculate plane change burns directly, so instead we create a succession of actual maneuver nodes at the AN/DN and ask KSP to tell us the resulting AN/DN, until it gets close to 0. This gets messy because we can't do that if the user has already set up some maneuver nodes that he wants to keep. Sometimes it raises exceptions inside core code.
 - I can't get the maneuver / warp buttons to show their built-in `tooltipText` property, and they don't seem to have `onHover` events to set one up manually like we did for the app launcher.
-- I was not able to find an API event for notification when the active vessel's orbit changes, so instead at each `FixedUpdate`, we check each time-invariant Keplerian orbital parameter to see if it has changed. They seem to experience tiny changes even when the craft is not under thrust (as if the values are being calculated dynamically with physics, which I thought Arsonide got rid of in 1.2), so we actually check to see if the previous and current value differ by more than 0.1%.
+- I was not able to find an API event for notification when the active vessel's orbit changes, so instead at each `FixedUpdate`, we check each time-invariant Keplerian orbital parameter to see if it has changed. They seem to experience tiny changes even when the craft is not under thrust (as if the values are being calculated dynamically with physics, which I thought Arsonide got rid of in 1.2), so we actually check to see if the previous and current value differ by more than some unit-specific thresholds.
 
 ## Future plans
 
 - Robustness
+  - Direct calculation of plane change burns
   - Create useful numbers for launches/landed and KSC
   - Return to LKO burns from Mun and Minmus
     - Lowest warp altitude limit + 5km
-  - Better ejection timing with ejection angle
   - Include target Vessel as a destination
 - Publish
   - Push to Github
@@ -52,6 +53,8 @@ make
 ### Physics and math
 - https://en.wikipedia.org/wiki/Hohmann_transfer_orbit
 - https://en.wikipedia.org/wiki/Orbital_speed#Precise_orbital_speed
+- https://www.reddit.com/r/KerbalAcademy/comments/35wtv1/how_do_i_calculate_phase_and_ejection_angle/crf3kc4/
+- http://www.bogan.ca/orbits/kepler/orbteqtn.html
 
 ### Performance
 - http://www.somasim.com/blog/2015/04/csharp-memory-and-performance-tips-for-unity/
