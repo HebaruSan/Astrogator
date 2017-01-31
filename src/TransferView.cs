@@ -249,7 +249,7 @@ namespace Astrogator {
 		/// </summary>
 		public void WarpToBurn()
 		{
-			DbgFmt("Attempting to warp to burn from {0} to {1}", Planetarium.GetUniversalTime().ToString(), model.ejectionBurn.atTime.ToString());
+			DbgFmt("Attempting to warp to burn from {0} to {1}", Planetarium.GetUniversalTime(), model.ejectionBurn.atTime);
 			if (Planetarium.GetUniversalTime() < model.ejectionBurn.atTime - BURN_PADDING ) {
 				DbgFmt("Warping to burn minus offset");
 				TimeWarp.fetch.WarpTo(model.ejectionBurn.atTime - BURN_PADDING);

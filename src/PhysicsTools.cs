@@ -242,112 +242,52 @@ namespace Astrogator {
 		}
 
 		/// Return the UT of the AN or DN, whichever is sooner
-		public static double TimeOfPlaneChange(Orbit currentOrbit, Orbit targetOrbit, double minTime)
+		public static double TimeOfPlaneChange(Orbit currentOrbit, Orbit targetOrbit, double minTime, out bool ascending)
 		{
 			double ascTime = currentOrbit.TimeOfTrueAnomaly(currentOrbit.AscendingNodeTrueAnomaly(targetOrbit), minTime),
 			 	descTime = currentOrbit.TimeOfTrueAnomaly(currentOrbit.DescendingNodeTrueAnomaly(targetOrbit), minTime);
 			if (ascTime > minTime && ascTime < descTime) {
+				ascending = true;
 				return ascTime;
 			} else {
+				ascending = false;
 				return descTime;
 			}
 		}
 
-		/// Figure out the value of the AN or DN after the given burn.
-		/// Creates and deletes a temporary maneuver node which the user can see!
-		/// This is in degrees, not radians.
-		public static double inclinationAfterBurn(Orbit targetOrbit, double nodeTime, double deltaV)
+		/// <summary>
+		/// Calculate the relative inclination between two orbits, including whether it's positive
+		/// or negative.
+		/// </summary>
+		/// <param name="currentOrbit">The orbit you're starting from</param>
+		/// <param name="targetOrbit">The orbit with which you're matching planes</param>
+		/// <param name="ascendingNode">True if you're changing planes at the AN, false for the DN</param>
+		/// <returns>
+		/// Value in radians describing the relative inclination.
+		/// </returns>
+		public static double RealRelativeInclination(Orbit currentOrbit, Orbit targetOrbit, bool ascendingNode)
 		{
-			DbgFmt("Probing inclination after burning {0}", deltaV.ToString());
-
-			ManeuverNode node = FlightGlobals.ActiveVessel.patchedConicSolver.AddManeuverNode(nodeTime);
-			node.DeltaV = new Vector3d(0, deltaV, 0);
-			node.nodeRotation = Quaternion.identity;
-			FlightGlobals.ActiveVessel.patchedConicSolver.UpdateFlightPlan();
-			Orbit postBurnOrbit = node.nextPatch;
-			double inclination = postBurnOrbit.GetRelativeInclination(targetOrbit);
-			node.RemoveSelf();
-			FlightGlobals.ActiveVessel.patchedConicSolver.UpdateFlightPlan();
-
-			DbgFmt("Inclination weighs in at {0}", inclination.ToString());
-
-			return inclination;
+			return (ascendingNode ? Mathf.Deg2Rad : -Mathf.Deg2Rad) * currentOrbit.GetRelativeInclination(targetOrbit);
 		}
 
-		/// Return the slope of the inclination/deltaV curve at the given point, so
-		/// we can find the minimum.
-		/// Creates and deletes TWO temporary maneuver nodes which the user can see!
-		/// Degrees per m/s
-		public static double inclinationSlope(Orbit targetOrbit, double nodeTime, double deltaV)
+		/// <summary>
+		/// Calculate the delta V needed to change from one orbit to another.
+		/// Gets us within 0.8 degrees usually.
+		/// Wikipedia's more general equation for this is flagrantly wrong.
+		/// </summary>
+		/// <param name="currentOrbit">Orbit you're starting from</param>
+		/// <param name="targetOrbit">Orbit with which you're matching planes</param>
+		/// <param name="nodeTime">Time of the burn</param>
+		/// <param name="ascendingNode">True if burning at the AN, false for DN</param>
+		/// <returns>
+		/// Magnitude in m/s of the burn needed.
+		/// </returns>
+		public static double PlaneChangeDeltaV(Orbit currentOrbit, Orbit targetOrbit, double nodeTime, bool ascendingNode)
 		{
-			const double epsilon = 0.01;
-
-			double inc1 = inclinationAfterBurn(targetOrbit, nodeTime, deltaV - epsilon),
-				inc2 = inclinationAfterBurn(targetOrbit, nodeTime, deltaV + epsilon);
-
-			return (inc2 - inc1) / (epsilon + epsilon);
-		}
-
-		/// Given a pre-burn orbit and a destination orbit, return the delta V needed to
-		/// change from one plane to the other.
-		/// Creates and deletes MANY temporary maneuver nodes which the user can see!
-		///
-		/// Binary search for the zero point of the inclination as a function of delta V.
-		/// Uses a small epsilon value to calculate the slope of the function.
-		/// There may be a way to calculate this directly, but I don't know what it is.
-		/// I believe this algorithm is named after some guy.
-		public static double FindPlaneChangeMagnitude(Orbit currentOrbit, Orbit targetOrbit, double nodeTime)
-		{
-			DbgFmt("Crunching orbits for plane change");
-
-			// We assume without checking that burning 1000 m/s south will give you
-			// a big descending node, and 1000 m/s north will give you a big ascending node.
-			const double tolerance = 0.01;
-			const double epsilon = 0.01;
-			const double goodEnoughInclination = 0.05; // (degrees)
-			double minDeltaV = -1000,
-				maxDeltaV = 1000;
-
-			for (int numReps = 0; numReps < 100; ++numReps) {
-
-				double midDeltaV = 0.5 * (minDeltaV + maxDeltaV);
-
-				double inc1 = inclinationAfterBurn(targetOrbit, nodeTime, midDeltaV - epsilon);
-
-				if (inc1 < goodEnoughInclination) {
-					return midDeltaV - epsilon;
-				}
-
-				double inc2 = inclinationAfterBurn(targetOrbit, nodeTime, midDeltaV + epsilon);
-
-				if (inc2 < goodEnoughInclination) {
-					return midDeltaV + epsilon;
-				}
-
-				double midSlope = (inc2 - inc1) / (epsilon + epsilon);
-
-				if (midSlope < 0) {
-					// Zoom in on the right segment
-					minDeltaV = midDeltaV;
-				} else if (midSlope > 0) {
-					// Zoom in on the left segment
-					maxDeltaV = midDeltaV;
-				} else {
-					// Found it exactly (very unlikely)
-					DbgFmt("Found good plane change");
-					return midDeltaV;
-				}
-
-				if (maxDeltaV - minDeltaV < tolerance) {
-					DbgFmt("Found good enough plane change");
-					return midDeltaV;
-				}
-			}
-
-			// If we didn't find anything within our target tolerance,
-			// just use the middle point of the remaining search space.
-			DbgFmt("Gave up looking for good plane change");
-			return 0.5 * (minDeltaV + maxDeltaV);
+			double inclination = RealRelativeInclination(currentOrbit, targetOrbit, ascendingNode);
+			Vector3d preBurnVelocity, preBurnPosition;
+			currentOrbit.GetOrbitalStateVectorsAtUT(nodeTime, out preBurnPosition, out preBurnVelocity);
+			return -2.0 * preBurnVelocity.magnitude * Math.Sin(0.5 * inclination);
 		}
 
 	}

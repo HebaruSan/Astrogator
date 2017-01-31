@@ -245,7 +245,7 @@ namespace Astrogator {
 			if (flightReady && Settings.Instance.GeneratePlaneChangeBurns) {
 				for (int i = 0; i < model.transfers.Count; ++i) {
 					try {
-						Thread.Sleep(750);
+						Thread.Sleep(200);
 						model.transfers[i].CalculatePlaneChangeBurn();
 					} catch (Exception ex) {
 						DbgFmt("Problem with background load: {0}\n{1}",
@@ -396,7 +396,7 @@ namespace Astrogator {
 					&& model != null
 					&& target != null) {
 
-				DbgFmt("Tracking station changed target to {0}", target.ToString());
+				DbgFmt("Tracking station changed target to {0}", target);
 				StartLoadingModel(target.celestialBody, target.vessel);
 				ResetView();
 			}

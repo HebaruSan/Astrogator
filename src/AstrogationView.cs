@@ -166,7 +166,6 @@ namespace Astrogator {
 		{
 			if (dialog != null) {
 				Vector3 rt = dialog.RTrf.position;
-				DbgFmt("Rect transform: {0}", rt.ToString());
 				geometry = new Rect(
 					rt.x / Screen.width  + 0.5f,
 					rt.y / Screen.height + 0.5f,

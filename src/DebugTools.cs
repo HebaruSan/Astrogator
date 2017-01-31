@@ -14,7 +14,7 @@ namespace Astrogator {
 		/// </summary>
 		/// <param name="format">String.Format format string</param>
 		/// <param name="args">Parameters for the format string, if any</param>
-		public static void DbgFmt(string format, params string[] args)
+		public static void DbgFmt(string format, params object[] args)
 		{
 			#if DEBUG
 
@@ -34,7 +34,7 @@ namespace Astrogator {
 		/// </summary>
 		/// <param name="format">String.Format format string</param>
 		/// <param name="args">Parameters for the format string, if any</param>
-		public static void ScreenFmt(string format, params string[] args)
+		public static void ScreenFmt(string format, params object[] args)
 		{
 			#if DEBUG
 

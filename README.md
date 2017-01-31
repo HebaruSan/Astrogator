@@ -64,7 +64,7 @@ Click the wrench to open and close the settings panel:
 ## Future plans
 
 - Robustness
-  - **Direct calculation of plane change burns**
+  - **Calculate plane change burns without instantiating ejection burns**
   - Delta V for burns among Jool's moons is way too high, maybe due to SOI size?
   - Create useful numbers for launches/landed and KSC
   - Return-to-LKO burns from Mun and Minmus
@@ -103,6 +103,8 @@ make
 - https://en.wikipedia.org/wiki/Orbital_speed#Precise_orbital_speed
 - https://www.reddit.com/r/KerbalAcademy/comments/35wtv1/how_do_i_calculate_phase_and_ejection_angle/crf3kc4/
 - http://www.bogan.ca/orbits/kepler/orbteqtn.html
+- https://d2r5da613aq50s.cloudfront.net/wp-content/uploads/411616.image0.jpg
+- https://en.wikipedia.org/wiki/Orbital_inclination_change#Calculation
 
 ### Performance
 - http://www.somasim.com/blog/2015/04/csharp-memory-and-performance-tips-for-unity/

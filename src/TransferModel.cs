@@ -217,12 +217,13 @@ namespace Astrogator {
 								DbgFmt("Identified matching reference body for {0}", destination.theName);
 
 								// Find the AN or DN
-								double planeTime = TimeOfPlaneChange(o, destination.orbit, ejectionBurn.atTime);
+								bool ascendingNode;
+								double planeTime = TimeOfPlaneChange(o, destination.orbit, ejectionBurn.atTime, out ascendingNode);
 
 								DbgFmt("Pinpointed plane change for {0}", destination.theName);
 
 								if (planeTime > 0 && planeTime > ejectionBurn.atTime) {
-									double magnitude = FindPlaneChangeMagnitude(o, destination.orbit, planeTime);
+									double magnitude = PlaneChangeDeltaV(o, destination.orbit, planeTime, ascendingNode);
 									// Don't bother to create tiny maneuver nodes
 									if (Math.Abs(magnitude) > 0.05) {
 										// Add a maneuver node to change planes
