@@ -17,22 +17,22 @@ namespace Astrogator {
 		/// <summary>
 		/// The UT of the burn.
 		/// </summary>
-		public double atTime { get; private set; }
+		public double atTime      { get; private set; }
 
 		/// <summary>
 		/// Prograde burn component in m/s.
 		/// </summary>
-		public double prograde { get; private set; }
+		public double prograde    { get; private set; }
 
 		/// <summary>
 		/// Normal burn component in m/s.
 		/// </summary>
-		public double normal { get; private set; }
+		public double normal      { get; private set; }
 
 		/// <summary>
 		/// Radial burn component in m/s.
 		/// </summary>
-		public double radial { get; private set; }
+		public double radial      { get; private set; }
 
 		/// <summary>
 		/// Magnitude of the dV vector.

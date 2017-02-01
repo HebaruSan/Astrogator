@@ -1,5 +1,7 @@
 using System;
+using System.Collections.Generic;
 using UnityEngine;
+using KSP;
 
 namespace Astrogator {
 
@@ -11,9 +13,19 @@ namespace Astrogator {
 	public class TransferModel {
 
 		/// <summary>
+		/// Construct a model object.
+		/// </summary>
+		public TransferModel(CelestialBody org, ITargetable dest, Vessel v)
+		{
+			origin = org;
+			destination = dest;
+			vessel = v;
+		}
+
+		/// <summary>
 		/// The body we're transferring to.
 		/// </summary>
-		public CelestialBody destination     { get; private set; }
+		public ITargetable   destination     { get; private set; }
 
 		/// <summary>
 		/// The body we're transferring from.
@@ -35,122 +47,133 @@ namespace Astrogator {
 		/// </summary>
 		public BurnModel     planeChangeBurn { get; private set; }
 
-		/// <summary>
-		/// Construct a model object.
-		/// </summary>
-		public TransferModel(CelestialBody org, CelestialBody dest, Vessel v)
-		{
-			origin = org;
-			destination = dest;
-			vessel = v;
-		}
-
 		private BurnModel GenerateEjectionBurn(Orbit currentOrbit)
 		{
 			if (currentOrbit == null || destination == null) {
 				// Sanity check just in case something unexpected happens.
 				return null;
 
-			} else if (currentOrbit.referenceBody == destination.referenceBody) {
-				// Our normal recursive base case - just a normal transfer
+			} else {
+				// If you want to go somewhere deep inside another SOI, we will
+				// just aim at whatever ancestor we can see.
+				// So Kerbin -> Laythe would be the same as Kerbin -> Jool.
+				ITargetable immediateDestination = null;
+				for (ITargetable b = StartBody(destination), prevBody = null;
+						b != null;
+						prevBody = b, b = ParentBody(b)) {
 
-				double optimalPhaseAngle = clamp(Math.PI * (
-					1 - Math.Pow(
-						(currentOrbit.semiMajorAxis + destination.orbit.semiMajorAxis)
-							/ (2 * destination.orbit.semiMajorAxis),
-						1.5)
-				));
-
-				// How many radians the phase angle increases or decreases by each second
-				double phaseAnglePerSecond =
-					  (Tau / destination.orbit.period)
-					- (Tau / currentOrbit.period);
-
-				double currentPhaseAngle = clamp(
-					Mathf.Deg2Rad * (
-						  destination.orbit.LAN
-						+ destination.orbit.argumentOfPeriapsis
-						- currentOrbit.LAN
-						- currentOrbit.argumentOfPeriapsis
-					)
-					+ destination.orbit.trueAnomaly
-					- currentOrbit.trueAnomaly
-				);
-
-				// This whole section borrowed from Kerbal Alarm Clock; thanks, TriggerAu!
-				double angleToMakeUp = currentPhaseAngle - optimalPhaseAngle;
-				if (angleToMakeUp > 0 && phaseAnglePerSecond > 0)
-					angleToMakeUp -= Tau;
-				if (angleToMakeUp < 0 && phaseAnglePerSecond < 0)
-					angleToMakeUp += Tau;
-
-				double timeTillBurn = Math.Abs(angleToMakeUp / phaseAnglePerSecond);
-				double ejectionBurnTime = Planetarium.GetUniversalTime() + timeTillBurn;
-				double arrivalTime = ejectionBurnTime + 0.5 * OrbitalPeriod(
-					destination.orbit.referenceBody,
-					destination.orbit.semiMajorAxis,
-					currentOrbit.semiMajorAxis
-				);
-
-				if (currentOrbit.semiMajorAxis < destination.orbit.semiMajorAxis) {
-					return new BurnModel(
-						ejectionBurnTime,
-						BurnToNewAp(
-							currentOrbit,
-							ejectionBurnTime,
-							RadiusAtTime(destination.orbit, arrivalTime)
-								- 0.25 * destination.sphereOfInfluence
-						),
-						0, 0
-					);
-				} else {
-					return new BurnModel(
-						ejectionBurnTime,
-						BurnToNewPe(
-							currentOrbit,
-							ejectionBurnTime,
-							RadiusAtTime(destination.orbit, arrivalTime)
-								+ 0.25 * destination.sphereOfInfluence
-						),
-						0, 0
-					);
+					if (currentOrbit.referenceBody == b as CelestialBody) {
+						immediateDestination = prevBody;
+						break;
+					}
 				}
 
-			} else {
-				// Recursive case - get an orbit from the parent body and adjust it for ejection from here
+				if (origin == immediateDestination as CelestialBody) {
+					return null;
+				}
 
-				BurnModel outerBurn = GenerateEjectionBurn(ParentOrbit(currentOrbit));
-				if (outerBurn != null) {
+				if (immediateDestination != null) {
+					// Our normal recursive base case - just a normal transfer
 
-					double ejectionAngle = EjectionAngle(
-						currentOrbit.referenceBody,
-						currentOrbit.semiMajorAxis,
-						outerBurn.totalDeltaV
+					double optimalPhaseAngle = clamp(Math.PI * (
+						1 - Math.Pow(
+							(currentOrbit.semiMajorAxis + immediateDestination.GetOrbit().semiMajorAxis)
+								/ (2 * immediateDestination.GetOrbit().semiMajorAxis),
+							1.5)
+					));
+
+					// How many radians the phase angle increases or decreases by each second
+					double phaseAnglePerSecond =
+						  (Tau / immediateDestination.GetOrbit().period)
+						- (Tau / currentOrbit.period);
+
+					double currentPhaseAngle = clamp(
+						Mathf.Deg2Rad * (
+							  immediateDestination.GetOrbit().LAN
+							+ immediateDestination.GetOrbit().argumentOfPeriapsis
+							- currentOrbit.LAN
+							- currentOrbit.argumentOfPeriapsis
+						)
+						+ immediateDestination.GetOrbit().trueAnomaly
+						- currentOrbit.trueAnomaly
 					);
-					if (outerBurn.prograde < 0) {
-						// Adjust maneuverTime to day side plus the ejection angle
-						double burnTime = TimeAtAngleFromMidnight(
-							currentOrbit.referenceBody.orbit,
-							currentOrbit,
-							outerBurn.atTime,
-							ejectionAngle
-						);
+
+					// This whole section borrowed from Kerbal Alarm Clock; thanks, TriggerAu!
+					double angleToMakeUp = currentPhaseAngle - optimalPhaseAngle;
+					if (angleToMakeUp > 0 && phaseAnglePerSecond > 0)
+						angleToMakeUp -= Tau;
+					if (angleToMakeUp < 0 && phaseAnglePerSecond < 0)
+						angleToMakeUp += Tau;
+
+					double timeTillBurn = Math.Abs(angleToMakeUp / phaseAnglePerSecond);
+					double ejectionBurnTime = Planetarium.GetUniversalTime() + timeTillBurn;
+					double arrivalTime = ejectionBurnTime + 0.5 * OrbitalPeriod(
+						immediateDestination.GetOrbit().referenceBody,
+						immediateDestination.GetOrbit().semiMajorAxis,
+						currentOrbit.semiMajorAxis
+					);
+
+					if (currentOrbit.semiMajorAxis < immediateDestination.GetOrbit().semiMajorAxis) {
 						return new BurnModel(
-							burnTime,
-							BurnToEscape(
-								currentOrbit.referenceBody,
+							ejectionBurnTime,
+							BurnToNewAp(
 								currentOrbit,
-								outerBurn.totalDeltaV,
-								burnTime),
+								ejectionBurnTime,
+								RadiusAtTime(immediateDestination.GetOrbit(), arrivalTime)
+									- 0.25 * SphereOfInfluence(immediateDestination)
+							),
 							0, 0
 						);
 					} else {
-						// Adjust maneuverTime to night side plus the ejection angle
-						double burnTime = TimeAtAngleFromMidnight(
-							currentOrbit.referenceBody.orbit,
-							currentOrbit,
-							outerBurn.atTime,
-							-Math.PI + ejectionAngle);
+						return new BurnModel(
+							ejectionBurnTime,
+							BurnToNewPe(
+								currentOrbit,
+								ejectionBurnTime,
+								RadiusAtTime(immediateDestination.GetOrbit(), arrivalTime)
+									+ 0.25 * SphereOfInfluence(immediateDestination)
+							),
+							0, 0
+						);
+					}
+
+				} else {
+					// Recursive case - get an orbit from the parent body and adjust it for ejection from here
+
+					BurnModel outerBurn = GenerateEjectionBurn(ParentOrbit(currentOrbit));
+					if (outerBurn != null) {
+
+						double angleOffset = outerBurn.prograde < 0
+							? 0
+							: -Math.PI;
+
+						// The angle, position, and time are interdependent.
+						// So we seed them with parameters from the outer burn, then
+						// cross-seed them with each other this many times.
+						// Cross your fingers and hope this converges to the right answer.
+						const int iterations = 6;
+
+						double burnTime = outerBurn.atTime;
+
+						try {
+							for (int i = 0; i < iterations; ++i) {
+								DbgFmt("Burn at ({1}): {0}", burnTime, i);
+								double ejectionAngle = EjectionAngle(
+									currentOrbit.referenceBody,
+									RadiusAtTime(currentOrbit, burnTime),
+									outerBurn.totalDeltaV);
+								burnTime = TimeAtAngleFromMidnight(
+									currentOrbit.referenceBody.orbit,
+									currentOrbit,
+									burnTime,
+									ejectionAngle + angleOffset);
+							}
+						} catch (Exception ex) {
+							DbgFmt("Problem with ejection calc: {0}\n{1}",
+								ex.Message, ex.StackTrace);
+						}
+						DbgFmt("Final burn time: {0}", burnTime);
+
 						return new BurnModel(
 							burnTime,
 							BurnToEscape(
@@ -161,8 +184,8 @@ namespace Astrogator {
 							0, 0
 						);
 					}
+					return outerBurn;
 				}
-				return outerBurn;
 			}
 		}
 
@@ -175,6 +198,8 @@ namespace Astrogator {
 				ejectionBurn = GenerateEjectionBurn(vessel.orbit);
 			} else if (origin != null) {
 				ejectionBurn = GenerateEjectionBurn(origin.orbit);
+			} else {
+				ejectionBurn = null;
 			}
 		}
 
@@ -196,12 +221,12 @@ namespace Astrogator {
 					}
 				}
 
-				DbgFmt("Temporarily activating ejection burn to {0}", destination.theName);
+				DbgFmt("Temporarily activating ejection burn to {0}", destination.GetName());
 
 				if (ejectionBurn != null) {
 					ManeuverNode eNode = ejectionBurn.ToActiveManeuver();
 
-					DbgFmt("Activated ejection burn to {0}", destination.theName);
+					DbgFmt("Activated ejection burn to {0}", destination.GetName());
 
 					if (eNode != null) {
 
@@ -212,31 +237,33 @@ namespace Astrogator {
 						// Find the orbit patch that intersects the target orbit
 						for (Orbit o = eNode.nextPatch; o != null; o = NextPatch(o)) {
 							// Skip the patches that are in the wrong SoI
-							if (o.referenceBody == destination.orbit.referenceBody) {
+							if (o.referenceBody == destination.GetOrbit().referenceBody) {
 
-								DbgFmt("Identified matching reference body for {0}", destination.theName);
+								DbgFmt("Identified matching reference body for {0}", destination.GetName());
 
 								// Find the AN or DN
 								bool ascendingNode;
-								double planeTime = TimeOfPlaneChange(o, destination.orbit, ejectionBurn.atTime, out ascendingNode);
+								double planeTime = TimeOfPlaneChange(o, destination.GetOrbit(), ejectionBurn.atTime, out ascendingNode);
 
-								DbgFmt("Pinpointed plane change for {0}", destination.theName);
+								DbgFmt("Pinpointed plane change for {0}", destination.GetName());
 
 								if (planeTime > 0 && planeTime > ejectionBurn.atTime) {
-									double magnitude = PlaneChangeDeltaV(o, destination.orbit, planeTime, ascendingNode);
+									double magnitude = PlaneChangeDeltaV(o, destination.GetOrbit(), planeTime, ascendingNode);
 									// Don't bother to create tiny maneuver nodes
 									if (Math.Abs(magnitude) > 0.05) {
 										// Add a maneuver node to change planes
 										planeChangeBurn = new BurnModel(planeTime, 0,
 											magnitude, 0);
-										DbgFmt("Transmitted correction burn for {0}", destination.theName);
+										DbgFmt("Transmitted correction burn for {0}: {1}", destination.GetName(), magnitude);
 									} else {
 										planeChangeBurn = null;
-										DbgFmt("No plane change neede for {0}", destination.theName);
+										DbgFmt("No plane change needed for {0}", destination.GetName());
 									}
 
 									// Stop looping through orbit patches since we found what we want
 									break;
+								} else {
+									DbgFmt("Plane change burn would be before the ejection burn, skipping");
 								}
 							} else {
 								DbgFmt("Skipping a patch with the wrong parent body");
@@ -248,7 +275,7 @@ namespace Astrogator {
 
 					// Clean up the node since we're just doing calculations, not intending to set things up for the user
 					ejectionBurn.RemoveNode();
-					DbgFmt("Released completed transfer to {0}", destination.theName);
+					DbgFmt("Released completed transfer to {0}", destination.GetName());
 				} else {
 					DbgFmt("Ejection burn is missing somehow");
 				}
@@ -272,7 +299,7 @@ namespace Astrogator {
 					&& vessel.patchedConicSolver.maneuverNodes != null) {
 
 				for (Orbit o = ejectionBurn.node.nextPatch; o != null; o = NextPatch(o)) {
-					if (o.referenceBody == destination) {
+					if (o.referenceBody == destination as CelestialBody) {
 						return true;
 					}
 				}

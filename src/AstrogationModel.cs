@@ -95,6 +95,8 @@ namespace Astrogator {
 		{
 			DbgFmt("Fabricating transfers");
 
+			bool foundTarget = false;
+
 			CelestialBody origin = StartBody(body, vessel);
 
 			for (CelestialBody b = origin, toSkip = null;
@@ -110,10 +112,19 @@ namespace Astrogator {
 						DbgFmt("Plotting transfer to {0}", satellite.theName);
 						transfers.Add(new TransferModel(origin, satellite, vessel));
 						DbgFmt("Finalized transfer to {0}", satellite.theName);
+
+						if (satellite == FlightGlobals.fetch.VesselTarget as CelestialBody) {
+							foundTarget = true;
+						}
 					}
 				}
 				DbgFmt("Exhausted transfers around {0}", b.theName);
 			}
+
+			if (!foundTarget && FlightGlobals.fetch.VesselTarget != null) {
+				transfers.Add(new TransferModel(origin, FlightGlobals.fetch.VesselTarget, vessel));
+			}
+
 			DbgFmt("Shipping completed transfers");
 		}
 	}

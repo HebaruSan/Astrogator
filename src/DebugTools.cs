@@ -8,6 +8,10 @@ namespace Astrogator {
 	/// They'd be module-level global variables if C# allowed that.
 	public static class DebugTools {
 
+		#if DEBUG
+		private static readonly object debugMutex = new object();
+		#endif
+
 		/// <summary>
 		/// Add a formattable string to the debug output.
 		/// Automatically prepends the mod name and a timestamp.
@@ -18,13 +22,16 @@ namespace Astrogator {
 		{
 			#if DEBUG
 
-			string formattedMessage = String.Format(format, args);
+			string formattedMessage = string.Format(format, args);
 
-			Debug.Log(String.Format("[{0} {1:000.000}] {2}",
-				AstrogationView.DisplayName,
-				Time.realtimeSinceStartup,
-				formattedMessage
-			));
+			lock (debugMutex) {
+				Debug.Log(string.Format(
+					"[{0} {1:000.000}] {2}",
+					AstrogationView.DisplayName,
+					Time.realtimeSinceStartup,
+					formattedMessage
+				));
+			}
 
 			#endif
 		}
@@ -39,7 +46,7 @@ namespace Astrogator {
 			#if DEBUG
 
 			ScreenMessages.PostScreenMessage(
-				String.Format(format, args)
+				string.Format(format, args)
 			);
 
 			#endif

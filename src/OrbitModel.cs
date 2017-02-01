@@ -42,7 +42,7 @@ namespace Astrogator {
 		/// </returns>
 		public string ComparisonDescription(Orbit o)
 		{
-			String ret = "Differences:";
+			string ret = "Differences:";
 
 			// Meters
 			if (!CloseEnough(SemiMajorAxis, o.semiMajorAxis, 1)) {

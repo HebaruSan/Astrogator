@@ -37,7 +37,7 @@ namespace Astrogator {
 					switch (col.content) {
 
 						case ContentEnum.PlanetName:
-							AddChild(LabelWithStyleAndSize(CultureInfo.InstalledUICulture.TextInfo.ToTitleCase(model.destination.theName),
+							AddChild(LabelWithStyleAndSize(CultureInfo.InstalledUICulture.TextInfo.ToTitleCase(TheName(model.destination)),
 								col.contentStyle, col.width, rowHeight));
 							break;
 
@@ -232,7 +232,7 @@ namespace Astrogator {
 						FocusMap(model.destination);
 					} else {
 						// Otherwise focus on the parent of the transfer orbit so we can get an encounter
-						FocusMap(model.destination.orbit.referenceBody);
+						FocusMap(model.destination.GetOrbit().referenceBody);
 					}
 				}
 			}

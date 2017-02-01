@@ -14,7 +14,15 @@ namespace Astrogator {
 	public class AstrogationView : DialogGUIVerticalLayout {
 		private AstrogationModel model { get; set; }
 		private PopupDialog dialog { get; set; }
-		private Callback resetCallback { get; set; }
+
+		/// <summary>
+		/// Type of function pointer used to request a re-creation of the UI.
+		/// This is needed because the DialogGUI* functions don't allow us to
+		/// make dynamic chnages to a UI beyond changing a label's text.
+		/// </summary>
+		public delegate void ResetCallback();
+
+		private ResetCallback resetCallback { get; set; }
 
 		private static Rect geometry {
 			get {
@@ -51,7 +59,7 @@ namespace Astrogator {
 		/// </summary>
 		/// <param name="m">Model object for which to make a view</param>
 		/// <param name="reset">Function to call when the view needs to be re-initiated</param>
-		public AstrogationView(AstrogationModel m, Callback reset)
+		public AstrogationView(AstrogationModel m, ResetCallback reset)
 			: base(
 				mainWindowMinWidth,
 				mainWindowMinHeight,
@@ -116,13 +124,13 @@ namespace Astrogator {
 		private string subTitle {
 			get {
 				if (model != null && model.badInclination) {
-					return String.Format(
+					return string.Format(
 						"Inclination is {0:0.0}°, accuracy too low past {1:0.}°",
 						Math.Abs(model.vessel.orbit.inclination),
 						AstrogationModel.maxInclination * Mathf.Rad2Deg
 					);
 				} else {
-					return String.Format("Transfers from {0}", model.OriginDescription);
+					return string.Format("Transfers from {0}", model.OriginDescription);
 				}
 			}
 		}

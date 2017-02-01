@@ -58,18 +58,18 @@ Click the wrench to open and close the settings panel:
 - Blizzy's toolbar is not and will not be supported. 0.23.5 was a long time ago.
 - It's not going to fly your ship for you. Other mods can do that already.
 - Only the phase angle approximation is used, not full porkchop plots, for performance reasons.
-- I don't know how to calculate plane change burns directly, so instead we create a succession of actual maneuver nodes at the AN/DN and ask KSP to tell us the resulting AN/DN, until it gets close to 0. This gets messy because we can't do that if the user has already set up some maneuver nodes that he wants to keep. Sometimes it raises exceptions inside core code. It also means you have to refrain from messing with maneuvers while this is going on.
+- It doesn't do anything advanced or clever, such as gravity assists or aerobraking or periapsis raising for plane changes; only the basics to save you a trip to alexmoon.github.io/ksp/. If you want to perform a more sophisticated maneuver, you'll have to handle that yourself.
+- We create a real maneuver node for the ejection burn temporarily to calculate the plane change burns. This means you have to refrain from messing with maneuvers while the window is loading.
 - I can't get the maneuver / warp buttons to show their built-in `tooltipText` property, and they don't seem to have `onHover` events to set one up manually like we did for the app launcher, so it won't tell you what those icons do.
 
 ## Future plans
 
 - Robustness
   - **Calculate plane change burns without instantiating ejection burns**
-  - Delta V for burns among Jool's moons is way too high, maybe due to SOI size?
+  - Kerbin -> Jool burn has wrong ejection angle, much better a few degrees later
   - Create useful numbers for launches/landed and KSC
   - Return-to-LKO burns from Mun and Minmus
     - Lowest warp altitude limit + 5km
-  - Include target Vessel as a destination
 - Publish
   - Push to Github
     - Make a Release
@@ -105,6 +105,7 @@ make
 - http://www.bogan.ca/orbits/kepler/orbteqtn.html
 - https://d2r5da613aq50s.cloudfront.net/wp-content/uploads/411616.image0.jpg
 - https://en.wikipedia.org/wiki/Orbital_inclination_change#Calculation
+- https://en.wikipedia.org/wiki/Hyperbolic_trajectory#Hyperbolic_excess_velocity
 
 ### Performance
 - http://www.somasim.com/blog/2015/04/csharp-memory-and-performance-tips-for-unity/

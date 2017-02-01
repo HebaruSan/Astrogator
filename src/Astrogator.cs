@@ -16,7 +16,7 @@ namespace Astrogator {
 
 	/// KSPAddon can only apply one scene per class; this is the one for the flight scene.
 	[KSPAddon(KSPAddon.Startup.Flight, false)]
-	public class FlightAstrogator : Astrogator { }
+	public class FlightAstrogator          : Astrogator { }
 
 	/// KSPAddon can only apply one scene per class; this is the one for the tracking station scene.
 	[KSPAddon(KSPAddon.Startup.TrackingStation, false)]
@@ -24,7 +24,7 @@ namespace Astrogator {
 
 	/// KSPAddon can only apply one scene per class; this is the one for the KSC scene.
 	[KSPAddon(KSPAddon.Startup.SpaceCentre, false)]
-	public class SpaceCenterAstrogator : Astrogator { }
+	public class SpaceCenterAstrogator     : Astrogator { }
 
 	/// Our main plugin behavior.
 	public class Astrogator : MonoBehavior {
@@ -199,13 +199,14 @@ namespace Astrogator {
 		{
 			flightReady = true;
 			if (Settings.Instance.GeneratePlaneChangeBurns) {
-				StartLoadingModel(model.body, model.vessel, false);
+				StartLoadingModel(model.body, model.vessel);
 				ResetView();
 			}
 		}
 
 		private void StartLoadingModel(CelestialBody b = null, Vessel v = null, bool fromScratch = false)
 		{
+			// Set up the very basics of the model so the view has something to display during load
 			if (fromScratch || model == null) {
 				DbgFmt("Assembling model");
 				model = new AstrogationModel(b, v);
@@ -214,55 +215,54 @@ namespace Astrogator {
 				model.Reset(b, v);
 			}
 
-			// Avoid running multiple background jobs at the same time
-			if (bgworker == null) {
+			DbgFmt("Delegating load to background");
 
-				DbgFmt("Delegating load to background");
+			BackgroundWorker bgworker = new BackgroundWorker();
+			bgworker.DoWork += bw_LoadModel;
+			bgworker.RunWorkerCompleted += bw_DoneLoadingModel;
+			bgworker.RunWorkerAsync();
 
-				bgworker = new BackgroundWorker();
-				bgworker.DoWork += bw_LoadModel;
-				bgworker.RunWorkerCompleted += bw_DoneLoadingModel;
-				bgworker.RunWorkerAsync();
-
-				DbgFmt("Launched background");
-			}
+			DbgFmt("Launched background");
 		}
+
+		private static readonly object bgLoadMutex = new object();
 
 		private void bw_LoadModel(object sender, DoWorkEventArgs e)
 		{
-			DbgFmt("Beginning background model load");
+			lock (bgLoadMutex) {
+				DbgFmt("Beginning background model load");
 
-			// Blast through the ejection burns so the popup has numbers ASAP
-			for (int i = 0; i < model.transfers.Count; ++i) {
-				try {
-					model.transfers[i].CalculateEjectionBurn();
-				} catch (Exception ex) {
-					DbgFmt("Problem with background load: {0}\n{1}",
-						ex.Message, ex.StackTrace);
-				}
-			}
-			// Now get the plane change burns.
-			if (flightReady && Settings.Instance.GeneratePlaneChangeBurns) {
+				// Blast through the ejection burns so the popup has numbers ASAP
 				for (int i = 0; i < model.transfers.Count; ++i) {
 					try {
-						Thread.Sleep(200);
-						model.transfers[i].CalculatePlaneChangeBurn();
+						model.transfers[i].CalculateEjectionBurn();
 					} catch (Exception ex) {
 						DbgFmt("Problem with background load: {0}\n{1}",
-							ex.Message, ex.StackTrace);
-
-						// If a route calculation crashes, it can leave behind a temporary node.
-						ClearManeuverNodes();
+						ex.Message, ex.StackTrace);
 					}
 				}
+				// Now get the plane change burns.
+				if (flightReady && Settings.Instance.GeneratePlaneChangeBurns) {
+					for (int i = 0; i < model.transfers.Count; ++i) {
+						try {
+							Thread.Sleep(200);
+							model.transfers[i].CalculatePlaneChangeBurn();
+						} catch (Exception ex) {
+							DbgFmt("Problem with background load: {0}\n{1}",
+							ex.Message, ex.StackTrace);
+
+							// If a route calculation crashes, it can leave behind a temporary node.
+							ClearManeuverNodes();
+						}
+					}
+				}
+				DbgFmt("Finished background model load");
 			}
-			DbgFmt("Finished background model load");
 		}
 
 		private void bw_DoneLoadingModel(object sender, RunWorkerCompletedEventArgs e)
 		{
 			DbgFmt("Background load complete");
-			bgworker = null;
 		}
 
 		#endregion Background loading
@@ -271,7 +271,6 @@ namespace Astrogator {
 
 		private AstrogationModel model    { get; set; }
 		private AstrogationView  view     { get; set; }
-		private BackgroundWorker bgworker { get; set; }
 
 		private static bool visible {
 			get {
@@ -333,11 +332,31 @@ namespace Astrogator {
 				// Check for changes in vessel's orbit
 
 				if (OrbitChanged()) {
-
 					OnOrbitChanged();
-
 					prevOrbit = new OrbitModel(FlightGlobals.ActiveVessel.orbit);
 				}
+
+				if (TargetChanged()) {
+					OnTargetChanged();
+					prevTarget = FlightGlobals.fetch.VesselTarget;
+				}
+			}
+		}
+
+		private ITargetable prevTarget { get; set; }
+
+		private bool TargetChanged()
+		{
+			return VesselMode
+				&& prevTarget != FlightGlobals.fetch.VesselTarget;
+		}
+
+		private void OnTargetChanged()
+		{
+			// Refresh the model so it can reflect the latest target data
+			if (model != null) {
+				StartLoadingModel(model.body, model.vessel);
+				ResetView();
 			}
 		}
 

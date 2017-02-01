@@ -29,7 +29,7 @@ namespace Astrogator {
 		/// <param name="filename">Name of file located in our plugin folder</param>
 		public static string FilePath(string filename)
 		{
-			return String.Format("GameData/{0}/{1}", Astrogator.Name, filename);
+			return string.Format("GameData/{0}/{1}", Astrogator.Name, filename);
 		}
 
 		/// <value>
@@ -518,7 +518,7 @@ namespace Astrogator {
 			if (!forceShow && val == 0) {
 				return nullString;
 			} else {
-				return String.Format(fmt, val);
+				return string.Format(fmt, val);
 			}
 		}
 

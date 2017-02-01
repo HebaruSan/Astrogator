@@ -13,7 +13,7 @@ namespace Astrogator {
 		/// Borrowed from Precise Node.
 		/// </summary>
 		/// <param name="destination">The body to focus</param>
-		public static void FocusMap(CelestialBody destination)
+		public static void FocusMap(ITargetable destination)
 		{
 			MapView.MapCamera.SetTarget(
 				PlanetariumCamera.fetch.targets.Find(
@@ -21,6 +21,40 @@ namespace Astrogator {
 						&& mapObj.celestialBody.Equals(destination)
 				)
 			);
+		}
+
+		/// <summary>
+		/// Wrapper around CelestialBody.sphereOfInfluence to support ITargetable
+		/// </summary>
+		/// <param name="target">Body or vessel to check</param>
+		/// <returns>
+		/// Sphere of influence radius for bodies, 0 otherwise
+		/// </returns>
+		public static double SphereOfInfluence(ITargetable target)
+		{
+			CelestialBody b = target as CelestialBody;
+			if (b != null) {
+				return b.sphereOfInfluence;
+			} else {
+				return 0.0;
+			}
+		}
+
+		/// <summary>
+		/// Wrapper around CelestialBody.theName to support other targets as well.
+		/// </summary>
+		/// <param name="target">Body or vessel to check</param>
+		/// <returns>
+		/// Name of target, possibly with "the" in front
+		/// </returns>
+		public static string TheName(ITargetable target)
+		{
+			CelestialBody b = target as CelestialBody;
+			if (b != null) {
+				return b.theName;
+			} else {
+				return target.GetName();
+			}
 		}
 
 		/// <summary>
@@ -45,6 +79,21 @@ namespace Astrogator {
 		}
 
 		/// <summary>
+		/// Determine a starting point for finding destination bodies.
+		/// </summary>
+		/// <param name="target">Body or vessel to use</param>
+		public static ITargetable StartBody(ITargetable target = null)
+		{
+			if (target == null) {
+				return FlightGlobals.GetHomeBody();
+			} else if (target.GetVessel() != null) {
+				return target.GetVessel().mainBody;
+			} else {
+				return target;
+			}
+		}
+
+		/// <summary>
 		/// Return the body to search for destinations next after the parameter.
 		/// Essentially a wrapper around CelestialBody.referenceBody to make it
 		/// return null for the sun instead of itself.
@@ -57,6 +106,21 @@ namespace Astrogator {
 				return null;
 			} else {
 				return currentBody.referenceBody;
+			}
+		}
+
+		/// <summary>
+		/// Return the body to search for destinations next after the parameter.
+		/// Essentially a wrapper around CelestialBody.referenceBody to make it
+		/// return null for the sun instead of itself.
+		/// </summary>
+		/// <param name="target">Previous target we searched</param>
+		public static ITargetable ParentBody(ITargetable target)
+		{
+			if (target.GetOrbit() == null || target.GetOrbit().referenceBody == target as CelestialBody) {
+				return null;
+			} else {
+				return target.GetOrbit().referenceBody;
 			}
 		}
 

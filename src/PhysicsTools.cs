@@ -82,6 +82,8 @@ namespace Astrogator {
 
 		/// <returns>
 		/// Magnitude of velocity needed to escape a body with a given speed.
+		/// Uses traditional physics calculation involving "speed at infinity",
+		/// which is not 100% applicable due to Spheres of Influence being finite.
 		/// </returns>
 		/// <param name="parent">The body we're trying to escape</param>
 		/// <param name="radiusAtBurn">The distance from parent's center at which to determine the velocity</param>
@@ -89,6 +91,25 @@ namespace Astrogator {
 		public static double SpeedToEscape(CelestialBody parent, double radiusAtBurn, double speedAtInfinity)
 		{
 			return Math.Sqrt(2.0 * parent.gravParameter / radiusAtBurn + speedAtInfinity * speedAtInfinity);
+		}
+
+		/// <returns>
+		/// Magnitude of velocity needed to escape a body with a given speed.
+		/// Takes into account the size of the SOI rather than assuming it's infinite.
+		/// Should converge to above function as sphere of influence -> infinity.
+		/// Derived directly from the vis viva equation.
+		/// https://en.wikipedia.org/wiki/Hyperbolic_trajectory#Velocity
+		/// </returns>
+		/// <param name="parent">The body we're trying to escape</param>
+		/// <param name="periapsis">The distance from parent's center at which to determine the velocity</param>
+		/// <param name="speedAtSOI">The desired speed left over after we escape</param>
+		public static double SpeedToExitSOI(CelestialBody parent, double periapsis, double speedAtSOI)
+		{
+			return Math.Sqrt(
+				2.0 * parent.gravParameter * (parent.sphereOfInfluence - periapsis)
+				/ (parent.sphereOfInfluence * periapsis)
+				+ speedAtSOI * speedAtSOI
+			);
 		}
 
 		/// <returns>
@@ -106,7 +127,7 @@ namespace Astrogator {
 			double preBurnRadius = preBurnPosition.magnitude,
 				preBurnSpeed = preBurnVelocity.magnitude;
 
-			return SpeedToEscape(parent, preBurnRadius, speedAtInfinity) - preBurnSpeed;
+			return SpeedToExitSOI(parent, preBurnRadius, speedAtInfinity) - preBurnSpeed;
 		}
 
 		/// <summary>
