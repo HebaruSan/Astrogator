@@ -4,6 +4,7 @@ using UnityEngine;
 namespace Astrogator {
 
 	using static DebugTools;
+	using static KerbalTools;
 	using static PhysicsTools;
 
 	/// <summary>
@@ -277,24 +278,7 @@ namespace Astrogator {
 		}
 
 		/// <summary>
-		/// Calculate the relative inclination between two orbits, including whether it's positive
-		/// or negative.
-		/// </summary>
-		/// <param name="currentOrbit">The orbit you're starting from</param>
-		/// <param name="targetOrbit">The orbit with which you're matching planes</param>
-		/// <param name="ascendingNode">True if you're changing planes at the AN, false for the DN</param>
-		/// <returns>
-		/// Value in radians describing the relative inclination.
-		/// </returns>
-		public static double RealRelativeInclination(Orbit currentOrbit, Orbit targetOrbit, bool ascendingNode)
-		{
-			return (ascendingNode ? Mathf.Deg2Rad : -Mathf.Deg2Rad) * currentOrbit.GetRelativeInclination(targetOrbit);
-		}
-
-		/// <summary>
 		/// Calculate the delta V needed to change from one orbit to another.
-		/// Gets us within 0.8 degrees usually.
-		/// Wikipedia's more general equation for this is flagrantly wrong.
 		/// </summary>
 		/// <param name="currentOrbit">Orbit you're starting from</param>
 		/// <param name="targetOrbit">Orbit with which you're matching planes</param>
@@ -305,10 +289,26 @@ namespace Astrogator {
 		/// </returns>
 		public static double PlaneChangeDeltaV(Orbit currentOrbit, Orbit targetOrbit, double nodeTime, bool ascendingNode)
 		{
-			double inclination = RealRelativeInclination(currentOrbit, targetOrbit, ascendingNode);
-			Vector3d preBurnVelocity, preBurnPosition;
-			currentOrbit.GetOrbitalStateVectorsAtUT(nodeTime, out preBurnPosition, out preBurnVelocity);
-			return -2.0 * preBurnVelocity.magnitude * Math.Sin(0.5 * inclination);
+			return (ascendingNode ? -1.0 : 1.0)
+			 	* DeltaVToMatchPlanes(currentOrbit, targetOrbit, nodeTime).magnitude;
+		}
+
+		/// <summary>
+		/// Calculate the delta V required to change planes from o to target at time burnUT.
+		/// Borrowed from Mechjeb
+		/// </summary>
+		/// <param name="o">Starting Orbit</param>
+		/// <param name="target">Destination orbit</param>
+		/// <param name="burnUT">Time to burn</param>
+		/// <returns>
+		/// Delta V in m/s
+		/// </returns>
+		public static Vector3d DeltaVToMatchPlanes(Orbit o, Orbit target, double burnUT)
+		{
+			Vector3d desiredHorizontal = Vector3d.Cross(target.SwappedOrbitNormal(), o.Up(burnUT));
+			Vector3d actualHorizontalVelocity = Vector3d.Exclude(o.Up(burnUT), o.SwappedOrbitalVelocityAtUT(burnUT));
+			Vector3d desiredHorizontalVelocity = actualHorizontalVelocity.magnitude * desiredHorizontal;
+			return desiredHorizontalVelocity - actualHorizontalVelocity;
 		}
 
 	}
@@ -352,6 +352,20 @@ namespace Astrogator {
 
 	internal static class VectorExtensions
 	{
+
+		/// <summary>
+		/// Return the vector with the Y and Z components exchanged
+		/// Borrowed from Mechjeb
+		/// </summary>
+		/// <param name="v">Input vector</param>
+		/// <returns>
+		/// Vector equivalent to (v.x, v.z, v.y)
+		/// </returns>
+		public static Vector3d SwapYZ(this Vector3d v)
+		{
+			return v.Reorder(132);
+		}
+
 		internal static Vector3d Reorder(this Vector3d vector, int order)
 		{
 			switch (order)
@@ -375,10 +389,48 @@ namespace Astrogator {
 
 	internal static class MuMech_OrbitExtensions
 	{
-		//can probably be replaced with Vector3d.xzy?
-		internal static Vector3d SwapYZ(Vector3d v)
+
+		/// <summary>
+		///  Normalized vector pointing radially outward from the planet
+		/// Borrowed from Mechjeb
+		/// </summary>
+		/// <param name="o">Orbit from which to plot the vector</param>
+		/// <param name="UT">Time at which to plot the vector</param>
+		/// <returns>
+		/// Outward radial vector matching the given parameters.
+		/// </returns>
+		public static Vector3d Up(this Orbit o, double UT)
 		{
-			return v.Reorder(132);
+			return o.SwappedRelativePositionAtUT(UT).normalized;
+		}
+
+		/// <summary>
+		/// Get orbital velocity, transformed to work with world space
+		/// Borrowed from Mechjeb
+		/// </summary>
+		/// <param name="o">Orbit</param>
+		/// <param name="UT">Time at which to get the velocity</param>
+		/// <returns>
+		/// Orbital velocity vector with Y and Z swapped to make sense.
+		/// </returns>
+		public static Vector3d SwappedOrbitalVelocityAtUT(this Orbit o, double UT)
+		{
+			return o.getOrbitalVelocityAtUT(UT).SwapYZ();
+		}
+
+		/// <summary>
+		/// Get position of orbiting entity relative to its parent body at a given time,
+		/// transformed to work with world space
+		/// Borrowed from Mechjeb
+		/// </summary>
+		/// <param name="o">Orbit of entity</param>
+		/// <param name="UT">Time at which to get the position</param>
+		/// <returns>
+		/// Return value description
+		/// </returns>
+		public static Vector3d SwappedRelativePositionAtUT(this Orbit o, double UT)
+		{
+			return o.getRelativePositionAtUT(UT).SwapYZ();
 		}
 
 		//
@@ -391,7 +443,7 @@ namespace Astrogator {
 		///convention: as you look down along the orbit normal, the satellite revolves counterclockwise
 		internal static Vector3d SwappedOrbitNormal(this Orbit o)
 		{
-			return -SwapYZ(o.GetOrbitNormal()).normalized;
+			return -o.GetOrbitNormal().SwapYZ().normalized;
 		}
 
 		///mean motion is rate of increase of the mean anomaly
@@ -503,7 +555,7 @@ namespace Astrogator {
 		internal static double TrueAnomalyFromVector(this Orbit o, Vector3d vec)
 		{
 			Vector3d projected = Vector3d.Exclude(o.SwappedOrbitNormal(), vec);
-			Vector3d vectorToPe = SwapYZ(o.eccVec);
+			Vector3d vectorToPe = o.eccVec.SwapYZ();
 			double angleFromPe = Math.Abs(Vector3d.Angle(vectorToPe, projected));
 
 			//If the vector points to the infalling part of the orbit then we need to do 360 minus the

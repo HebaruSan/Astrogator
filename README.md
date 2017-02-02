@@ -69,6 +69,7 @@ Click the wrench to open and close the settings panel:
   - Create useful numbers for launches/landed and KSC
   - Return-to-LKO burns from Mun and Minmus
     - Lowest warp altitude limit + 5km
+  - Improve auto-focus for targets inside other SOIs - use the transfer SOI parent
 - Publish
   - Push to Github
     - Make a Release
@@ -112,6 +113,7 @@ make
 
 ## Credits
 
+- AN/DN logic and plane change calculations borrowed from MechJeb
 - Phase angle logic and some icons borrowed from Kerbal Alarm Clock
 - `.gitignore` borrowed from Transfer Window Planner
 - `csproj` file borrowed from Transfer Window Planner and Craft Import and adapted. (I develop with `xbuild` and so could not generate files with an IDE.)
