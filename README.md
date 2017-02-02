@@ -66,7 +66,6 @@ Click the wrench to open and close the settings panel:
 
 - Robustness
   - **Calculate plane change burns without instantiating ejection burns**
-  - Kerbin -> Jool burn has wrong ejection angle, much better a few degrees later
   - Create useful numbers for launches/landed and KSC
   - Return-to-LKO burns from Mun and Minmus
     - Lowest warp altitude limit + 5km

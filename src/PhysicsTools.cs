@@ -77,7 +77,7 @@ namespace Astrogator {
 
 			// Angle between parent's prograde and the vessel's prograde at burn
 			// Should be between PI/2 and PI
-			return theta;
+			return 1.5*Math.PI - theta;
 		}
 
 		/// <returns>

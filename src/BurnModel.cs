@@ -9,6 +9,22 @@ namespace Astrogator {
 	/// actual maneuver node, so we can store the data and use it later.
 	public class BurnModel {
 
+		/// <summary>
+		/// Construct a burn object with the given parameters.
+		/// </summary>
+		/// <param name="t">Time of burn</param>
+		/// <param name="pro">Prograde component</param>
+		/// <param name="nor">Normal component</param>
+		/// <param name="rad">Radial component</param>
+		public BurnModel(double t, double pro, double nor, double rad)
+		{
+			atTime = t;
+			prograde = pro;
+			normal = nor;
+			radial = rad;
+			totalDeltaV = Math.Sqrt(prograde * prograde + normal * normal + radial * radial);
+		}
+
 		/// <value>
 		/// Maneuver node created from this burn, if any.
 		/// </value>
@@ -38,22 +54,6 @@ namespace Astrogator {
 		/// Magnitude of the dV vector.
 		/// </summary>
 		public double totalDeltaV { get; private set; }
-
-		/// <summary>
-		/// Construct a burn object with the given parameters.
-		/// </summary>
-		/// <param name="t">Time of burn</param>
-		/// <param name="pro">Prograde component</param>
-		/// <param name="nor">Normal component</param>
-		/// <param name="rad">Radial component</param>
-		public BurnModel(double t, double pro, double nor, double rad)
-		{
-			atTime = t;
-			prograde = pro;
-			normal = nor;
-			radial = rad;
-			totalDeltaV = Math.Sqrt(prograde * prograde + normal * normal + radial * radial);
-		}
 
 		/// <summary>
 		/// Generate a visible maneuver using this object's parameters.

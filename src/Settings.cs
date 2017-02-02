@@ -10,8 +10,26 @@ namespace Astrogator {
 	/// Wrapper around ConfigNode for our .settings file.
 	/// </summary>
 	public class Settings {
+
+		private Settings()
+		{
+			if (System.IO.File.Exists(filename)) {
+				config = ConfigNode.Load(filename);
+			} else {
+				config = new ConfigNode(RootKey);
+			}
+		}
+
 		private ConfigNode config { get; set; }
 		private static string filename = FilePath(Astrogator.Name + ".settings");
+
+		/// <summary>
+		/// We don't want multiple copies of this floating around clobbering one another.
+		/// </summary>
+		/// <value>
+		/// Singleton instance for our settings object.
+		/// </value>
+		public static Settings Instance { get; private set; } = new Settings();
 
 		private const string
 			RootKey                     = "SETTINGS",
@@ -28,23 +46,6 @@ namespace Astrogator {
 			AutoFocusDestinationKey     = "AutoFocusDestination",
 			AutoEditEjectionNodeKey     = "AutoEditEjectionNode",
 			AutoEditPlaneChangeNodeKey  = "AutoEditPlaneChangeNode";
-
-		/// <summary>
-		/// We don't want multiple copies of this floating around clobbering one another.
-		/// </summary>
-		/// <value>
-		/// Singleton instance for our settings object.
-		/// </value>
-		public static Settings Instance { get; private set; } = new Settings();
-
-		private Settings()
-		{
-			if (System.IO.File.Exists(filename)) {
-				config = ConfigNode.Load(filename);
-			} else {
-				config = new ConfigNode(RootKey);
-			}
-		}
 
 		/// <summary>
 		/// Save current settings to disk.

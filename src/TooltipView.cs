@@ -8,9 +8,6 @@ namespace Astrogator {
 
 	/// A class for a simple tooltip popup, since I couldn't find a way to do that easily in Unity.
 	class TooltipView : MultiOptionDialog {
-		public PopupDialog dialog { get; set; }
-
-		private const float tooltipWidth = 200, tooltipHeight = 10;
 
 		public TooltipView(string title, string description, Rect where)
 			: base(
@@ -18,7 +15,11 @@ namespace Astrogator {
 				" " + title + " ",
 				AstrogatorSkin,
 				where)
-			{ }
+		{ }
+
+		public PopupDialog dialog { get; set; }
+
+		private const float tooltipWidth = 200, tooltipHeight = 10;
 
 		/// Use this wrapper to generate a tooltip for an app launcher button.
 		public static TooltipView AppLauncherTooltip(

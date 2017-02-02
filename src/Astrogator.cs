@@ -355,8 +355,10 @@ namespace Astrogator {
 		{
 			// Refresh the model so it can reflect the latest target data
 			if (model != null) {
-				StartLoadingModel(model.body, model.vessel);
-				ResetView();
+				if (!model.HasDestination(FlightGlobals.fetch.VesselTarget)) {
+					StartLoadingModel(model.body, model.vessel);
+					ResetView();
+				}
 			}
 		}
 

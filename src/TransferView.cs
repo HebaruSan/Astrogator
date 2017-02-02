@@ -11,9 +11,6 @@ namespace Astrogator {
 	/// A class that displays a given transfer's info.
 	/// Corresponds to one row of the main window.
 	public class TransferView : DialogGUIHorizontalLayout {
-		private TransferModel model { get; set; }
-		private double lastUniversalTime { get; set; }
-		private DateTimeParts timeToWait { get; set; }
 
 		/// <summary>
 		/// Construct a view for the given model.
@@ -26,6 +23,10 @@ namespace Astrogator {
 
 			CreateLayout();
 		}
+
+		private TransferModel model { get; set; }
+		private double lastUniversalTime { get; set; }
+		private DateTimeParts timeToWait { get; set; }
 
 		private void CreateLayout()
 		{

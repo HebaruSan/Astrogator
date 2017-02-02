@@ -12,6 +12,40 @@ namespace Astrogator {
 	/// Intended for embedding in a MultiOptionDialog.
 	/// </summary>
 	public class AstrogationView : DialogGUIVerticalLayout {
+
+		/// <summary>
+		/// Construct a view for the given model.
+		/// </summary>
+		/// <param name="m">Model object for which to make a view</param>
+		/// <param name="reset">Function to call when the view needs to be re-initiated</param>
+		public AstrogationView(AstrogationModel m, ResetCallback reset)
+			: base(
+				mainWindowMinWidth,
+				mainWindowMinHeight,
+				mainWindowSpacing,
+				mainWindowPadding,
+				TextAnchor.UpperCenter
+			)
+		{
+			model = m;
+			resetCallback = reset;
+
+			if (!model.badInclination) {
+				createHeaders();
+				createRows();
+			}
+			AddChild(new DialogGUIHorizontalLayout(
+				mainWindowMinWidth, 10,
+				mainWindowSpacing, mainWindowPadding,
+				TextAnchor.UpperRight,
+				new DialogGUIFlexibleSpace(),
+				iconButton(settingsIcon, settingsStyle, "Settings", toggleSettingsVisible)
+			));
+			if (ShowSettings) {
+				AddChild(new SettingsView());
+			}
+		}
+
 		private AstrogationModel model { get; set; }
 		private PopupDialog dialog { get; set; }
 
@@ -53,39 +87,6 @@ namespace Astrogator {
 		/// UI object representing the top row of the table
 		/// </summary>
 		private static DialogGUIHorizontalLayout ColumnHeaders { get; set; }
-
-		/// <summary>
-		/// Construct a view for the given model.
-		/// </summary>
-		/// <param name="m">Model object for which to make a view</param>
-		/// <param name="reset">Function to call when the view needs to be re-initiated</param>
-		public AstrogationView(AstrogationModel m, ResetCallback reset)
-			: base(
-				mainWindowMinWidth,
-				mainWindowMinHeight,
-				mainWindowSpacing,
-				mainWindowPadding,
-				TextAnchor.UpperCenter
-			)
-		{
-			model = m;
-			resetCallback = reset;
-
-			if (!model.badInclination) {
-				createHeaders();
-				createRows();
-			}
-			AddChild(new DialogGUIHorizontalLayout(
-				mainWindowMinWidth, 10,
-				mainWindowSpacing, mainWindowPadding,
-				TextAnchor.UpperRight,
-				new DialogGUIFlexibleSpace(),
-				iconButton(settingsIcon, settingsStyle, "Settings", toggleSettingsVisible)
-			));
-			if (ShowSettings) {
-				AddChild(new SettingsView());
-			}
-		}
 
 		private void toggleSettingsVisible()
 		{
