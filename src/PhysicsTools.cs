@@ -46,6 +46,64 @@ namespace Astrogator {
 		}
 
 		/// <summary>
+		/// Estimate the delta V needed for the given vessel to get to orbit around the given body.
+		/// </summary>
+		/// <param name="body">Body to launch from</param>
+		/// <param name="vessel">Vessel to launch</param>
+		/// <returns>
+		/// Delta V it would take to launch from vessel's current position to a comfortable orbit.
+		/// </returns>
+		public static double DeltaVToOrbit(CelestialBody body, Vessel vessel)
+		{
+			double targetRadius = GoodLowOrbitRadius(body);
+
+			return SpeedAtPeriapsis(body, targetRadius, body.Radius)
+				- vessel.obt_speed
+				+ SpeedAtPeriapsis(body, targetRadius, targetRadius)
+				- SpeedAtApoapsis(body, targetRadius, body.Radius);
+		}
+
+		/// <summary>
+		/// Calculate a phase angle for the given orbit at the given time
+		/// </summary>
+		/// <param name="o">Orbit to consider</param>
+		/// <param name="t">Time when we want to know the phase angle</param>
+		/// <returns>
+		/// An angle in radians that can be compared to similar values of other satellites.
+		/// </returns>
+		public static double AbsolutePhaseAngle(Orbit o, double t)
+		{
+			return clamp(
+				Mathf.Deg2Rad * (
+					  o.LAN
+					+ o.argumentOfPeriapsis
+				)
+				+ o.TrueAnomalyAtUT(t)
+			);
+		}
+
+		/// <summary>
+		/// Calculate the time around closeToTime when the given landed vessel
+		/// will reach the given phase angle through the rotation of the body.
+		/// NOTE: Not yet completed!
+		/// </summary>
+		/// <param name="b">Body on which v is landed</param>
+		/// <param name="v">Vessel to track</param>
+		/// <param name="angle">Desired phase angle for the vessel</param>
+		/// <param name="closeToTime">Target time around which to search for actual time</param>
+		/// <returns>
+		/// Time when vessel reaches the phase angle.
+		/// </returns>
+		public static double TimeAtSurfacePhaseAngle(CelestialBody b, Vessel v, double angle, double closeToTime)
+		{
+			double anglePerSecond = Tau / b.rotationPeriod;
+			double phaseAngleAtGivenTime = 0;
+			double angleToMakeUp = clamp(angle - phaseAngleAtGivenTime);
+			double timeToMakeUp = angleToMakeUp / anglePerSecond;
+			return closeToTime + timeToMakeUp;
+		}
+
+		/// <summary>
 		/// Calculate ejection angle of a hyperbolic orbit with the given parameters
 		/// </summary>
 		/// <param name="parent">Parent body we're escaping</param>

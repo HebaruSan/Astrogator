@@ -477,6 +477,13 @@ namespace Astrogator {
 		public static Vector2 mainWindowAnchor = new Vector2(0.5f, 1f);
 
 		/// <summary>
+		/// A label option for truncating long strings with an ellipsis.
+		/// </summary>
+		public static DialogGUILabel.TextLabelOptions useEllipsis = new DialogGUILabel.TextLabelOptions() {
+			OverflowMode = TMPro.TextOverflowModes.Ellipsis
+		};
+
+		/// <summary>
 		/// Wrapper around stock label constructor to allow specification of style.
 		/// </summary>
 		/// <returns>
@@ -488,7 +495,10 @@ namespace Astrogator {
 		/// <param name="height">Height of the label</param>
 		public static DialogGUILabel LabelWithStyleAndSize(string message, UIStyle style, float width, float height)
 		{
-			return new DialogGUILabel(message, width, height) { guiStyle = style };
+			return new DialogGUILabel(message, width, height) {
+				guiStyle = style,
+				textLabelOptions = useEllipsis
+			};
 		}
 
 		/// <summary>
@@ -503,7 +513,10 @@ namespace Astrogator {
 		/// <param name="height">Height of the label</param>
 		public static DialogGUILabel LabelWithStyleAndSize(Func<string> getString, UIStyle style, float width, float height)
 		{
-			return new DialogGUILabel(getString, width, height) { guiStyle = style };
+			return new DialogGUILabel(getString, width, height) {
+				guiStyle = style,
+				textLabelOptions = useEllipsis
+			};
 		}
 
 		/// <returns>

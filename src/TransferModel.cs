@@ -28,6 +28,11 @@ namespace Astrogator {
 		public ITargetable   destination     { get; private set; }
 
 		/// <summary>
+		/// The reference body of the transfer portion of our route.
+		/// </summary>
+		public CelestialBody transferParent  { get; private set; }
+
+		/// <summary>
 		/// The body we're transferring from.
 		/// </summary>
 		public CelestialBody origin          { get; private set; }
@@ -53,6 +58,21 @@ namespace Astrogator {
 				// Sanity check just in case something unexpected happens.
 				return null;
 
+			} else if (vessel != null
+					&& (vessel.situation == Vessel.Situations.PRELAUNCH
+						|| vessel.situation == Vessel.Situations.LANDED
+						|| vessel.situation == Vessel.Situations.SPLASHED)) {
+
+				DbgFmt("Delta V to orbit: {0}", DeltaVToOrbit(origin, vessel));
+
+				return null;
+
+			} else if (currentOrbit.eccentricity > 1.0) {
+
+				DbgFmt("No point in trying to calculate on hyperbolic orbit.");
+
+				return null;
+
 			} else {
 				// If you want to go somewhere deep inside another SOI, we will
 				// just aim at whatever ancestor we can see.
@@ -69,11 +89,15 @@ namespace Astrogator {
 				}
 
 				if (origin == immediateDestination as CelestialBody) {
+					// Trying to get to the start SOI or one of its sub-SOIs
 					return null;
 				}
 
 				if (immediateDestination != null) {
 					// Our normal recursive base case - just a normal transfer
+
+					// Note which body is boss in the zone where we transfer
+					transferParent = immediateDestination.GetOrbit().referenceBody;
 
 					double optimalPhaseAngle = clamp(Math.PI * (
 						1 - Math.Pow(
@@ -157,7 +181,6 @@ namespace Astrogator {
 
 						try {
 							for (int i = 0; i < iterations; ++i) {
-								DbgFmt("Burn at ({1}): {0}", burnTime, i);
 								double ejectionAngle = EjectionAngle(
 									currentOrbit.referenceBody,
 									RadiusAtTime(currentOrbit, burnTime),
@@ -172,7 +195,6 @@ namespace Astrogator {
 							DbgFmt("Problem with ejection calc: {0}\n{1}",
 								ex.Message, ex.StackTrace);
 						}
-						DbgFmt("Final burn time: {0}", burnTime);
 
 						return new BurnModel(
 							burnTime,

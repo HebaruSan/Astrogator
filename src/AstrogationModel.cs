@@ -121,26 +121,30 @@ namespace Astrogator {
 					b != null;
 					toSkip = b, b = ParentBody(b)) {
 
-				DbgFmt("Plotting transfers around {0}", b.theName);
+				// Skip the first body unless we can actually transfer to its children
+				// (i.e., we have a vessel)
+				if (vessel != null || toSkip != null) {
+					DbgFmt("Plotting transfers around {0}", b.theName);
 
-				int numBodies = b.orbitingBodies.Count;
-				for (int i = 0; i < numBodies; ++i) {
-					CelestialBody satellite = b.orbitingBodies[i];
-					if (satellite != toSkip) {
-						DbgFmt("Plotting transfer to {0}", satellite.theName);
-						transfers.Add(new TransferModel(origin, satellite, vessel));
-						DbgFmt("Finalized transfer to {0}", satellite.theName);
+					int numBodies = b.orbitingBodies.Count;
+					for (int i = 0; i < numBodies; ++i) {
+						CelestialBody satellite = b.orbitingBodies[i];
+						if (satellite != toSkip) {
+							DbgFmt("Plotting transfer to {0}", satellite.theName);
+							transfers.Add(new TransferModel(origin, satellite, vessel));
+							DbgFmt("Finalized transfer to {0}", satellite.theName);
 
-						if (satellite == FlightGlobals.fetch.VesselTarget as CelestialBody) {
-							foundTarget = true;
+							if (satellite == FlightGlobals.fetch.VesselTarget as CelestialBody) {
+								foundTarget = true;
+							}
 						}
 					}
+					DbgFmt("Exhausted transfers around {0}", b.theName);
 				}
-				DbgFmt("Exhausted transfers around {0}", b.theName);
 			}
 
 			if (!foundTarget && FlightGlobals.fetch.VesselTarget != null) {
-				transfers.Add(new TransferModel(origin, FlightGlobals.fetch.VesselTarget, vessel));
+				transfers.Insert(0, new TransferModel(origin, FlightGlobals.fetch.VesselTarget, vessel));
 			}
 
 			DbgFmt("Shipping completed transfers");

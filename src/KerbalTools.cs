@@ -24,6 +24,26 @@ namespace Astrogator {
 		}
 
 		/// <summary>
+		/// Choose an radius for an orbit around the given body.
+		/// </summary>
+		/// <param name="body">The body for which to suggest a radius</param>
+		/// <returns>
+		/// About 10km above the atmosphere or the minimum safe distance.
+		/// </returns>
+		public static double GoodLowOrbitRadius(CelestialBody body)
+		{
+			// Allow enough distance that we are "safely" in the desired zone
+			const double ALTITUDE_PADDING = 10000;
+			if (body.atmosphere) {
+				// For a body with an atmosphere, assume we'll be just above it.
+				return body.Radius + body.atmosphereDepth + ALTITUDE_PADDING;
+			} else {
+				// Otherwise we go just above the minimum safe distance.
+				return body.Radius + body.minOrbitalDistance + ALTITUDE_PADDING;
+			}
+		}
+
+		/// <summary>
 		/// Wrapper around CelestialBody.sphereOfInfluence to support ITargetable
 		/// </summary>
 		/// <param name="target">Body or vessel to check</param>

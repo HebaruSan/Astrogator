@@ -69,7 +69,6 @@ Click the wrench to open and close the settings panel:
   - Create useful numbers for launches/landed and KSC
   - Return-to-LKO burns from Mun and Minmus
     - Lowest warp altitude limit + 5km
-  - Improve auto-focus for targets inside other SOIs - use the transfer SOI parent
 - Publish
   - Push to Github
     - Make a Release

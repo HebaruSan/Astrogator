@@ -231,9 +231,9 @@ namespace Astrogator {
 					if (model.HaveEncounter()) {
 						// Move the map to the target for fine-tuning if we have an encounter
 						FocusMap(model.destination);
-					} else {
+					} else if (model.transferParent != null) {
 						// Otherwise focus on the parent of the transfer orbit so we can get an encounter
-						FocusMap(model.destination.GetOrbit().referenceBody);
+						FocusMap(model.transferParent);
 					}
 				}
 			}
