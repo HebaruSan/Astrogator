@@ -164,3 +164,6 @@ Astrogator/*
 
 # Our special symlink to the game DLLs
 src/KSP_x64_Data
+
+# Generated CKAN files (the .netkan file is the one we need)
+*.ckan
