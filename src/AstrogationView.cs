@@ -5,6 +5,7 @@ using UnityEngine;
 namespace Astrogator {
 
 	using static DebugTools;
+	using static KerbalTools;
 	using static ViewTools;
 
 	/// <summary>
@@ -30,7 +31,7 @@ namespace Astrogator {
 			model = m;
 			resetCallback = reset;
 
-			if (!model.badInclination) {
+			if (!ErrorCondition) {
 				createHeaders();
 				createRows();
 			}
@@ -122,26 +123,59 @@ namespace Astrogator {
 			}
 		}
 
+		private bool ErrorCondition {
+			get {
+				return model == null
+					|| model.transfers.Count == 0
+					|| model.badInclination
+					|| model.hyperbolicOrbit
+					|| model.notOrbiting
+					|| model.retrogradeOrbit;
+			}
+		}
+
 		private string subTitle {
 			get {
-				if (model != null && model.badInclination) {
-					return string.Format(
-						"Inclination is {0:0.0}°, accuracy too low past {1:0.}°",
-						Math.Abs(model.vessel.orbit.inclination),
-						AstrogationModel.maxInclination * Mathf.Rad2Deg
-					);
+				if (model != null) {
+					if (model.hyperbolicOrbit) {
+						return string.Format(
+							"{0} is on a hyperbolic trajectory. Capture to see transfer info.",
+							TheName(model.vessel)
+						);
+					} else if (model.notOrbiting) {
+						return string.Format(
+							"{0} is landed. Launch to orbit to see transfer info.",
+							TheName(model.vessel)
+						);
+					} else if (model.retrogradeOrbit) {
+						return string.Format(
+							"Orbit is retrograde, must be prograde with inclination below {1:0.}°",
+							Math.Abs(model.vessel.orbit.inclination),
+							AstrogationModel.maxInclination * Mathf.Rad2Deg
+						);
+					} else if (model.badInclination) {
+						return string.Format(
+							"Inclination is {0:0.0}°, accuracy too low past {1:0.}°",
+							Math.Abs(model.vessel.orbit.inclination),
+							AstrogationModel.maxInclination * Mathf.Rad2Deg
+						);
+					} else if (model.transfers.Count == 0) {
+						return "No transfers available";
+					} else {
+						return string.Format("Transfers from {0}", model.OriginDescription);
+					}
 				} else {
-					return string.Format("Transfers from {0}", model.OriginDescription);
+					return "Internal error: Model not found";
 				}
 			}
 		}
 
 		private UISkinDef skinToUse {
 			get {
-				if (model != null && model.badInclination) {
-					return AstrogatorErrorSkin;
-				} else {
+				if (!ErrorCondition) {
 					return AstrogatorSkin;
+				} else {
+					return AstrogatorErrorSkin;
 				}
 			}
 		}
@@ -153,8 +187,8 @@ namespace Astrogator {
 		public PopupDialog Show()
 		{
 			return dialog = PopupDialog.SpawnPopupDialog(
-				mainWindowAnchor,
-				mainWindowAnchor,
+				mainWindowAnchorMin,
+				mainWindowAnchorMax,
 				new MultiOptionDialog(
 					subTitle,
 					DisplayName,

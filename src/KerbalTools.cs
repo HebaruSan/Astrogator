@@ -24,6 +24,15 @@ namespace Astrogator {
 		}
 
 		/// <summary>
+		/// Check whether maneuver nodes are available in the current game mode.
+		/// Borrowed from MechJeb.
+		/// </summary>
+		public static bool patchedConicsUnlocked()
+		{
+			return GameVariables.Instance.GetOrbitDisplayMode(ScenarioUpgradeableFacilities.GetFacilityLevel(SpaceCenterFacility.TrackingStation)) == GameVariables.OrbitDisplayMode.PatchedConics;
+		}
+
+		/// <summary>
 		/// Choose an radius for an orbit around the given body.
 		/// </summary>
 		/// <param name="body">The body for which to suggest a radius</param>
@@ -53,11 +62,7 @@ namespace Astrogator {
 		public static double SphereOfInfluence(ITargetable target)
 		{
 			CelestialBody b = target as CelestialBody;
-			if (b != null) {
-				return b.sphereOfInfluence;
-			} else {
-				return 0.0;
-			}
+			return b?.sphereOfInfluence ?? 0.0;
 		}
 
 		/// <summary>
@@ -70,11 +75,7 @@ namespace Astrogator {
 		public static string TheName(ITargetable target)
 		{
 			CelestialBody b = target as CelestialBody;
-			if (b != null) {
-				return b.theName;
-			} else {
-				return target.GetName();
-			}
+			return b?.theName ?? target.GetName();
 		}
 
 		/// <summary>
@@ -104,13 +105,9 @@ namespace Astrogator {
 		/// <param name="target">Body or vessel to use</param>
 		public static ITargetable StartBody(ITargetable target = null)
 		{
-			if (target == null) {
-				return FlightGlobals.GetHomeBody();
-			} else if (target.GetVessel() != null) {
-				return target.GetVessel().mainBody;
-			} else {
-				return target;
-			}
+			return target?.GetVessel()?.mainBody
+				?? target
+				?? FlightGlobals.GetHomeBody();
 		}
 
 		/// <summary>

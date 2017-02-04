@@ -433,6 +433,7 @@ namespace Astrogator {
 				contentStyle	= maneuverStyle,
 				content	= ContentEnum.CreateManeuverNodeButton,
 				vesselSpecific	= true,
+				requiresPatchedConics	= true,
 			}, new ColumnDefinition() {
 				header	= "",
 				width	= buttonIconWidth,
@@ -461,20 +462,28 @@ namespace Astrogator {
 		public const int mainWindowMinHeight = 10;
 
 		/// <summary>
-		/// Pixels between elements of the window (?)
+		/// Pixels between elements of the window
 		/// </summary>
 		public const int mainWindowSpacing = 4;
 
 		/// <summary>
-		/// Extra space around the edges of the window (?)
+		/// Extra space around the edges of the window
 		/// </summary>
 		public static RectOffset mainWindowPadding = new RectOffset(6, 6, 10, 10);
 
 		/// <summary>
 		/// Window-relative coordinate of the spot that stays fixed in place when the size changes.
 		/// This choice is equivalent to UpperCenter anchoring.
+		/// Relates to mainWindowAnchorMax somehow, but I can't tell how.
 		/// </summary>
-		public static Vector2 mainWindowAnchor = new Vector2(0.5f, 1f);
+		public static Vector2 mainWindowAnchorMin = new Vector2(0.5f, 1f);
+
+		/// <summary>
+		/// Window-relative coordinate of the spot that stays fixed in place when the size changes.
+		/// This choice is equivalent to UpperCenter anchoring.
+		/// Relates to mainWindowAnchorMin somehow, but I can't tell how.
+		/// </summary>
+		public static Vector2 mainWindowAnchorMax = new Vector2(0.5f, 1f);
 
 		/// <summary>
 		/// A label option for truncating long strings with an ellipsis.
@@ -641,6 +650,11 @@ namespace Astrogator {
 		/// True to hide this column when there's no active vessel (tracking station, KSC)
 		/// </summary>
 		public bool vesselSpecific { get; set; }
+
+		/// <summary>
+		/// True to hide this column if maneuver nodes aren't available in this game mode.
+		/// </summary>
+		public bool requiresPatchedConics { get; set; }
 	}
 
 	/// <summary>

@@ -145,8 +145,7 @@ namespace Astrogator {
 								ejectionBurnTime,
 								RadiusAtTime(immediateDestination.GetOrbit(), arrivalTime)
 									- 0.25 * SphereOfInfluence(immediateDestination)
-							),
-							0, 0
+							)
 						);
 					} else {
 						return new BurnModel(
@@ -156,8 +155,7 @@ namespace Astrogator {
 								ejectionBurnTime,
 								RadiusAtTime(immediateDestination.GetOrbit(), arrivalTime)
 									+ 0.25 * SphereOfInfluence(immediateDestination)
-							),
-							0, 0
+							)
 						);
 					}
 
@@ -202,8 +200,7 @@ namespace Astrogator {
 								currentOrbit.referenceBody,
 								currentOrbit,
 								outerBurn.totalDeltaV,
-								burnTime),
-							0, 0
+								burnTime)
 						);
 					}
 					return outerBurn;
@@ -223,6 +220,13 @@ namespace Astrogator {
 			} else {
 				ejectionBurn = null;
 			}
+
+			if (planeChangeBurn != null && ejectionBurn != null) {
+				if (planeChangeBurn.atTime < ejectionBurn.atTime) {
+					DbgFmt("Resetting plane change burn because it's too early now");
+					planeChangeBurn = null;
+				}
+			}
 		}
 
 		/// <summary>
@@ -231,14 +235,23 @@ namespace Astrogator {
 		public void CalculatePlaneChangeBurn()
 		{
 			if (FlightGlobals.ActiveVessel == vessel
-					&& vessel != null
-					&& vessel.patchedConicSolver != null
-					&& vessel.patchedConicSolver.maneuverNodes != null) {
+					&& vessel?.patchedConicSolver?.maneuverNodes != null) {
+
+				bool ejectionAlreadyActive = false;
 
 				if (vessel.patchedConicSolver.maneuverNodes.Count > 0) {
 					if (Settings.Instance.DeleteExistingManeuvers) {
+
 						ClearManeuverNodes();
+
+					} else if (vessel.patchedConicSolver.maneuverNodes.Count == 1
+							&& ejectionBurn.node != null) {
+
+						ejectionAlreadyActive = true;
+
 					} else {
+						// At least one unrelated maneuver is active, and we're not allowed to delete them.
+						// Can't activate ejection burn for calculation.
 						return;
 					}
 				}
@@ -246,7 +259,13 @@ namespace Astrogator {
 				DbgFmt("Temporarily activating ejection burn to {0}", destination.GetName());
 
 				if (ejectionBurn != null) {
-					ManeuverNode eNode = ejectionBurn.ToActiveManeuver();
+
+					ManeuverNode eNode;
+					if (ejectionAlreadyActive) {
+						eNode = ejectionBurn.node;
+					} else {
+						eNode = ejectionBurn.ToActiveManeuver();
+					}
 
 					DbgFmt("Activated ejection burn to {0}", destination.GetName());
 
@@ -275,7 +294,7 @@ namespace Astrogator {
 									if (Math.Abs(magnitude) > 0.05) {
 										// Add a maneuver node to change planes
 										planeChangeBurn = new BurnModel(planeTime, 0,
-											magnitude, 0);
+											magnitude);
 										DbgFmt("Transmitted correction burn for {0}: {1}", destination.GetName(), magnitude);
 									} else {
 										planeChangeBurn = null;
@@ -295,8 +314,10 @@ namespace Astrogator {
 						DbgFmt("Ejection burn existed but generated a null node");
 					}
 
-					// Clean up the node since we're just doing calculations, not intending to set things up for the user
-					ejectionBurn.RemoveNode();
+					if (!ejectionAlreadyActive) {
+						// Clean up the node since we're just doing calculations, not intending to set things up for the user
+						ejectionBurn.RemoveNode();
+					}
 					DbgFmt("Released completed transfer to {0}", destination.GetName());
 				} else {
 					DbgFmt("Ejection burn is missing somehow");
@@ -316,9 +337,7 @@ namespace Astrogator {
 		public bool HaveEncounter()
 		{
 			if (FlightGlobals.ActiveVessel == vessel
-					&& vessel != null
-					&& vessel.patchedConicSolver != null
-					&& vessel.patchedConicSolver.maneuverNodes != null) {
+					&& vessel?.patchedConicSolver?.maneuverNodes != null) {
 
 				for (Orbit o = ejectionBurn.node.nextPatch; o != null; o = NextPatch(o)) {
 					if (o.referenceBody == destination as CelestialBody) {
@@ -343,6 +362,16 @@ namespace Astrogator {
 			} else {
 				return false;
 			}
+		}
+
+		/// <summary>
+		/// Check whether the user opened any manuever node editing gizmos since the last tick.
+		/// There doesn't seem to be event-based notification for this, so we just have to poll.
+		/// </summary>
+		public void CheckForOpenGizmos()
+		{
+			ejectionBurn?.CheckForOpenGizmo();
+			planeChangeBurn?.CheckForOpenGizmo();
 		}
 	}
 

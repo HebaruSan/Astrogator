@@ -16,7 +16,7 @@ namespace Astrogator {
 		/// <param name="pro">Prograde component</param>
 		/// <param name="nor">Normal component</param>
 		/// <param name="rad">Radial component</param>
-		public BurnModel(double t, double pro, double nor, double rad)
+		public BurnModel(double t, double pro, double nor = 0, double rad = 0)
 		{
 			atTime = t;
 			prograde = pro;
@@ -29,6 +29,8 @@ namespace Astrogator {
 		/// Maneuver node created from this burn, if any.
 		/// </value>
 		public ManeuverNode node { get; private set; }
+
+		private ManeuverGizmo gizmo { get; set; }
 
 		/// <summary>
 		/// The UT of the burn.
@@ -62,8 +64,7 @@ namespace Astrogator {
 		{
 			DbgFmt("Activating maneuver");
 			node = null;
-			if (FlightGlobals.ActiveVessel != null
-					&& FlightGlobals.ActiveVessel.patchedConicSolver != null) {
+			if (FlightGlobals.ActiveVessel?.patchedConicSolver != null) {
 				node = FlightGlobals.ActiveVessel.patchedConicSolver.AddManeuverNode(atTime);
 			}
 			if (node != null) {
@@ -75,9 +76,45 @@ namespace Astrogator {
 				DbgFmt("Updating flight plan");
 				FlightGlobals.ActiveVessel.patchedConicSolver.UpdateFlightPlan();
 				DbgFmt("Flight plan revised");
+
+				CheckForOpenGizmo();
+
 				return node;
 			} else {
 				return null;
+			}
+		}
+
+		/// <summary>
+		/// Check whether the user opened this manuever node's editing gizmo since the last tick.
+		/// There doesn't seem to be event-based notification for this, so we just have to poll.
+		/// </summary>
+		public void CheckForOpenGizmo()
+		{
+			if (node != null) {
+				if (node.attachedGizmo != null && gizmo == null) {
+					gizmo = node.attachedGizmo;
+					DbgFmt("Attached gizmo exists");
+					gizmo.OnDelete += NodeDeleted;
+				}
+			}
+		}
+
+		/// <summary>
+		/// When a maneuver node is deleted, release our reference to it.
+		/// </summary>
+		public void NodeDeleted()
+		{
+			DbgFmt("Our node was deleted, release it");
+
+			if (node != null) {
+				if (gizmo != null) {
+					DbgFmt("Attached gizmo exists, removing event handler");
+					gizmo.OnDelete -= NodeDeleted;
+					gizmo = null;
+				}
+
+				node = null;
 			}
 		}
 
@@ -88,7 +125,7 @@ namespace Astrogator {
 		{
 			if (node != null) {
 				node.RemoveSelf();
-				node = null;
+				NodeDeleted();
 			}
 		}
 
@@ -103,6 +140,8 @@ namespace Astrogator {
 			if (node != null && FlightGlobals.ActiveVessel != null) {
 				node.AttachGizmo(MapView.ManeuverNodePrefab,
 					FlightGlobals.ActiveVessel.patchedConicRenderer);
+
+				CheckForOpenGizmo();
 			}
 		}
 	}

@@ -34,55 +34,62 @@ namespace Astrogator {
 				ColumnDefinition col = Columns[i];
 
 				// Skip columns that require an active vessel if we don't have one
-				if (!col.vesselSpecific || FlightGlobals.ActiveVessel != null) {
-					switch (col.content) {
+				if (col.vesselSpecific && FlightGlobals.ActiveVessel == null) {
+					continue;
+				}
 
-						case ContentEnum.PlanetName:
-							AddChild(LabelWithStyleAndSize(CultureInfo.InstalledUICulture.TextInfo.ToTitleCase(TheName(model.destination)),
-								col.contentStyle, col.width, rowHeight));
-							break;
+				// Skip columns that require maneuver nodes if they're not unlocked
+				if (col.requiresPatchedConics && !patchedConicsUnlocked()) {
+					continue;
+				}
 
-						case ContentEnum.YearsTillBurn:
-							AddChild(LabelWithStyleAndSize(getYearValue,
-								col.contentStyle, col.width, rowHeight));
-							break;
+				switch (col.content) {
 
-						case ContentEnum.DaysTillBurn:
-							AddChild(LabelWithStyleAndSize(getDayValue,
-								col.contentStyle, col.width, rowHeight));
-							break;
+					case ContentEnum.PlanetName:
+						AddChild(LabelWithStyleAndSize(CultureInfo.InstalledUICulture.TextInfo.ToTitleCase(TheName(model.destination)),
+							col.contentStyle, col.width, rowHeight));
+						break;
 
-						case ContentEnum.HoursTillBurn:
-							AddChild(LabelWithStyleAndSize(getHourValue,
-								col.contentStyle, col.width, rowHeight));
-							break;
+					case ContentEnum.YearsTillBurn:
+						AddChild(LabelWithStyleAndSize(getYearValue,
+							col.contentStyle, col.width, rowHeight));
+						break;
 
-						case ContentEnum.MinutesTillBurn:
-							AddChild(LabelWithStyleAndSize(getMinuteValue,
-								col.contentStyle, col.width, rowHeight));
-							break;
+					case ContentEnum.DaysTillBurn:
+						AddChild(LabelWithStyleAndSize(getDayValue,
+							col.contentStyle, col.width, rowHeight));
+						break;
 
-						case ContentEnum.SecondsTillBurn:
-							AddChild(LabelWithStyleAndSize(getSecondValue,
-								col.contentStyle, col.width, rowHeight));
-							break;
+					case ContentEnum.HoursTillBurn:
+						AddChild(LabelWithStyleAndSize(getHourValue,
+							col.contentStyle, col.width, rowHeight));
+						break;
 
-						case ContentEnum.DeltaV:
-							AddChild(LabelWithStyleAndSize(getDeltaV,
-								col.contentStyle, col.width, rowHeight));
-							break;
+					case ContentEnum.MinutesTillBurn:
+						AddChild(LabelWithStyleAndSize(getMinuteValue,
+							col.contentStyle, col.width, rowHeight));
+						break;
 
-						case ContentEnum.CreateManeuverNodeButton:
-							AddChild(iconButton(maneuverIcon,
-								col.contentStyle, "Create maneuver", CreateManeuvers));
-							break;
+					case ContentEnum.SecondsTillBurn:
+						AddChild(LabelWithStyleAndSize(getSecondValue,
+							col.contentStyle, col.width, rowHeight));
+						break;
 
-						case ContentEnum.WarpToBurnButton:
-							AddChild(iconButton(warpIcon,
-								col.contentStyle, "Warp to window", WarpToBurn));
-							break;
+					case ContentEnum.DeltaV:
+						AddChild(LabelWithStyleAndSize(getDeltaV,
+							col.contentStyle, col.width, rowHeight));
+						break;
 
-					}
+					case ContentEnum.CreateManeuverNodeButton:
+						AddChild(iconButton(maneuverIcon,
+							col.contentStyle, "Create maneuver", CreateManeuvers));
+						break;
+
+					case ContentEnum.WarpToBurnButton:
+						AddChild(iconButton(warpIcon,
+							col.contentStyle, "Warp to window", WarpToBurn));
+						break;
+
 				}
 			}
 		}
@@ -212,10 +219,19 @@ namespace Astrogator {
 				// Create a maneuver node for the ejection burn
 				model.ejectionBurn.ToActiveManeuver();
 
-				if (Settings.Instance.GeneratePlaneChangeBurns && model.planeChangeBurn != null) {
-					model.planeChangeBurn.ToActiveManeuver();
+				if (Settings.Instance.GeneratePlaneChangeBurns) {
+					if (model.planeChangeBurn == null) {
+						DbgFmt("Calculating plane change on the fly");
+						model.CalculatePlaneChangeBurn();
+					}
+
+					if (model.planeChangeBurn != null) {
+						model.planeChangeBurn.ToActiveManeuver();
+					} else {
+						DbgFmt("No plane change found");
+					}
 				} else {
-					DbgFmt("Skipping plane change burn.");
+					DbgFmt("Plane changes disabled");
 				}
 
 				if (Settings.Instance.AutoEditEjectionNode) {

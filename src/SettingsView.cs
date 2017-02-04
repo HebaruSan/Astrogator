@@ -26,7 +26,7 @@ namespace Astrogator {
 				AddChild(LabelWithStyleAndSize(
 					"Settings:",
 					midHdrStyle,
-					mainWindowMinWidth, 10
+					mainWindowMinWidth, rowHeight
 				));
 
 				AddChild(new DialogGUIToggle(
@@ -50,7 +50,7 @@ namespace Astrogator {
 				AddChild(LabelWithStyleAndSize(
 					"Maneuver creation:",
 					midHdrStyle,
-					mainWindowMinWidth, 10
+					mainWindowMinWidth, rowHeight
 				));
 
 				AddChild(new DialogGUIToggle(

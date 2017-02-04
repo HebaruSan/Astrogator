@@ -61,6 +61,37 @@ namespace Astrogator {
 		}
 
 		/// <summary>
+		/// True if the craft is in a retrograde orbit.
+		/// </summary>
+		public bool retrogradeOrbit {
+			get {
+				return vessel != null
+					&& Math.Abs(vessel.orbit.inclination * Mathf.Deg2Rad) > 0.5 * Math.PI;
+			}
+		}
+
+		/// <summary>
+		/// True if the craft is on a hyperbolic trajectory.
+		/// </summary>
+		public bool hyperbolicOrbit {
+			get {
+				return vessel?.GetOrbit().eccentricity > 1.0;
+			}
+		}
+
+		/// <summary>
+		/// True if the craft is sitting on a surface (solid or liquid) rather than on an orbit.
+		/// </summary>
+		public bool notOrbiting {
+			get {
+				return vessel != null
+					&& (vessel.situation == Vessel.Situations.PRELAUNCH
+						|| vessel.situation == Vessel.Situations.LANDED
+						|| vessel.situation == Vessel.Situations.SPLASHED);
+			}
+		}
+
+		/// <summary>
 		/// Re-initialize a model object for the given origin objects.
 		/// </summary>
 		/// <param name="b">Body to start at, overridden by v</param>
@@ -137,6 +168,9 @@ namespace Astrogator {
 							if (satellite == FlightGlobals.fetch.VesselTarget as CelestialBody) {
 								foundTarget = true;
 							}
+							if (toSkip == FlightGlobals.fetch.VesselTarget as CelestialBody) {
+								foundTarget = true;
+							}
 						}
 					}
 					DbgFmt("Exhausted transfers around {0}", b.theName);
@@ -148,6 +182,19 @@ namespace Astrogator {
 			}
 
 			DbgFmt("Shipping completed transfers");
+		}
+
+		/// <summary>
+		/// Check whether the user opened any manuever node editing gizmos since the last tick.
+		/// There doesn't seem to be event-based notification for this, so we just have to poll.
+		/// </summary>
+		public void CheckForOpenGizmos()
+		{
+			if (transfers != null) {
+				for (int i = 0; i < transfers.Count; ++i) {
+					transfers[i].CheckForOpenGizmos();
+				}
+			}
 		}
 	}
 

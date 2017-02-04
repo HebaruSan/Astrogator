@@ -324,6 +324,14 @@ namespace Astrogator {
 		}
 
 		/// <summary>
+		/// Called by the framework for each UI tick.
+		/// </summary>
+		public void Update()
+		{
+			CheckForOpenGizmos();
+		}
+
+		/// <summary>
 		/// Called by the framework for each physics tick.
 		/// </summary>
 		public void FixedUpdate()
@@ -340,11 +348,15 @@ namespace Astrogator {
 					OnTargetChanged();
 					prevTarget = FlightGlobals.fetch.VesselTarget;
 				}
+
+				if (SituationChanged()) {
+					OnSituationChanged();
+					prevSituation = FlightGlobals.ActiveVessel.situation;
+				}
 			}
 		}
 
 		private ITargetable prevTarget { get; set; }
-
 		private bool TargetChanged()
 		{
 			return VesselMode
@@ -363,7 +375,6 @@ namespace Astrogator {
 		}
 
 		private OrbitModel prevOrbit { get; set; }
-
 		private bool OrbitChanged()
 		{
 			return VesselMode
@@ -371,7 +382,8 @@ namespace Astrogator {
 					|| !prevOrbit.Equals(FlightGlobals.ActiveVessel.orbit));
 		}
 
-		private void OnOrbitChanged() {
+		private void OnOrbitChanged()
+		{
 			if (prevOrbit == null) {
 				DbgFmt("No previous orbit.");
 			} else {
@@ -390,8 +402,19 @@ namespace Astrogator {
 							ex.Message, ex.StackTrace);
 					}
 				}
-
 			}
+		}
+
+		private Vessel.Situations prevSituation { get; set; }
+		private bool SituationChanged()
+		{
+			return prevSituation != FlightGlobals.ActiveVessel.situation;
+		}
+
+		private void OnSituationChanged()
+		{
+			StartLoadingModel(FlightGlobals.ActiveVessel?.mainBody, FlightGlobals.ActiveVessel);
+			ResetView();
 		}
 
 		/// <summary>
@@ -421,6 +444,11 @@ namespace Astrogator {
 				StartLoadingModel(target.celestialBody, target.vessel);
 				ResetView();
 			}
+		}
+
+		private void CheckForOpenGizmos()
+		{
+			model?.CheckForOpenGizmos();
 		}
 	}
 
