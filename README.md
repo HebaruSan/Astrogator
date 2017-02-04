@@ -76,7 +76,6 @@ Click the wrench to open and close the settings panel:
   - New thread on forums
   - [DialogGUI* thread](http://forum.kerbalspaceprogram.com/index.php?/topic/149324-popupdialog-and-the-dialoggui-classes/)
   - Reply to [Kerbal Navigator post](http://forum.kerbalspaceprogram.com/index.php?/topic/138886-what-mod-should-i-make/&do=findComment&comment=2562076), @Nansuchao
-  - CKAN
 
 ## Building
 
