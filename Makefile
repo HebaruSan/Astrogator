@@ -32,9 +32,9 @@ $(RELEASEZIP): $(RELEASEDLL) $(ICONS) $(README) $(DLLDOCS) $(DLLSYMBOLS) $(LICEN
 	zip -r $@ $(DISTDIR)
 
 $(GAMELINK):
-	if [ -x $(DEFAULTGAMEDIR) ]; \
+	if [ -x "$(DEFAULTGAMEDIR)" ]; \
 	then; \
-		ln -s $(DEFAULTGAMEDIR) $(GAMELINK); \
+		ln -s "$(DEFAULTGAMEDIR)"/KSP_x64_Data $(GAMELINK); \
 	else; \
 		echo "$(GAMELINK) not found."; \
 		echo 'This must be a symlink to Kerbal Space Program/KSP_x64_Data.'; \
