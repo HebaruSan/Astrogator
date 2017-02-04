@@ -12,7 +12,7 @@ DEBUGDLL=$(SOURCEDIR)/bin/Debug/Astrogator.dll
 RELEASEDLL=$(SOURCEDIR)/bin/Release/Astrogator.dll
 DISTDIR=Astrogator
 RELEASEZIP=Astrogator.zip
-DLLDOCS=$(SOURCEDIR)/bin/Debug/Astrogator.xml
+DLLDOCS=$(SOURCEDIR)/bin/Release/Astrogator.xml
 DLLSYMBOLS=$(DEBUGDLL).mdb
 
 TARGETS=$(DEBUGDLL) $(RELEASEDLL) $(RELEASEZIP)
@@ -25,10 +25,10 @@ $(DEBUGDLL): $(SOURCE) $(GAMELINK)
 $(RELEASEDLL): $(SOURCE) $(GAMELINK)
 	cd $(SOURCEDIR) && xbuild /p:Configuration=Release
 
-$(RELEASEZIP): $(DEBUGDLL) $(ICONS) $(README) $(DLLDOCS) $(DLLSYMBOLS)
+$(RELEASEZIP): $(RELEASEDLL) $(ICONS) $(README) $(DLLDOCS) $(DLLSYMBOLS)
 	mkdir -p $(DISTDIR)
 	cp $^ $(DISTDIR)
-	zip -u -r $@ $(DISTDIR)
+	zip -r $@ $(DISTDIR)
 
 $(GAMELINK):
 	if [ -x $(DEFAULTGAMEDIR) ]; \

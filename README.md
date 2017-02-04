@@ -1,6 +1,6 @@
 # Astrogator
 
-<div style="margin:0.25em;padding:2px;text-align:center;">![mainScreenshot](screenshots/mainScreenshot.png)</div>
+![mainScreenshot](screenshots/mainScreenshot.png)
 
 A space-navigational aide for [Kerbal Space Program](http://www.kerbalspaceprogram.com/).
 
@@ -8,7 +8,7 @@ See all the transfers that you could choose from your current location at a glan
 
 ## Download
 
-The [latest version]() is available on Github.
+The [latest version](https://github.com/HebaruSan/Astrogator/releases) is available on Github.
 
 Unzip to your GameData folder.
 
@@ -73,8 +73,7 @@ Click the wrench to open and close the settings panel:
 - Useful numbers for launches/landed
 - Return-to-LKO burns from Mun and Minmus
 - Publish
-  - Push to Github
-    - Make a Release
+  - Make a Release
   - New thread on forums
   - [DialogGUI* thread](http://forum.kerbalspaceprogram.com/index.php?/topic/149324-popupdialog-and-the-dialoggui-classes/)
   - Reply to [Kerbal Navigator post](http://forum.kerbalspaceprogram.com/index.php?/topic/138886-what-mod-should-i-make/&do=findComment&comment=2562076), @Nansuchao
