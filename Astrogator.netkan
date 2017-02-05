@@ -4,10 +4,11 @@
     "name": "Astrogator",
     "abstract": "Space navigation assistant",
     "$kref": "#/ckan/github/HebaruSan/Astrogator",
+    "$vref": "#/ckan/ksp-avc",
     "license": "GPL-3.0",
-    "ksp_version_min": "1.2.2",
-    "ksp_version_max": "1.2.99",
     "resources": {
-        "homepage": "https://github.com/HebaruSan/Astrogator"
+        "homepage": "http://forum.kerbalspaceprogram.com/index.php?/topic/155998-122-astrogator",
+        "bugtracker": "https://github.com/HebaruSan/Astrogator/issues",
+        "repository": "https://github.com/HebaruSan/Astrogator"
     }
 }
