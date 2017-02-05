@@ -31,6 +31,11 @@ namespace Astrogator {
 			}
 		}
 
+		/// <summary>
+		/// Log a debug message about an Exception
+		/// </summary>
+		/// <param name="description">Explanation of the context in which the exception was raised</param>
+		/// <param name="ex">The exception to log</param>
 		[System.Diagnostics.Conditional("DEBUG")]
 		public static void DbgExc(string description, Exception ex) {
 			DbgFmt(
