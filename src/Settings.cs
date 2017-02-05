@@ -13,11 +13,15 @@ namespace Astrogator {
 
 		private Settings()
 		{
+			DbgFmt("Initializing settings object");
 			if (System.IO.File.Exists(filename)) {
+				DbgFmt("Loading settings from {0}", filename);
 				config = ConfigNode.Load(filename);
 			} else {
+				DbgFmt("Creating settings object from scratch");
 				config = new ConfigNode(RootKey);
 			}
+			DbgFmt("Is settings object ready? {0}", (config != null));
 		}
 
 		private ConfigNode config { get; set; }

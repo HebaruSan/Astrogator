@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics;
 using UnityEngine;
 using KSP;
 
@@ -8,9 +9,7 @@ namespace Astrogator {
 	/// They'd be module-level global variables if C# allowed that.
 	public static class DebugTools {
 
-		#if DEBUG
 		private static readonly object debugMutex = new object();
-		#endif
 
 		/// <summary>
 		/// Add a formattable string to the debug output.
@@ -18,22 +17,19 @@ namespace Astrogator {
 		/// </summary>
 		/// <param name="format">String.Format format string</param>
 		/// <param name="args">Parameters for the format string, if any</param>
+		[Conditional("DEBUG")]
 		public static void DbgFmt(string format, params object[] args)
 		{
-			#if DEBUG
-
 			string formattedMessage = string.Format(format, args);
 
 			lock (debugMutex) {
-				Debug.Log(string.Format(
+				UnityEngine.Debug.Log(string.Format(
 					"[{0} {1:000.000}] {2}",
 					AstrogationView.DisplayName,
 					Time.realtimeSinceStartup,
 					formattedMessage
 				));
 			}
-
-			#endif
 		}
 
 		/// <summary>
@@ -41,15 +37,12 @@ namespace Astrogator {
 		/// </summary>
 		/// <param name="format">String.Format format string</param>
 		/// <param name="args">Parameters for the format string, if any</param>
+		[Conditional("DEBUG")]
 		public static void ScreenFmt(string format, params object[] args)
 		{
-			#if DEBUG
-
 			ScreenMessages.PostScreenMessage(
 				string.Format(format, args)
 			);
-
-			#endif
 		}
 
 	}

@@ -198,7 +198,8 @@ namespace Astrogator {
 		private void OnFlightReady()
 		{
 			flightReady = true;
-			if (Settings.Instance.GeneratePlaneChangeBurns) {
+			if (Settings.Instance.GeneratePlaneChangeBurns
+					&& Settings.Instance.AddPlaneChangeDeltaV) {
 				StartLoadingModel(model.body, model.vessel);
 				ResetView();
 			}
@@ -241,8 +242,10 @@ namespace Astrogator {
 						ex.Message, ex.StackTrace);
 					}
 				}
-				// Now get the plane change burns.
-				if (flightReady && Settings.Instance.GeneratePlaneChangeBurns) {
+				// Now get the plane change burns if we need them for the on-screen numbers.
+				if (flightReady
+						&& Settings.Instance.GeneratePlaneChangeBurns
+						&& Settings.Instance.AddPlaneChangeDeltaV) {
 					for (int i = 0; i < model.transfers.Count; ++i) {
 						try {
 							Thread.Sleep(200);
