@@ -177,7 +177,9 @@ namespace Astrogator {
 				}
 			}
 
-			if (!foundTarget && FlightGlobals.fetch.VesselTarget != null) {
+			if (!foundTarget
+					&& FlightGlobals.ActiveVessel != null
+					&& FlightGlobals.fetch.VesselTarget != null) {
 				transfers.Insert(0, new TransferModel(origin, FlightGlobals.fetch.VesselTarget, vessel));
 			}
 
