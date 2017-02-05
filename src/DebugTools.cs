@@ -1,5 +1,4 @@
 using System;
-using System.Diagnostics;
 using UnityEngine;
 using KSP;
 
@@ -17,13 +16,13 @@ namespace Astrogator {
 		/// </summary>
 		/// <param name="format">String.Format format string</param>
 		/// <param name="args">Parameters for the format string, if any</param>
-		[Conditional("DEBUG")]
+		[System.Diagnostics.Conditional("DEBUG")]
 		public static void DbgFmt(string format, params object[] args)
 		{
 			string formattedMessage = string.Format(format, args);
 
 			lock (debugMutex) {
-				UnityEngine.Debug.Log(string.Format(
+				Debug.Log(string.Format(
 					"[{0} {1:000.000}] {2}",
 					AstrogationView.DisplayName,
 					Time.realtimeSinceStartup,
@@ -32,12 +31,22 @@ namespace Astrogator {
 			}
 		}
 
+		[System.Diagnostics.Conditional("DEBUG")]
+		public static void DbgExc(string description, Exception ex) {
+			DbgFmt(
+				"{0}: {1}\n{2}",
+				description,
+				ex.Message,
+				ex.StackTrace
+			);
+		}
+
 		/// <summary>
 		/// Show a formattable string to the user.
 		/// </summary>
 		/// <param name="format">String.Format format string</param>
 		/// <param name="args">Parameters for the format string, if any</param>
-		[Conditional("DEBUG")]
+		[System.Diagnostics.Conditional("DEBUG")]
 		public static void ScreenFmt(string format, params object[] args)
 		{
 			ScreenMessages.PostScreenMessage(

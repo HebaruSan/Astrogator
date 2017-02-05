@@ -238,8 +238,7 @@ namespace Astrogator {
 					try {
 						model.transfers[i].CalculateEjectionBurn();
 					} catch (Exception ex) {
-						DbgFmt("Problem with background load: {0}\n{1}",
-						ex.Message, ex.StackTrace);
+						DbgExc("Problem with background load of ejection burn", ex);
 					}
 				}
 				// Now get the plane change burns if we need them for the on-screen numbers.
@@ -251,8 +250,7 @@ namespace Astrogator {
 							Thread.Sleep(200);
 							model.transfers[i].CalculatePlaneChangeBurn();
 						} catch (Exception ex) {
-							DbgFmt("Problem with background load: {0}\n{1}",
-							ex.Message, ex.StackTrace);
+							DbgExc("Problem with background load of plane change burn", ex);
 
 							// If a route calculation crashes, it can leave behind a temporary node.
 							ClearManeuverNodes();
@@ -390,7 +388,6 @@ namespace Astrogator {
 			if (prevOrbit == null) {
 				DbgFmt("No previous orbit.");
 			} else {
-				// Comment this later to save a bunch of divisions and abs operations
 				DbgFmt(prevOrbit.ComparisonDescription(FlightGlobals.ActiveVessel.orbit));
 			}
 
@@ -401,8 +398,7 @@ namespace Astrogator {
 					try {
 						model.transfers[i].CalculateEjectionBurn();
 					} catch (Exception ex) {
-						DbgFmt("Problem after orbit change: {0}\n{1}",
-							ex.Message, ex.StackTrace);
+						DbgExc("Problem after orbit change", ex);
 					}
 				}
 			}

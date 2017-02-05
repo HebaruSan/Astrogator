@@ -190,8 +190,7 @@ namespace Astrogator {
 									ejectionAngle + angleOffset);
 							}
 						} catch (Exception ex) {
-							DbgFmt("Problem with ejection calc: {0}\n{1}",
-								ex.Message, ex.StackTrace);
+							DbgExc("Problem with ejection calc", ex);
 						}
 
 						return new BurnModel(

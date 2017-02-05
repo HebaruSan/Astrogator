@@ -78,8 +78,7 @@ namespace Astrogator {
 				));
 
 			} catch (Exception ex) {
-				DbgFmt("Problem constructing settings view: {0}\n{1}",
-					ex.Message, ex.StackTrace);
+				DbgExc("Problem constructing settings view", ex);
 			}
 		}
 

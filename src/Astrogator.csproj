@@ -58,45 +58,20 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Astrogator.cs" />
-  </ItemGroup>
-  <ItemGroup>
     <Compile Include="KerbalTools.cs" />
-  </ItemGroup>
-  <ItemGroup>
     <Compile Include="ViewTools.cs" />
-  </ItemGroup>
-  <ItemGroup>
     <Compile Include="PhysicsTools.cs" />
-  </ItemGroup>
-  <ItemGroup>
     <Compile Include="AstrogationModel.cs" />
-  </ItemGroup>
-  <ItemGroup>
     <Compile Include="AstrogationView.cs" />
-  </ItemGroup>
-  <ItemGroup>
     <Compile Include="TransferModel.cs" />
-  </ItemGroup>
-  <ItemGroup>
     <Compile Include="TransferView.cs" />
-  </ItemGroup>
-  <ItemGroup>
     <Compile Include="BurnModel.cs" />
-  </ItemGroup>
-  <ItemGroup>
     <Compile Include="OrbitModel.cs" />
-  </ItemGroup>
-  <ItemGroup>
     <Compile Include="TooltipView.cs" />
-  </ItemGroup>
-  <ItemGroup>
     <Compile Include="DebugTools.cs" />
-  </ItemGroup>
-  <ItemGroup>
     <Compile Include="Settings.cs" />
-  </ItemGroup>
-  <ItemGroup>
     <Compile Include="SettingsView.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

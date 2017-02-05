@@ -16,8 +16,14 @@ namespace Astrogator {
 			DbgFmt("Initializing settings object");
 			if (System.IO.File.Exists(filename)) {
 				DbgFmt("Loading settings from {0}", filename);
-				config = ConfigNode.Load(filename);
-			} else {
+				try {
+					config = ConfigNode.Load(filename);
+				} catch (Exception ex) {
+					DbgExc("Problem loading settings", ex);
+				}
+			}
+			// Generate a default settings object even if it tries and fails to load, so at least it won't crash
+			if (config == null) {
 				DbgFmt("Creating settings object from scratch");
 				config = new ConfigNode(RootKey);
 			}
@@ -56,7 +62,13 @@ namespace Astrogator {
 		/// </summary>
 		public bool Save()
 		{
-			return config.Save(filename);
+			try {
+				DbgFmt("Attempting to save settings to {0}", filename);
+				return config.Save(filename);
+			} catch (Exception ex) {
+				DbgExc("Failed to save settings", ex);
+			}
+			return false;
 		}
 
 		/// <value>
