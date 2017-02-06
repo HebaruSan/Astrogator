@@ -37,7 +37,7 @@ namespace Astrogator {
 			}
 			AddChild(new DialogGUIHorizontalLayout(
 				mainWindowMinWidth, 10,
-				mainWindowSpacing, mainWindowPadding,
+				0, wrenchPadding,
 				TextAnchor.UpperRight,
 				new DialogGUIFlexibleSpace(),
 				iconButton(settingsIcon, settingsStyle, "Settings", toggleSettingsVisible)

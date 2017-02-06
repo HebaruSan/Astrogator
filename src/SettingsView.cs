@@ -17,7 +17,7 @@ namespace Astrogator {
 		public SettingsView()
 			: base(
 				mainWindowMinWidth, 10,
-				mainWindowSpacing, mainWindowPadding,
+				mainWindowSpacing,  settingsPadding,
 				TextAnchor.UpperLeft
 			)
 		{

@@ -472,6 +472,16 @@ namespace Astrogator {
 		public static RectOffset mainWindowPadding = new RectOffset(6, 6, 10, 10);
 
 		/// <summary>
+		/// Space around the edges of the settings button (only on top)
+		/// </summary>
+		public static RectOffset wrenchPadding = new RectOffset(0, 0, 10, 0);
+
+		/// <summary>
+		/// Space around the edges of the settings pane
+		/// </summary>
+		public static RectOffset settingsPadding = new RectOffset(0, 0, 0, 0);
+
+		/// <summary>
 		/// Window-relative coordinate of the spot that stays fixed in place when the size changes.
 		/// This choice is equivalent to UpperCenter anchoring.
 		/// Relates to mainWindowAnchorMax somehow, but I can't tell how.
