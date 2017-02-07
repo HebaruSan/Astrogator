@@ -47,6 +47,8 @@ namespace Astrogator {
 			MainWindowVisibleKey        = "MainWindowVisible",
 
 			ShowSettingsKey             = "ShowSettings",
+			TransferSortKey             = "TransferSort",
+			DescendingSortKey           = "DescendingSort",
 
 			GeneratePlaneChangeBurnsKey = "GeneratePlaneChangeBurns",
 			AddPlaneChangeDeltaVKey     = "AddPlaneChangeDeltaV",
@@ -271,6 +273,45 @@ namespace Astrogator {
 				if (value) {
 					GeneratePlaneChangeBurns = true;
 					AutoEditEjectionNode = false;
+				}
+			}
+		}
+
+		/// <summary>
+		/// How to sort the table.
+		/// </summary>
+		public SortEnum TransferSort {
+			get {
+				SortEnum ts = SortEnum.Position;
+				string savedValue = "";
+				if (config.TryGetValue(TransferSortKey, ref savedValue)) {
+					ts = ParseEnum<SortEnum>(savedValue, SortEnum.Position);
+				}
+				return ts;
+			}
+			set {
+				if (config.HasValue(TransferSortKey)) {
+					config.SetValue(TransferSortKey, value.ToString());
+				} else {
+					config.AddValue(TransferSortKey, value.ToString());
+				}
+			}
+		}
+
+		/// <summary>
+		/// True if the sort should be largest value at the top, false otherwise.
+		/// </summary>
+		public bool DescendingSort {
+			get {
+				bool descend = false;
+				config.TryGetValue(DescendingSortKey, ref descend);
+				return descend;
+			}
+			set {
+				if (config.HasValue(DescendingSortKey)) {
+					config.SetValue(DescendingSortKey, value);
+				} else {
+					config.AddValue(DescendingSortKey, value);
 				}
 			}
 		}

@@ -5,6 +5,8 @@ using KSP.UI.TooltipTypes;
 
 namespace Astrogator {
 
+	using static DebugTools;
+
 	/// Anything UI-related that needs to be used from multiple places.
 	public static class ViewTools {
 
@@ -30,6 +32,25 @@ namespace Astrogator {
 		public static string FilePath(string filename)
 		{
 			return string.Format("GameData/{0}/{1}", Astrogator.Name, filename);
+		}
+
+		/// <summary>
+		/// Parse a string into an enum for Settings
+		/// Inverse of Enum.ToString()
+		/// </summary>
+		/// <param name="val">String from the settings</param>
+		/// <param name="defaultVal">Default to use if can't match to any value from the enum</param>
+		/// <returns>
+		/// Enum value matching the string, if any
+		/// </returns>
+		public static T ParseEnum<T>(string val, T defaultVal)
+		{
+			try {
+				return (T) Enum.Parse(typeof(T), val, true);
+			} catch (Exception ex) {
+				DbgExc("Problem parsing enum", ex);
+				return defaultVal;
+			}
 		}
 
 		/// <value>
@@ -92,7 +113,13 @@ namespace Astrogator {
 		/// <value>
 		/// Black image with 50% opacity.
 		/// </value>
-		public static Sprite halfTransparentBlack = SolidColorSprite(new Color(0.0f, 0.0f, 0.0f, 0.5f));
+		public static Sprite halfTransparentBlack = SolidColorSprite(new Color(0f, 0f, 0f, 0.5f));
+
+		/// <value>
+		/// Completely transparent sprite so we can use buttons for the headers
+		/// without the default button graphic.
+		/// </value>
+		public static Sprite transparent = SolidColorSprite(new Color(0f, 0f, 0f, 0f));
 
 		/// <value>
 		/// Backgrounds and text colors for the tooltip and main window.
@@ -106,6 +133,7 @@ namespace Astrogator {
 		/// Text color for table headers.
 		/// </value>
 		public static UIStyleState headingFont = new UIStyleState() {
+			background	= transparent,
 			textColor	= Color.HSVToRGB(0.3f, 0.8f, 0.8f)
 		};
 
@@ -372,24 +400,156 @@ namespace Astrogator {
 			toggle	= UISkinManager.defaultSkin.toggle,
 		};
 
+		/// <summary>
+		/// Types of columns in our table.
+		/// </summary>
+		public enum ContentEnum {
+
+			/// <summary>
+			/// Left most column, left aligned, sort of a header, contains planet names
+			/// </summary>
+			PlanetName,
+
+			/// <summary>
+			/// First time column
+			/// </summary>
+			YearsTillBurn,
+
+			/// <summary>
+			/// Second time columnm
+			/// </summary>
+			DaysTillBurn,
+
+			/// <summary>
+			/// Third time column
+			/// </summary>
+			HoursTillBurn,
+
+			/// <summary>
+			/// Fourth time column
+			/// </summary>
+			MinutesTillBurn,
+
+			/// <summary>
+			/// Fifth time column
+			/// </summary>
+			SecondsTillBurn,
+
+			/// <summary>
+			/// Delta V column
+			/// </summary>
+			DeltaV,
+
+			/// <summary>
+			/// Maneuver node creation button column
+			/// </summary>
+			CreateManeuverNodeButton,
+
+			/// <summary>
+			/// Warp button column
+			/// </summary>
+			WarpToBurnButton,
+		}
+
+		/// <summary>
+		/// A type defining the different sort orders available.
+		/// Can't be the same as the column list, because we have
+		/// four different columns for time data.
+		/// </summary>
+		public enum SortEnum {
+			/// <summary>
+			/// Sort by discovery order; first the satellites of the current
+			/// body in inner->outer order, then satellites of its parent, etc.
+			/// </summary>
+			Position,
+
+			/// <summary>
+			/// Sort by name (currently not available in UI)
+			/// </summary>
+			Name,
+
+			/// <summary>
+			/// Sort by time till burn
+			/// </summary>
+			Time,
+
+			/// <summary>
+			/// Sort by delta V
+			/// </summary>
+			DeltaV
+		}
+
+		/// <summary>
+		/// Structure defining the properties of a column of our table.
+		/// </summary>
+		public class ColumnDefinition {
+
+			/// <summary>
+			/// The string to display at the top of the column
+			/// </summary>
+			public string header { get; set; }
+
+			/// <summary>
+			/// Width of the column
+			/// </summary>
+			public int width { get; set; }
+
+			/// <summary>
+			/// Number of cells occupied horizontally by the header
+			/// </summary>
+			public int headerColSpan { get; set; }
+
+			/// <summary>
+			/// Font, color, and alignment of the header
+			/// </summary>
+			public UIStyle headerStyle { get; set; }
+
+			/// <summary>
+			/// Font, color, and alignment of the normal content
+			/// </summary>
+			public UIStyle contentStyle { get; set; }
+
+			/// <summary>
+			/// How to generate the content for this column
+			/// </summary>
+			public ContentEnum content { get; set; }
+
+			/// <summary>
+			/// True to hide this column when there's no active vessel (tracking station, KSC)
+			/// </summary>
+			public bool vesselSpecific { get; set; }
+
+			/// <summary>
+			/// True to hide this column if maneuver nodes aren't available in this game mode.
+			/// </summary>
+			public bool requiresPatchedConics { get; set; }
+
+			/// <summary>
+			/// Sort order to use when the user clicks the header.
+			/// </summary>
+			public SortEnum sortKey { get; set; }
+		}
+
 		/// <value>
 		/// Columns for our table.
 		/// </value>
 		public static ColumnDefinition[] Columns = new ColumnDefinition[] {
 			new ColumnDefinition() {
-				header	= "",
-				width	= 45,
+				header	= "Transfer",
+				width	= 60,
 				headerColSpan	= 1,
 				headerStyle	= leftHdrStyle,
 				contentStyle	= planetStyle,
-				content	= ContentEnum.PlanetName
+				content	= ContentEnum.PlanetName,
+				sortKey	= SortEnum.Position
 			}, new ColumnDefinition() {
 				header	= "Time Till Burn",
 				width	= 30,
 				headerColSpan	= 5,
 				headerStyle	= midHdrStyle,
 				contentStyle	= numberStyle,
-				content	= ContentEnum.YearsTillBurn
+				content	= ContentEnum.YearsTillBurn,
+				sortKey	= SortEnum.Time
 			}, new ColumnDefinition() {
 				header	= "",
 				width	= 30,
@@ -424,7 +584,8 @@ namespace Astrogator {
 				headerColSpan	= 1,
 				headerStyle	= rightHdrStyle,
 				contentStyle	= numberStyle,
-				content	= ContentEnum.DeltaV
+				content	= ContentEnum.DeltaV,
+				sortKey	= SortEnum.DeltaV
 			}, new ColumnDefinition() {
 				header	= "",
 				width	= buttonIconWidth,
@@ -554,6 +715,27 @@ namespace Astrogator {
 			}
 		}
 
+		/// <summary>
+		/// Create a button that looks like a label
+		/// </summary>
+		/// <param name="text">String to display</param>
+		/// <param name="style">Style to use for the text</param>
+		/// <param name="tooltip">Tooltip to use (not currently visible)</param>
+		/// <param name="width">Horizontal space to take up</param>
+		/// <param name="height">Vertical space to take up</param>
+		/// <param name="cb">Function to call when the user clicks the button</param>
+		/// <returns>
+		/// Button with the given properties
+		/// </returns>
+		public static DialogGUIButton headerButton(string text, UIStyle style, string tooltip, float width, float height, Callback cb)
+		{
+			// The 'transparent' Sprite makes the default button borders go away
+			return new DialogGUIButton(transparent, text, cb, width, height, false) {
+				guiStyle    = style,
+				tooltipText = tooltip
+			};
+		}
+
 		/// <returns>
 		/// A button with parameterized icon, tooltip, and callback.
 		/// </returns>
@@ -568,103 +750,6 @@ namespace Astrogator {
 				tooltipText = tooltip
 			};
 		}
-	}
-
-	/// <summary>
-	/// Types of columns in our table.
-	/// </summary>
-	public enum ContentEnum {
-
-		/// <summary>
-		/// Left most column, left aligned, sort of a header, contains planet names
-		/// </summary>
-		PlanetName,
-
-		/// <summary>
-		/// First time column
-		/// </summary>
-		YearsTillBurn,
-
-		/// <summary>
-		/// Second time columnm
-		/// </summary>
-		DaysTillBurn,
-
-		/// <summary>
-		/// Third time column
-		/// </summary>
-		HoursTillBurn,
-
-		/// <summary>
-		/// Fourth time column
-		/// </summary>
-		MinutesTillBurn,
-
-		/// <summary>
-		/// Fifth time column
-		/// </summary>
-		SecondsTillBurn,
-
-		/// <summary>
-		/// Delta V column
-		/// </summary>
-		DeltaV,
-
-		/// <summary>
-		/// Maneuver node creation button column
-		/// </summary>
-		CreateManeuverNodeButton,
-
-		/// <summary>
-		/// Warp button column
-		/// </summary>
-		WarpToBurnButton,
-	}
-
-	/// <summary>
-	/// Structure defining the properties of a column of our table.
-	/// </summary>
-	public class ColumnDefinition {
-
-		/// <summary>
-		/// The string to display at the top of the column
-		/// </summary>
-		public string header { get; set; }
-
-		/// <summary>
-		/// Width of the column
-		/// </summary>
-		public int width { get; set; }
-
-		/// <summary>
-		/// Number of cells occupied horizontally by the header
-		/// </summary>
-		public int headerColSpan { get; set; }
-
-		/// <summary>
-		/// Font, color, and alignment of the header
-		/// </summary>
-		public UIStyle headerStyle { get; set; }
-
-		/// <summary>
-		/// Font, color, and alignment of the normal content
-		/// </summary>
-		public UIStyle contentStyle { get; set; }
-
-		/// <summary>
-		/// How to generate the content for this column
-		/// </summary>
-		public ContentEnum content { get; set; }
-
-		/// <summary>
-		/// True to hide this column when there's no active vessel (tracking station, KSC)
-		/// </summary>
-		public bool vesselSpecific { get; set; }
-
-		/// <summary>
-		/// True to hide this column if maneuver nodes aren't available in this game mode.
-		/// </summary>
-		public bool requiresPatchedConics { get; set; }
 	}
 
 	/// <summary>

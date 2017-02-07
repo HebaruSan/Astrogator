@@ -412,8 +412,10 @@ namespace Astrogator {
 
 		private void OnSituationChanged()
 		{
-			StartLoadingModel(FlightGlobals.ActiveVessel?.mainBody, FlightGlobals.ActiveVessel);
-			ResetView();
+			if (model != null && view != null) {
+				StartLoadingModel(FlightGlobals.ActiveVessel?.mainBody, FlightGlobals.ActiveVessel);
+				ResetView();
+			}
 		}
 
 		/// <summary>
@@ -423,9 +425,11 @@ namespace Astrogator {
 		{
 			DbgFmt("Entered {0}'s sphere of influence", newBody.theName);
 
-			// The old list no longer applies because reachable bodies depend on current SOI
-			StartLoadingModel(newBody, FlightGlobals.ActiveVessel);
-			ResetView();
+			if (model != null && view != null) {
+				// The old list no longer applies because reachable bodies depend on current SOI
+				StartLoadingModel(newBody, FlightGlobals.ActiveVessel);
+				ResetView();
+			}
 		}
 
 		/// <summary>

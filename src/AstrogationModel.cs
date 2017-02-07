@@ -145,6 +145,7 @@ namespace Astrogator {
 			DbgFmt("Fabricating transfers");
 
 			bool foundTarget = false;
+			int discoveryOrder = 0;
 
 			CelestialBody origin = StartBody(body, vessel);
 
@@ -162,7 +163,7 @@ namespace Astrogator {
 						CelestialBody satellite = b.orbitingBodies[i];
 						if (satellite != toSkip) {
 							DbgFmt("Plotting transfer to {0}", satellite.theName);
-							transfers.Add(new TransferModel(origin, satellite, vessel));
+							transfers.Add(new TransferModel(origin, satellite, vessel, ++discoveryOrder));
 							DbgFmt("Finalized transfer to {0}", satellite.theName);
 
 							if (satellite == FlightGlobals.fetch.VesselTarget as CelestialBody) {
@@ -180,7 +181,7 @@ namespace Astrogator {
 			if (!foundTarget
 					&& FlightGlobals.ActiveVessel != null
 					&& FlightGlobals.fetch.VesselTarget != null) {
-				transfers.Insert(0, new TransferModel(origin, FlightGlobals.fetch.VesselTarget, vessel));
+				transfers.Insert(0, new TransferModel(origin, FlightGlobals.fetch.VesselTarget, vessel, -1));
 			}
 
 			DbgFmt("Shipping completed transfers");

@@ -15,11 +15,12 @@ namespace Astrogator {
 		/// <summary>
 		/// Construct a model object.
 		/// </summary>
-		public TransferModel(CelestialBody org, ITargetable dest, Vessel v)
+		public TransferModel(CelestialBody org, ITargetable dest, Vessel v, int order)
 		{
 			origin = org;
 			destination = dest;
 			vessel = v;
+			DiscoveryOrder = order;
 		}
 
 		/// <summary>
@@ -51,6 +52,11 @@ namespace Astrogator {
 		/// Representation of the burn to change into the destination's orbital plane.
 		/// </summary>
 		public BurnModel     planeChangeBurn { get; private set; }
+
+		/// <summary>
+		/// Number representing the position of this row when sorted by position.
+		/// </summary>
+		public int           DiscoveryOrder  { get; private set; }
 
 		private BurnModel GenerateEjectionBurn(Orbit currentOrbit)
 		{

@@ -72,6 +72,9 @@ Click the wrench to open and close the settings panel:
 
 - Useful numbers for launches/landed
 - Return-to-LKO burns from Mun and Minmus
+- Allow low-inclination retrograde orbits
+- Represent starting point with ITargetable
+- Split CalculateEjectionBurn into transfer versus ejection functions
 
 ## Building
 

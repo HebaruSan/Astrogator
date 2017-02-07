@@ -78,6 +78,12 @@ namespace Astrogator {
 			}
 		}
 
+		private void toggleSettingsVisible()
+		{
+			ShowSettings = !ShowSettings;
+			resetCallback();
+		}
+
 		/// <summary>
 		/// The user-facing name for this mod.
 		/// Use Astrogator.Name for filenames, internal representations, CKAN, etc.
@@ -87,27 +93,37 @@ namespace Astrogator {
 		/// <summary>
 		/// UI object representing the top row of the table
 		/// </summary>
-		private static DialogGUIHorizontalLayout ColumnHeaders { get; set; }
+		private DialogGUIHorizontalLayout ColumnHeaders { get; set; }
 
-		private void toggleSettingsVisible()
+		private string columnSortIndicator(ColumnDefinition col)
 		{
-			ShowSettings = !ShowSettings;
-			resetCallback();
+			return col.sortKey != Settings.Instance.TransferSort ? ""
+				: Settings.Instance.DescendingSort ? " ↓"
+				: " ↑";
 		}
 
 		private void createHeaders()
 		{
-			if (ColumnHeaders == null) {
-				ColumnHeaders = new DialogGUIHorizontalLayout();
-				for (int i = 0; i < Columns.Length; ++i) {
-					ColumnDefinition col = Columns[i];
-					// Skip columns that require an active vessel if we don't have one
-					if (!col.vesselSpecific || model.vessel != null) {
-						int width = 0;
-						for (int span = 0; span < col.headerColSpan; ++span) {
-							width += Columns[i + span].width;
-						}
-						if (width > 0) {
+			ColumnHeaders = new DialogGUIHorizontalLayout();
+			for (int i = 0; i < Columns.Length; ++i) {
+				ColumnDefinition col = Columns[i];
+				// Skip columns that require an active vessel if we don't have one
+				if (!col.vesselSpecific || model.vessel != null) {
+					float width = 0;
+					for (int span = 0; span < col.headerColSpan; ++span) {
+						width += Columns[i + span].width;
+					}
+					if (width > 0) {
+						// Add in the spacing gaps that got left out from colspanning
+						width += (col.headerColSpan - 1) * spacing;
+						if (col.header != "") {
+							ColumnHeaders.AddChild(headerButton(
+								col.header + columnSortIndicator(col),
+								col.headerStyle, "Sort", width, rowHeight, () => {
+									SortClicked(col.sortKey);
+								}
+							));
+						} else {
 							ColumnHeaders.AddChild(LabelWithStyleAndSize(col.header, col.headerStyle, width, rowHeight));
 						}
 					}
@@ -116,10 +132,56 @@ namespace Astrogator {
 			AddChild(ColumnHeaders);
 		}
 
+		private void SortClicked(SortEnum which)
+		{
+			if (Settings.Instance.TransferSort == which) {
+				Settings.Instance.DescendingSort = !Settings.Instance.DescendingSort;
+			} else {
+				Settings.Instance.TransferSort = which;
+				Settings.Instance.DescendingSort = false;
+			}
+			resetCallback();
+		}
+
+		private List<TransferModel> SortTransfers(AstrogationModel m, SortEnum how, bool descend)
+		{
+			List<TransferModel> transfers = new List<TransferModel>(m.transfers);
+			switch (how) {
+				case SortEnum.Name:
+					transfers.Sort((a, b) =>
+						a?.destination?.GetName().CompareTo(b?.destination?.GetName()) ?? 0);
+					break;
+				case SortEnum.Position:
+					transfers.Sort((a, b) =>
+						a?.DiscoveryOrder.CompareTo(b?.DiscoveryOrder) ?? 0);
+					break;
+				case SortEnum.Time:
+					transfers.Sort((a, b) =>
+						a?.ejectionBurn?.atTime.CompareTo(b?.ejectionBurn?.atTime) ?? 0);
+					break;
+				case SortEnum.DeltaV:
+					transfers.Sort((a, b) =>
+						a?.ejectionBurn?.totalDeltaV.CompareTo(b?.ejectionBurn?.totalDeltaV) ?? 0);
+					break;
+				default:
+					DbgFmt("Bad sort argument: {0}", how.ToString());
+					break;
+			}
+			if (descend) {
+				transfers.Reverse();
+			}
+			return transfers;
+		}
+
 		private void createRows()
 		{
-			for (int i = 0; i < model.transfers.Count; ++i) {
-				AddChild(new TransferView(model.transfers[i]));
+			List<TransferModel> transfers = SortTransfers(
+				model,
+				Settings.Instance.TransferSort,
+				Settings.Instance.DescendingSort
+			);
+			for (int i = 0; i < transfers.Count; ++i) {
+				AddChild(new TransferView(transfers[i]));
 			}
 		}
 
