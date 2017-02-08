@@ -92,7 +92,9 @@ namespace Astrogator {
 		public void CheckForOpenGizmo()
 		{
 			if (node != null) {
-				if (node.attachedGizmo != null && gizmo == null) {
+				if (!FlightGlobals.ActiveVessel?.patchedConicSolver?.maneuverNodes.Contains(node) ?? true) {
+					NodeDeleted();
+				} else if (node.attachedGizmo != null && gizmo == null) {
 					gizmo = node.attachedGizmo;
 					DbgFmt("Attached gizmo exists");
 					gizmo.OnDelete += NodeDeleted;

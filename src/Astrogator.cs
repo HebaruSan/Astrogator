@@ -334,12 +334,70 @@ namespace Astrogator {
 			}
 		}
 
+		private static void AdjustManeuver(BurnModel burn, Vector3d direction)
+		{
+			const double DELTA_V_INCREMENT_LARGE = 0.5,
+				DELTA_V_INCREMENT_SMALL = 0.01;
+
+			if (burn != null
+					&& FlightGlobals.ActiveVessel != null
+					&& !FlightGlobals.ActiveVessel.ActionGroups[KSPActionGroup.RCS]) {
+
+				ManeuverNode n = burn?.node;
+				if (n != null) {
+					if (GameSettings.MODIFIER_KEY.GetKey()) {
+						n.DeltaV += DELTA_V_INCREMENT_SMALL * direction;
+					} else {
+						n.DeltaV += DELTA_V_INCREMENT_LARGE * direction;
+					}
+					n.solver.UpdateFlightPlan();
+				}
+			}
+		}
+
+		private delegate void KeyPressedCallback(AstrogationModel m);
+
+		// Adjust our nodes using the RCS translation controls if RCS is turned off
+		private Dictionary<KeyBinding, KeyPressedCallback> bindings = new Dictionary<KeyBinding, KeyPressedCallback>() {
+			{
+				GameSettings.TRANSLATE_FWD, (AstrogationModel m) => {
+					AdjustManeuver(m?.ActiveEjectionBurn, 0.1 * Vector3d.forward);
+				}
+			}, {
+				GameSettings.TRANSLATE_BACK, (AstrogationModel m) => {
+					AdjustManeuver(m?.ActiveEjectionBurn, 0.1 * Vector3d.back);
+				}
+			}, {
+				GameSettings.TRANSLATE_UP, (AstrogationModel m) => {
+					AdjustManeuver(m?.ActivePlaneChangeBurn, Vector3d.up);
+				}
+			}, {
+				GameSettings.TRANSLATE_DOWN, (AstrogationModel m) => {
+					AdjustManeuver(m?.ActivePlaneChangeBurn, Vector3d.down);
+				}
+			}, {
+				GameSettings.TRANSLATE_LEFT, (AstrogationModel m) => {
+					AdjustManeuver(m?.ActivePlaneChangeBurn, Vector3d.left);
+				}
+			}, {
+				GameSettings.TRANSLATE_RIGHT, (AstrogationModel m) => {
+					AdjustManeuver(m?.ActivePlaneChangeBurn, Vector3d.right);
+				}
+			}
+		};
+
 		/// <summary>
 		/// Called by the framework for each UI tick.
 		/// </summary>
 		public void Update()
 		{
 			CheckForOpenGizmos();
+
+			foreach (KeyValuePair<KeyBinding, KeyPressedCallback> k in bindings) {
+				if (k.Key.GetKey()) {
+					k.Value(model);
+				}
+			}
 		}
 
 		/// <summary>
