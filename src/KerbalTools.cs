@@ -105,9 +105,7 @@ namespace Astrogator {
 		/// <param name="target">Body or vessel to use</param>
 		public static ITargetable StartBody(ITargetable target = null)
 		{
-			return target?.GetVessel()?.mainBody
-				?? target
-				?? FlightGlobals.GetHomeBody();
+			return target ?? FlightGlobals.GetHomeBody();
 		}
 
 		/// <summary>

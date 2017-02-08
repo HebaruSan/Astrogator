@@ -60,7 +60,13 @@ namespace Astrogator {
 
 		private BurnModel GenerateEjectionBurn(Orbit currentOrbit)
 		{
-			if (currentOrbit == null || destination == null) {
+			if (currentOrbit == null) {
+				DbgFmt("Skipping transfer from null starting orbit.");
+				// Sanity check just in case something unexpected happens.
+				return null;
+
+			} else if (destination == null) {
+				DbgFmt("Skipping transfer to null destination.");
 				// Sanity check just in case something unexpected happens.
 				return null;
 
@@ -96,6 +102,7 @@ namespace Astrogator {
 
 				if (origin == immediateDestination as CelestialBody) {
 					// Trying to get to the start SOI or one of its sub-SOIs
+					DbgFmt("Skipping origin destination");
 					return null;
 				}
 
