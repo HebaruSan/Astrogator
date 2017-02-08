@@ -55,8 +55,9 @@ namespace Astrogator {
 		public bool badInclination {
 			get {
 				// Orbit.inclination is in degrees
-				return vessel != null
-					&& Math.Abs(vessel.orbit.inclination * Mathf.Deg2Rad) > maxInclination;
+				// A bad inclination is one that is closer to Tau/4 than the limit is
+				return vessel?.orbit != null
+					&& Math.Abs(0.25 * Tau - Math.Abs(vessel.orbit.inclination * Mathf.Deg2Rad)) < 0.25 * Tau - maxInclination;
 			}
 		}
 
@@ -66,7 +67,7 @@ namespace Astrogator {
 		public bool retrogradeOrbit {
 			get {
 				return vessel != null
-					&& Math.Abs(vessel.orbit.inclination * Mathf.Deg2Rad) > 0.5 * Math.PI;
+					&& Math.Abs(vessel.orbit.inclination * Mathf.Deg2Rad) > 0.25 * Tau;
 			}
 		}
 
@@ -148,6 +149,7 @@ namespace Astrogator {
 			int discoveryOrder = 0;
 
 			CelestialBody origin = StartBody(body, vessel);
+			CelestialBody targetBody = FlightGlobals.fetch.VesselTarget as CelestialBody;
 
 			for (CelestialBody b = origin, toSkip = null;
 					b != null;
@@ -156,31 +158,34 @@ namespace Astrogator {
 				// Skip the first body unless we can actually transfer to its children
 				// (i.e., we have a vessel)
 				if (vessel != null || toSkip != null) {
-					DbgFmt("Plotting transfers around {0}", b.theName);
+					DbgFmt("Checking transfers around {0}", b.theName);
 
 					int numBodies = b.orbitingBodies.Count;
 					for (int i = 0; i < numBodies; ++i) {
 						CelestialBody satellite = b.orbitingBodies[i];
 						if (satellite != toSkip) {
-							DbgFmt("Plotting transfer to {0}", satellite.theName);
+							DbgFmt("Allocating transfer to {0}", satellite.theName);
 							transfers.Add(new TransferModel(origin, satellite, vessel, ++discoveryOrder));
-							DbgFmt("Finalized transfer to {0}", satellite.theName);
 
-							if (satellite == FlightGlobals.fetch.VesselTarget as CelestialBody) {
-								foundTarget = true;
-							}
-							if (toSkip == FlightGlobals.fetch.VesselTarget as CelestialBody) {
+							if (satellite == targetBody) {
+								DbgFmt("Found target as satellite");
 								foundTarget = true;
 							}
 						}
 					}
 					DbgFmt("Exhausted transfers around {0}", b.theName);
 				}
+
+				if (toSkip == targetBody && targetBody != null) {
+					DbgFmt("Found target as toSkip");
+					foundTarget = true;
+				}
 			}
 
 			if (!foundTarget
 					&& FlightGlobals.ActiveVessel != null
 					&& FlightGlobals.fetch.VesselTarget != null) {
+				DbgFmt("Allocating transfer to {0}", FlightGlobals.fetch.VesselTarget.GetName());
 				transfers.Insert(0, new TransferModel(origin, FlightGlobals.fetch.VesselTarget, vessel, -1));
 			}
 

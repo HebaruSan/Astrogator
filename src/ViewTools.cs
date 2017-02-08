@@ -750,6 +750,45 @@ namespace Astrogator {
 				tooltipText = tooltip
 			};
 		}
+
+		/// <summary>
+		/// Symbols representing systems of physical units
+		/// </summary>
+		public enum DisplayUnitsEnum {
+
+			/// <summary>
+			/// Système International d'Unités
+			/// https://upload.wikimedia.org/wikipedia/commons/thumb/a/ab/Metric_system_adoption_map.svg/2000px-Metric_system_adoption_map.svg.png
+			/// </summary>
+			Metric,
+
+			/// <summary>
+			/// Time-tested traditional units.
+			/// https://i.imgur.com/h5UsGxK.png
+			/// </summary>
+			UnitedStatesCustomary
+		}
+
+		/// <summary>
+		/// Format a speed value for display
+		/// </summary>
+		/// <param name="speed">Speed value in m/s</param>
+		/// <param name="units">Type of units to use</param>
+		/// <returns>
+		/// Converted number string with no decimal places concatenated
+		/// with short unit string.
+		/// </returns>
+		public static string FormatSpeed(double speed, DisplayUnitsEnum units) {
+			const double METERS_PER_SECOND_PER_MILES_PER_HOUR = 0.44704;
+			switch (units) {
+				case DisplayUnitsEnum.UnitedStatesCustomary:
+					return string.Format("{0:0} mph", speed / METERS_PER_SECOND_PER_MILES_PER_HOUR);
+				default:
+				case DisplayUnitsEnum.Metric:
+					return string.Format("{0:0} m/s", speed);
+			}
+		}
+
 	}
 
 	/// <summary>

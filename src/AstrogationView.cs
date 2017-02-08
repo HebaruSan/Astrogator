@@ -181,7 +181,7 @@ namespace Astrogator {
 				Settings.Instance.DescendingSort
 			);
 			for (int i = 0; i < transfers.Count; ++i) {
-				AddChild(new TransferView(transfers[i]));
+				AddChild(new TransferView(transfers[i], resetCallback));
 			}
 		}
 
@@ -191,8 +191,7 @@ namespace Astrogator {
 					|| model.transfers.Count == 0
 					|| model.badInclination
 					|| model.hyperbolicOrbit
-					|| model.notOrbiting
-					|| model.retrogradeOrbit;
+					|| model.notOrbiting;
 			}
 		}
 
@@ -208,12 +207,6 @@ namespace Astrogator {
 						return string.Format(
 							"{0} is landed. Launch to orbit to see transfer info.",
 							TheName(model.vessel)
-						);
-					} else if (model.retrogradeOrbit) {
-						return string.Format(
-							"Orbit is retrograde, must be prograde with inclination below {1:0.}°",
-							Math.Abs(model.vessel.orbit.inclination),
-							AstrogationModel.maxInclination * Mathf.Rad2Deg
 						);
 					} else if (model.badInclination) {
 						return string.Format(

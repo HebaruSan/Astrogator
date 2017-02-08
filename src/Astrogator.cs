@@ -216,6 +216,9 @@ namespace Astrogator {
 				model.Reset(b, v);
 			}
 
+			// Do the easy calculations in the foreground so the view can sort properly right away
+			CalculateEjectionBurns();
+
 			DbgFmt("Delegating load to background");
 
 			BackgroundWorker bgworker = new BackgroundWorker();
@@ -232,32 +235,39 @@ namespace Astrogator {
 		{
 			lock (bgLoadMutex) {
 				DbgFmt("Beginning background model load");
+				CalculatePlaneChangeBurns();
+				DbgFmt("Finished background model load");
+			}
+		}
 
-				// Blast through the ejection burns so the popup has numbers ASAP
+		private void CalculateEjectionBurns()
+		{
+			// Blast through the ejection burns so the popup has numbers ASAP
+			for (int i = 0; i < model.transfers.Count; ++i) {
+				try {
+					model.transfers[i].CalculateEjectionBurn();
+				} catch (Exception ex) {
+					DbgExc("Problem with background load of ejection burn", ex);
+				}
+			}
+		}
+
+		private void CalculatePlaneChangeBurns()
+		{
+			if (flightReady
+					&& Settings.Instance.GeneratePlaneChangeBurns
+					&& Settings.Instance.AddPlaneChangeDeltaV) {
 				for (int i = 0; i < model.transfers.Count; ++i) {
 					try {
-						model.transfers[i].CalculateEjectionBurn();
+						Thread.Sleep(200);
+						model.transfers[i].CalculatePlaneChangeBurn();
 					} catch (Exception ex) {
-						DbgExc("Problem with background load of ejection burn", ex);
-					}
-				}
-				// Now get the plane change burns if we need them for the on-screen numbers.
-				if (flightReady
-						&& Settings.Instance.GeneratePlaneChangeBurns
-						&& Settings.Instance.AddPlaneChangeDeltaV) {
-					for (int i = 0; i < model.transfers.Count; ++i) {
-						try {
-							Thread.Sleep(200);
-							model.transfers[i].CalculatePlaneChangeBurn();
-						} catch (Exception ex) {
-							DbgExc("Problem with background load of plane change burn", ex);
+						DbgExc("Problem with background load of plane change burn", ex);
 
-							// If a route calculation crashes, it can leave behind a temporary node.
-							ClearManeuverNodes();
-						}
+						// If a route calculation crashes, it can leave behind a temporary node.
+						ClearManeuverNodes();
 					}
 				}
-				DbgFmt("Finished background model load");
 			}
 		}
 
@@ -369,6 +379,7 @@ namespace Astrogator {
 			// Refresh the model so it can reflect the latest target data
 			if (model != null) {
 				if (!model.HasDestination(FlightGlobals.fetch.VesselTarget)) {
+					DbgFmt("Reloading model and view on target change");
 					StartLoadingModel(model.body, model.vessel);
 					ResetView();
 				}

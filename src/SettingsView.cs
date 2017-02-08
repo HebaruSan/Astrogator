@@ -77,6 +77,24 @@ namespace Astrogator {
 					(bool b) => { Settings.Instance.AutoEditPlaneChangeNode = b; }
 				));
 
+				AddChild(LabelWithStyleAndSize(
+					"Units:",
+					midHdrStyle,
+					mainWindowMinWidth, rowHeight
+				));
+
+				AddChild(new DialogGUIToggle(
+					() => Settings.Instance.DisplayUnits == DisplayUnitsEnum.Metric,
+					"Metric",
+					(bool b) => { if (b) Settings.Instance.DisplayUnits = DisplayUnitsEnum.Metric; }
+				));
+
+				AddChild(new DialogGUIToggle(
+					() => Settings.Instance.DisplayUnits == DisplayUnitsEnum.UnitedStatesCustomary,
+					"United States Customary",
+					(bool b) => { if (b) Settings.Instance.DisplayUnits = DisplayUnitsEnum.UnitedStatesCustomary; }
+				));
+
 			} catch (Exception ex) {
 				DbgExc("Problem constructing settings view", ex);
 			}

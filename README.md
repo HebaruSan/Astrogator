@@ -58,6 +58,8 @@ Click the wrench to open and close the settings panel:
 | Automatically focus destination | When this is enabled, clicking the maneuver icon will change the map view focus. If the default maneuvers create an encounter with the desired body, then that body will be focused so you can fine tune your arrival; otherwise the destination's parent body will be focused so you can establish the encounter. |
 | Automatically edit ejection node | When this is enabled, clicking the maneuver icon will leave the first node open for editing. |
 | Automatically edit plane change node | If you enable this, then the second node will be opened for editing instead of the first. |
+| Units: Metric | Shows delta V in m/s (meters per second) |
+| Units: United States Customary | Shows delta V in mph (miles per hour) |
 
 ## Known limitations
 
@@ -72,7 +74,6 @@ Click the wrench to open and close the settings panel:
 
 - Useful numbers for launches/landed
 - Return-to-LKO burns from Mun and Minmus
-- Allow low-inclination retrograde orbits
 - Represent starting point with ITargetable
 - Split CalculateEjectionBurn into transfer versus ejection functions
 

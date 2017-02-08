@@ -73,12 +73,23 @@ namespace Astrogator {
 		/// </returns>
 		public static double AbsolutePhaseAngle(Orbit o, double t)
 		{
+			// Longitude of Ascending Node: Angle between an absolute direction and the ascending node.
+			// Argument of Periapsis: Angle between ascending node and periapsis.
+			// True Anomaly: Angle between periapsis and current location of the body.
+			// Sum: Angle describing absolute location of the body.
+			// Only the True Anomaly is in radians by default.
+
+			// https://upload.wikimedia.org/wikipedia/commons/e/eb/Orbit1.svg
+			// The ArgOfPer and TruAno move you the normal amount at Inc=0,
+			// zero at Inc=PI/2, and backwards at Inc=PI.
+			// That's a cosine as far as I can tell.
+			double cosInc = Math.Cos(o.inclination * Mathf.Deg2Rad);
 			return clamp(
 				Mathf.Deg2Rad * (
 					  o.LAN
-					+ o.argumentOfPeriapsis
+					+ o.argumentOfPeriapsis * cosInc
 				)
-				+ o.TrueAnomalyAtUT(t)
+				+ o.TrueAnomalyAtUT(t) * cosInc
 			);
 		}
 
@@ -136,7 +147,7 @@ namespace Astrogator {
 
 			// Angle between parent's prograde and the vessel's prograde at burn
 			// Should be between PI/2 and PI
-			return 1.5*Math.PI - theta;
+			return 0.75 * Tau - theta;
 		}
 
 		/// <returns>
@@ -202,16 +213,31 @@ namespace Astrogator {
 		/// </returns>
 		public static double TimeAtAngleFromMidnight(Orbit parentOrbit, Orbit satOrbit, double minTime, double angle)
 		{
-			double satTrueAnomaly = clamp(
-				Mathf.Deg2Rad * (
-					  parentOrbit.LAN
-					+ parentOrbit.argumentOfPeriapsis
-					- satOrbit.LAN
-					- satOrbit.argumentOfPeriapsis
-				)
-				+ parentOrbit.TrueAnomalyAtUT(minTime)
-				+ angle
-			);
+			double satTrueAnomaly;
+			if (satOrbit.GetRelativeInclination(parentOrbit) < 90f) {
+				satTrueAnomaly = clamp(
+					Mathf.Deg2Rad * (
+						  parentOrbit.LAN
+						+ parentOrbit.argumentOfPeriapsis
+						- satOrbit.LAN
+						- satOrbit.argumentOfPeriapsis
+					)
+					+ parentOrbit.TrueAnomalyAtUT(minTime)
+					+ angle
+				);
+			} else {
+				satTrueAnomaly = clamp(
+					Mathf.Deg2Rad * (
+						- parentOrbit.LAN
+						- parentOrbit.argumentOfPeriapsis
+						+ satOrbit.LAN
+						- satOrbit.argumentOfPeriapsis
+					)
+					- parentOrbit.TrueAnomalyAtUT(minTime)
+					+ angle
+					+ Math.PI
+				);
+			}
 			double nextTime = satOrbit.GetUTforTrueAnomaly(satTrueAnomaly, Planetarium.GetUniversalTime());
 			int numOrbits = (int)Math.Ceiling((minTime - nextTime) / satOrbit.period);
 			return nextTime + numOrbits * satOrbit.period;
@@ -347,8 +373,16 @@ namespace Astrogator {
 		/// </returns>
 		public static double PlaneChangeDeltaV(Orbit currentOrbit, Orbit targetOrbit, double nodeTime, bool ascendingNode)
 		{
-			return (ascendingNode ? -1.0 : 1.0)
-			 	* DeltaVToMatchPlanes(currentOrbit, targetOrbit, nodeTime).magnitude;
+			// DeltaVToMatchPlanes is precise, but it tries to flip orbits if they're going
+			// in opposite directions.
+			// In fact, we don't care if one is prograde and the other retrograde.
+			if (currentOrbit.GetRelativeInclination(targetOrbit) < 90f) {
+				return (ascendingNode ? -1.0 : 1.0)
+					* DeltaVToMatchPlanes(currentOrbit, targetOrbit, nodeTime).magnitude;
+			} else {
+				return (ascendingNode ? 1.0 : -1.0)
+					* DeltaVToMatchPlanes(currentOrbit, targetOrbit, nodeTime).magnitude;
+			}
 		}
 
 		/// <summary>
@@ -363,10 +397,18 @@ namespace Astrogator {
 		/// </returns>
 		public static Vector3d DeltaVToMatchPlanes(Orbit o, Orbit target, double burnUT)
 		{
-			Vector3d desiredHorizontal = Vector3d.Cross(target.SwappedOrbitNormal(), o.Up(burnUT));
-			Vector3d actualHorizontalVelocity = Vector3d.Exclude(o.Up(burnUT), o.SwappedOrbitalVelocityAtUT(burnUT));
-			Vector3d desiredHorizontalVelocity = actualHorizontalVelocity.magnitude * desiredHorizontal;
-			return desiredHorizontalVelocity - actualHorizontalVelocity;
+			if (o.GetRelativeInclination(target) < 90f) {
+				Vector3d desiredHorizontal = Vector3d.Cross(target.SwappedOrbitNormal(), o.Up(burnUT));
+				Vector3d actualHorizontalVelocity = Vector3d.Exclude(o.Up(burnUT), o.SwappedOrbitalVelocityAtUT(burnUT));
+				Vector3d desiredHorizontalVelocity = actualHorizontalVelocity.magnitude * desiredHorizontal;
+				return desiredHorizontalVelocity - actualHorizontalVelocity;
+			} else {
+				// Try to match a retrograde orbit with a prograde one
+				Vector3d desiredHorizontal = Vector3d.Cross(o.Up(burnUT), target.SwappedOrbitNormal());
+				Vector3d actualHorizontalVelocity = Vector3d.Exclude(o.Up(burnUT), o.SwappedOrbitalVelocityAtUT(burnUT));
+				Vector3d desiredHorizontalVelocity = actualHorizontalVelocity.magnitude * desiredHorizontal;
+				return desiredHorizontalVelocity - actualHorizontalVelocity;
+			}
 		}
 
 	}

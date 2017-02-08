@@ -16,10 +16,12 @@ namespace Astrogator {
 		/// Construct a view for the given model.
 		/// </summary>
 		/// <param name="m">Model for which to construct a view</param>
-		public TransferView(TransferModel m)
+		/// <param name="reset">Callback to call when a UI layout change may be needed</param>
+		public TransferView(TransferModel m, AstrogationView.ResetCallback reset)
 			: base()
 		{
 			model = m;
+			resetCallback = reset;
 
 			CreateLayout();
 		}
@@ -27,6 +29,7 @@ namespace Astrogator {
 		private TransferModel model { get; set; }
 		private double lastUniversalTime { get; set; }
 		private DateTimeParts timeToWait { get; set; }
+		private AstrogationView.ResetCallback resetCallback { get; set; }
 
 		private void CreateLayout()
 		{
@@ -105,7 +108,12 @@ namespace Astrogator {
 			bool modelNeedsUIUpdate = model.Refresh();
 			double now = Math.Floor(Planetarium.GetUniversalTime());
 
-			if ((modelNeedsUIUpdate || lastUniversalTime != now) && model.ejectionBurn != null) {
+			if (modelNeedsUIUpdate) {
+				// We have a new ejection burn, so we might need a totally new view
+				// because the sort could be wrong now.
+				resetCallback();
+				return true;
+			} else if (lastUniversalTime != now && model.ejectionBurn != null) {
 				timeToWait = new DateTimeParts(model.ejectionBurn.atTime - Planetarium.GetUniversalTime());
 				lastUniversalTime = now;
 				return true;
@@ -190,13 +198,13 @@ namespace Astrogator {
 			if (model.ejectionBurn == null) {
 				return LoadingText;
 			} else if (model.planeChangeBurn == null || !Settings.Instance.AddPlaneChangeDeltaV) {
-				return TimePieceString("{0} m/s",
-					Math.Abs(Math.Floor(model.ejectionBurn.totalDeltaV)),
-					false, "N/A");
+				return FormatSpeed(
+					model.ejectionBurn.totalDeltaV,
+					Settings.Instance.DisplayUnits);
 			} else {
-				return TimePieceString("{0} m/s",
-					Math.Abs(Math.Floor(model.ejectionBurn.totalDeltaV + model.planeChangeBurn.totalDeltaV)),
-					false, "Done");
+				return FormatSpeed(
+					model.ejectionBurn.totalDeltaV + model.planeChangeBurn.totalDeltaV,
+					Settings.Instance.DisplayUnits);
 			}
 		}
 

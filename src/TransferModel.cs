@@ -105,38 +105,55 @@ namespace Astrogator {
 					// Note which body is boss in the zone where we transfer
 					transferParent = immediateDestination.GetOrbit().referenceBody;
 
-					double optimalPhaseAngle = clamp(Math.PI * (
-						1 - Math.Pow(
-							(currentOrbit.semiMajorAxis + immediateDestination.GetOrbit().semiMajorAxis)
-								/ (2 * immediateDestination.GetOrbit().semiMajorAxis),
-							1.5)
-					));
+					double now = Planetarium.GetUniversalTime();
 
 					// How many radians the phase angle increases or decreases by each second
-					double phaseAnglePerSecond =
-						  (Tau / immediateDestination.GetOrbit().period)
-						- (Tau / currentOrbit.period);
+					double phaseAnglePerSecond, angleToMakeUp;
+					if (currentOrbit.GetRelativeInclination(immediateDestination.GetOrbit()) < 90f) {
 
-					double currentPhaseAngle = clamp(
-						Mathf.Deg2Rad * (
-							  immediateDestination.GetOrbit().LAN
-							+ immediateDestination.GetOrbit().argumentOfPeriapsis
-							- currentOrbit.LAN
-							- currentOrbit.argumentOfPeriapsis
-						)
-						+ immediateDestination.GetOrbit().trueAnomaly
-						- currentOrbit.trueAnomaly
-					);
+						// Normal prograde orbits
+						double optimalPhaseAngle = clamp(Math.PI * (
+							1 - Math.Pow(
+								(currentOrbit.semiMajorAxis + immediateDestination.GetOrbit().semiMajorAxis)
+									/ (2 * immediateDestination.GetOrbit().semiMajorAxis),
+								1.5)
+						));
+						double currentPhaseAngle = clamp(
+							  AbsolutePhaseAngle(immediateDestination.GetOrbit(), now)
+							- AbsolutePhaseAngle(currentOrbit, now));
+						angleToMakeUp = currentPhaseAngle - optimalPhaseAngle;
+						phaseAnglePerSecond =
+							  (Tau / immediateDestination.GetOrbit().period)
+							- (Tau / currentOrbit.period);
+						// This whole section borrowed from Kerbal Alarm Clock; thanks, TriggerAu!
+						if (angleToMakeUp > 0 && phaseAnglePerSecond > 0)
+							angleToMakeUp -= Tau;
+						if (angleToMakeUp < 0 && phaseAnglePerSecond < 0)
+							angleToMakeUp += Tau;
 
-					// This whole section borrowed from Kerbal Alarm Clock; thanks, TriggerAu!
-					double angleToMakeUp = currentPhaseAngle - optimalPhaseAngle;
-					if (angleToMakeUp > 0 && phaseAnglePerSecond > 0)
-						angleToMakeUp -= Tau;
-					if (angleToMakeUp < 0 && phaseAnglePerSecond < 0)
-						angleToMakeUp += Tau;
+					} else {
+
+						// Special logic needed for retrograde orbits
+						// The phase angle is the opposite part of the unit circle
+						double optimalPhaseAngle = Tau - clamp(Math.PI * (
+							1 - Math.Pow(
+								(currentOrbit.semiMajorAxis + immediateDestination.GetOrbit().semiMajorAxis)
+									/ (2 * immediateDestination.GetOrbit().semiMajorAxis),
+								1.5)
+						));
+						// The phase angle always decreases by the sum of the angular velocities
+						double currentPhaseAngle = Tau - clamp(
+							  AbsolutePhaseAngle(immediateDestination.GetOrbit(), now)
+							- AbsolutePhaseAngle(currentOrbit, now));
+						angleToMakeUp = clamp(currentPhaseAngle - optimalPhaseAngle);
+						phaseAnglePerSecond =
+							  (Tau / immediateDestination.GetOrbit().period)
+							+ (Tau / currentOrbit.period);
+
+					}
 
 					double timeTillBurn = Math.Abs(angleToMakeUp / phaseAnglePerSecond);
-					double ejectionBurnTime = Planetarium.GetUniversalTime() + timeTillBurn;
+					double ejectionBurnTime = now + timeTillBurn;
 					double arrivalTime = ejectionBurnTime + 0.5 * OrbitalPeriod(
 						immediateDestination.GetOrbit().referenceBody,
 						immediateDestination.GetOrbit().semiMajorAxis,
@@ -359,7 +376,18 @@ namespace Astrogator {
 			if (ejectionBurn != null) {
 				if (ejectionBurn.atTime < Planetarium.GetUniversalTime()) {
 					CalculateEjectionBurn();
-					CalculatePlaneChangeBurn();
+
+					// Apply the same filters we do everywhere else to suppress phantom nodes
+					if (Settings.Instance.GeneratePlaneChangeBurns
+							&& Settings.Instance.AddPlaneChangeDeltaV) {
+
+						try {
+							CalculatePlaneChangeBurn();
+						} catch (Exception ex) {
+							DbgExc("Problem with plane change at expiration", ex);
+							ClearManeuverNodes();
+						}
+					}
 					return true;
 				} else {
 					return false;

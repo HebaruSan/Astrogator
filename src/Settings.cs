@@ -49,6 +49,7 @@ namespace Astrogator {
 			ShowSettingsKey             = "ShowSettings",
 			TransferSortKey             = "TransferSort",
 			DescendingSortKey           = "DescendingSort",
+			DisplayUnitsKey             = "DisplayUnits",
 
 			GeneratePlaneChangeBurnsKey = "GeneratePlaneChangeBurns",
 			AddPlaneChangeDeltaVKey     = "AddPlaneChangeDeltaV",
@@ -312,6 +313,27 @@ namespace Astrogator {
 					config.SetValue(DescendingSortKey, value);
 				} else {
 					config.AddValue(DescendingSortKey, value);
+				}
+			}
+		}
+
+		/// <summary>
+		/// Unit system for display of physical quantities.
+		/// </summary>
+		public DisplayUnitsEnum DisplayUnits {
+			get {
+				DisplayUnitsEnum du = DisplayUnitsEnum.Metric;
+				string savedValue = "";
+				if (config.TryGetValue(DisplayUnitsKey, ref savedValue)) {
+					du = ParseEnum<DisplayUnitsEnum>(savedValue, DisplayUnitsEnum.Metric);
+				}
+				return du;
+			}
+			set {
+				if (config.HasValue(DisplayUnitsKey)) {
+					config.SetValue(DisplayUnitsKey, value.ToString());
+				} else {
+					config.AddValue(DisplayUnitsKey, value.ToString());
 				}
 			}
 		}
