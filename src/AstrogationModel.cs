@@ -77,9 +77,7 @@ namespace Astrogator {
 		/// True if the craft is on a hyperbolic trajectory.
 		/// </summary>
 		public bool hyperbolicOrbit {
-			get {
-				return origin?.GetOrbit().eccentricity > 1.0;
-			}
+			get { return origin?.GetOrbit()?.eccentricity > 1.0; }
 		}
 
 		/// <summary>
@@ -129,11 +127,11 @@ namespace Astrogator {
 
 		private void CreateTransfers(ITargetable start)
 		{
-			DbgFmt("Fabricating transfers");
+			DbgFmt("Fabricating transfers around {0}", TheName(start));
 
 			bool foundTarget = false;
 
-			CelestialBody first = start.GetOrbit().referenceBody,
+			CelestialBody first = start.GetOrbit()?.referenceBody,
 				targetBody = FlightGlobals.fetch.VesselTarget as CelestialBody;
 
 			for (CelestialBody b = first, toSkip = start as CelestialBody;

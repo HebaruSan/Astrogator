@@ -209,7 +209,7 @@ namespace Astrogator {
 					} else if (model.badInclination) {
 						return string.Format(
 							"Inclination is {0:0.0}°, accuracy too low past {1:0.}°",
-							AngleFromEquatorial(model.origin.GetOrbit().inclination * Mathf.Rad2Deg),
+							AngleFromEquatorial(model.origin.GetOrbit().inclination * Mathf.Deg2Rad) * Mathf.Rad2Deg,
 							AstrogationModel.maxInclination * Mathf.Rad2Deg
 						);
 					} else if (model.transfers.Count == 0) {

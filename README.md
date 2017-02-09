@@ -86,7 +86,6 @@ Click the wrench to open and close the settings panel:
   - Split CalculateEjectionBurn into transfer versus ejection functions
   - Retrograde orbit special cases
   - Split ViewTools: Truly generic stuff versus this project's stuff
-  - KerbalTools: redundant versions of StartBody & ParentBody
   - Split MathTools off from PhysicsTools
   - Factor out a SimpleMod base class
     - App launcher button
