@@ -334,21 +334,19 @@ namespace Astrogator {
 			}
 		}
 
-		private static void AdjustManeuver(BurnModel burn, Vector3d direction)
+		private static void AdjustManeuver(BurnModel burn, Vector3d direction, double fraction = 1.0)
 		{
 			const double DELTA_V_INCREMENT_LARGE = 0.5,
 				DELTA_V_INCREMENT_SMALL = 0.01;
 
-			if (burn != null
-					&& FlightGlobals.ActiveVessel != null
-					&& !FlightGlobals.ActiveVessel.ActionGroups[KSPActionGroup.RCS]) {
+			if (burn != null && FlightGlobals.ActiveVessel != null) {
 
 				ManeuverNode n = burn?.node;
 				if (n != null) {
 					if (GameSettings.MODIFIER_KEY.GetKey()) {
-						n.DeltaV += DELTA_V_INCREMENT_SMALL * direction;
+						n.DeltaV += DELTA_V_INCREMENT_SMALL * fraction * direction;
 					} else {
-						n.DeltaV += DELTA_V_INCREMENT_LARGE * direction;
+						n.DeltaV += DELTA_V_INCREMENT_LARGE * fraction * direction;
 					}
 					n.solver.UpdateFlightPlan();
 				}
@@ -358,30 +356,73 @@ namespace Astrogator {
 		private delegate void KeyPressedCallback(AstrogationModel m);
 
 		// Adjust our nodes using the RCS translation controls if RCS is turned off
-		private Dictionary<KeyBinding, KeyPressedCallback> bindings = new Dictionary<KeyBinding, KeyPressedCallback>() {
+		private Dictionary<KeyBinding, KeyPressedCallback> keys = new Dictionary<KeyBinding, KeyPressedCallback>() {
 			{
 				GameSettings.TRANSLATE_FWD, (AstrogationModel m) => {
-					AdjustManeuver(m?.ActiveEjectionBurn, 0.1 * Vector3d.forward);
+					AdjustManeuver(m.ActiveEjectionBurn, 0.1 * Vector3d.forward);
 				}
 			}, {
 				GameSettings.TRANSLATE_BACK, (AstrogationModel m) => {
-					AdjustManeuver(m?.ActiveEjectionBurn, 0.1 * Vector3d.back);
+					AdjustManeuver(m.ActiveEjectionBurn, 0.1 * Vector3d.back);
 				}
 			}, {
 				GameSettings.TRANSLATE_UP, (AstrogationModel m) => {
-					AdjustManeuver(m?.ActivePlaneChangeBurn, Vector3d.up);
+					if (m.retrogradeOrbit) {
+						AdjustManeuver(m.ActivePlaneChangeBurn, Vector3d.up);
+					} else {
+						AdjustManeuver(m.ActivePlaneChangeBurn, Vector3d.down);
+					}
 				}
 			}, {
 				GameSettings.TRANSLATE_DOWN, (AstrogationModel m) => {
-					AdjustManeuver(m?.ActivePlaneChangeBurn, Vector3d.down);
+					if (m.retrogradeOrbit) {
+						AdjustManeuver(m.ActivePlaneChangeBurn, Vector3d.down);
+					} else {
+						AdjustManeuver(m.ActivePlaneChangeBurn, Vector3d.up);
+					}
 				}
 			}, {
 				GameSettings.TRANSLATE_LEFT, (AstrogationModel m) => {
-					AdjustManeuver(m?.ActivePlaneChangeBurn, Vector3d.left);
+					if (m.retrogradeOrbit) {
+						AdjustManeuver(m.ActivePlaneChangeBurn, Vector3d.right);
+					} else {
+						AdjustManeuver(m.ActivePlaneChangeBurn, Vector3d.left);
+					}
 				}
 			}, {
 				GameSettings.TRANSLATE_RIGHT, (AstrogationModel m) => {
-					AdjustManeuver(m?.ActivePlaneChangeBurn, Vector3d.right);
+					if (m.retrogradeOrbit) {
+						AdjustManeuver(m.ActivePlaneChangeBurn, Vector3d.left);
+					} else {
+						AdjustManeuver(m.ActivePlaneChangeBurn, Vector3d.right);
+					}
+				}
+			}
+		};
+
+		private delegate void AxisCallback(AstrogationModel m, double axisValue);
+
+		// Also adjust nodes with the joystick/controller translation axes
+		private Dictionary<AxisBinding, AxisCallback> axes = new Dictionary<AxisBinding, AxisCallback>() {
+			{
+				GameSettings.AXIS_TRANSLATE_X, (AstrogationModel m, double axisValue) => {
+					if (m.retrogradeOrbit) {
+						AdjustManeuver(m.ActivePlaneChangeBurn, Vector3d.left, axisValue);
+					} else {
+						AdjustManeuver(m.ActivePlaneChangeBurn, Vector3d.right, axisValue);
+					}
+				}
+			}, {
+				GameSettings.AXIS_TRANSLATE_Y, (AstrogationModel m, double axisValue) => {
+					if (m.retrogradeOrbit) {
+						AdjustManeuver(m.ActivePlaneChangeBurn, Vector3d.up, axisValue);
+					} else {
+						AdjustManeuver(m.ActivePlaneChangeBurn, Vector3d.down, axisValue);
+					}
+				}
+			}, {
+				GameSettings.AXIS_TRANSLATE_Z, (AstrogationModel m, double axisValue) => {
+					AdjustManeuver(m.ActivePlaneChangeBurn, Vector3d.back, axisValue);
 				}
 			}
 		};
@@ -391,11 +432,22 @@ namespace Astrogator {
 		/// </summary>
 		public void Update()
 		{
-			CheckForOpenGizmos();
+			CheckIfNodesDisappeared();
 
-			foreach (KeyValuePair<KeyBinding, KeyPressedCallback> k in bindings) {
-				if (k.Key.GetKey()) {
-					k.Value(model);
+			if (Settings.Instance.TranslationAdjust
+					&& model != null
+					&& !FlightGlobals.ActiveVessel.ActionGroups[KSPActionGroup.RCS]) {
+
+				foreach (KeyValuePair<KeyBinding, KeyPressedCallback> k in keys) {
+					if (k.Key.GetKey()) {
+						k.Value(model);
+					}
+				}
+				foreach (KeyValuePair<AxisBinding, AxisCallback> a in axes) {
+					double val = a.Key.GetAxis();
+					if (val != 0) {
+						a.Value(model, val);
+					}
 				}
 			}
 		}
@@ -518,9 +570,9 @@ namespace Astrogator {
 			}
 		}
 
-		private void CheckForOpenGizmos()
+		private void CheckIfNodesDisappeared()
 		{
-			model?.CheckForOpenGizmos();
+			model?.CheckIfNodesDisappeared();
 		}
 	}
 

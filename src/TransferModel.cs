@@ -307,27 +307,27 @@ namespace Astrogator {
 						// Find the orbit patch that intersects the target orbit
 						for (Orbit o = eNode.nextPatch; o != null; o = NextPatch(o)) {
 							// Skip the patches that are in the wrong SoI
-							if (o.referenceBody == destination.GetOrbit().referenceBody) {
+							if (o.referenceBody == transferParent.GetOrbit().referenceBody) {
 
-								DbgFmt("Identified matching reference body for {0}", destination.GetName());
+								DbgFmt("Identified matching reference body for {0}", transferParent.GetName());
 
 								// Find the AN or DN
 								bool ascendingNode;
-								double planeTime = TimeOfPlaneChange(o, destination.GetOrbit(), ejectionBurn.atTime, out ascendingNode);
+								double planeTime = TimeOfPlaneChange(o, transferParent.GetOrbit(), ejectionBurn.atTime, out ascendingNode);
 
-								DbgFmt("Pinpointed plane change for {0}", destination.GetName());
+								DbgFmt("Pinpointed plane change for {0}", transferParent.GetName());
 
 								if (planeTime > 0 && planeTime > ejectionBurn.atTime) {
-									double magnitude = PlaneChangeDeltaV(o, destination.GetOrbit(), planeTime, ascendingNode);
+									double magnitude = PlaneChangeDeltaV(o, transferParent.GetOrbit(), planeTime, ascendingNode);
 									// Don't bother to create tiny maneuver nodes
 									if (Math.Abs(magnitude) > 0.05) {
 										// Add a maneuver node to change planes
 										planeChangeBurn = new BurnModel(planeTime, 0,
 											magnitude);
-										DbgFmt("Transmitted correction burn for {0}: {1}", destination.GetName(), magnitude);
+										DbgFmt("Transmitted correction burn for {0}: {1}", transferParent.GetName(), magnitude);
 									} else {
 										planeChangeBurn = null;
-										DbgFmt("No plane change needed for {0}", destination.GetName());
+										DbgFmt("No plane change needed for {0}", transferParent.GetName());
 									}
 
 									// Stop looping through orbit patches since we found what we want
@@ -408,10 +408,10 @@ namespace Astrogator {
 		/// Check whether the user opened any manuever node editing gizmos since the last tick.
 		/// There doesn't seem to be event-based notification for this, so we just have to poll.
 		/// </summary>
-		public void CheckForOpenGizmos()
+		public void CheckIfNodesDisappeared()
 		{
-			ejectionBurn?.CheckForOpenGizmo();
-			planeChangeBurn?.CheckForOpenGizmo();
+			ejectionBurn?.CheckIfNodeDisappeared();
+			planeChangeBurn?.CheckIfNodeDisappeared();
 		}
 	}
 

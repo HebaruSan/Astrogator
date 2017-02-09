@@ -196,11 +196,11 @@ namespace Astrogator {
 		/// Check whether the user opened any manuever node editing gizmos since the last tick.
 		/// There doesn't seem to be event-based notification for this, so we just have to poll.
 		/// </summary>
-		public void CheckForOpenGizmos()
+		public void CheckIfNodesDisappeared()
 		{
 			if (transfers != null) {
 				for (int i = 0; i < transfers.Count; ++i) {
-					transfers[i].CheckForOpenGizmos();
+					transfers[i].CheckIfNodesDisappeared();
 				}
 			}
 		}

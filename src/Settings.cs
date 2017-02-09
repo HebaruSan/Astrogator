@@ -58,7 +58,8 @@ namespace Astrogator {
 			AutoTargetDestinationKey    = "AutoTargetDestination",
 			AutoFocusDestinationKey     = "AutoFocusDestination",
 			AutoEditEjectionNodeKey     = "AutoEditEjectionNode",
-			AutoEditPlaneChangeNodeKey  = "AutoEditPlaneChangeNode";
+			AutoEditPlaneChangeNodeKey  = "AutoEditPlaneChangeNode",
+			TranslationAdjustKey        = "TranslationAdjust";
 
 		/// <summary>
 		/// Save current settings to disk.
@@ -334,6 +335,26 @@ namespace Astrogator {
 					config.SetValue(DisplayUnitsKey, value.ToString());
 				} else {
 					config.AddValue(DisplayUnitsKey, value.ToString());
+				}
+			}
+		}
+
+		/// <summary>
+		/// True to use the RCS translation controls to adjust generated maneuver nodes.
+		/// Includes both the HNJIKL keys and the joystick/controller translation axes.
+		/// Only applies when RCS is turned off!
+		/// </summary>
+		public bool TranslationAdjust {
+			get {
+				bool ta = true;
+				config.TryGetValue(TranslationAdjustKey, ref ta);
+				return ta;
+			}
+			set {
+				if (config.HasValue(TranslationAdjustKey)) {
+					config.SetValue(TranslationAdjustKey, value);
+				} else {
+					config.AddValue(TranslationAdjustKey, value);
 				}
 			}
 		}

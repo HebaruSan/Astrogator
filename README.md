@@ -75,8 +75,15 @@ Click the wrench to open and close the settings panel:
 - Useful numbers for launches/landed
 - Return-to-LKO burns from Mun and Minmus
 - Capture burns for inbound hyperbolic orbits
-- Represent starting point with ITargetable
-- Split CalculateEjectionBurn into transfer versus ejection functions
+- Allow a window of times for transfers
+  - Could calculate 2-3 additional ejection backwards and forwards in time
+  - Return "bad" transfer burns in the recent past, until we confirm that it's truly too late
+- Clean up hacks
+  - Split CalculateEjectionBurn into transfer versus ejection functions
+  - Represent starting point with ITargetable
+  - Retrograde orbit special cases
+  - Split ViewTools: Truly generic stuff versus this project's stuff
+  - KerbalTools: redundant versions of StartBody & ParentBody
 
 ## Building
 
@@ -94,6 +101,7 @@ make
 ### Plug-in authoring
 - http://forum.kerbalspaceprogram.com/index.php?/topic/153765-getting-started-the-basics-of-writing-a-plug-in/
 - http://forum.kerbalspaceprogram.com/index.php?/topic/151354-unity-ui-creation-tutorial/
+- http://forum.kerbalspaceprogram.com/index.php?/topic/149324-popupdialog-and-the-dialoggui-classes/
 - http://forum.kerbalspaceprogram.com/index.php?/topic/78231-application-launcher-and-mods/
 - http://forum.kerbalspaceprogram.com/index.php?/topic/154006-solved-texture-issues/&do=findComment&comment=2904233
 - https://kerbalspaceprogram.com/api/index.html

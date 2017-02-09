@@ -77,6 +77,12 @@ namespace Astrogator {
 					(bool b) => { Settings.Instance.AutoEditPlaneChangeNode = b; }
 				));
 
+				AddChild(new DialogGUIToggle(
+					() => Settings.Instance.TranslationAdjust,
+					"Adjust nodes with translation controls when RCS is off",
+					(bool b) => { Settings.Instance.TranslationAdjust = b; }
+				));
+
 				AddChild(LabelWithStyleAndSize(
 					"Units:",
 					midHdrStyle,

@@ -30,8 +30,6 @@ namespace Astrogator {
 		/// </value>
 		public ManeuverNode node { get; private set; }
 
-		private ManeuverGizmo gizmo { get; set; }
-
 		/// <summary>
 		/// The UT of the burn.
 		/// </summary>
@@ -77,8 +75,6 @@ namespace Astrogator {
 				FlightGlobals.ActiveVessel.patchedConicSolver.UpdateFlightPlan();
 				DbgFmt("Flight plan revised");
 
-				CheckForOpenGizmo();
-
 				return node;
 			} else {
 				return null;
@@ -89,15 +85,11 @@ namespace Astrogator {
 		/// Check whether the user opened this manuever node's editing gizmo since the last tick.
 		/// There doesn't seem to be event-based notification for this, so we just have to poll.
 		/// </summary>
-		public void CheckForOpenGizmo()
+		public void CheckIfNodeDisappeared()
 		{
 			if (node != null) {
 				if (!FlightGlobals.ActiveVessel?.patchedConicSolver?.maneuverNodes.Contains(node) ?? true) {
 					NodeDeleted();
-				} else if (node.attachedGizmo != null && gizmo == null) {
-					gizmo = node.attachedGizmo;
-					DbgFmt("Attached gizmo exists");
-					gizmo.OnDelete += NodeDeleted;
 				}
 			}
 		}
@@ -110,12 +102,6 @@ namespace Astrogator {
 			DbgFmt("Our node was deleted, release it");
 
 			if (node != null) {
-				if (gizmo != null) {
-					DbgFmt("Attached gizmo exists, removing event handler");
-					gizmo.OnDelete -= NodeDeleted;
-					gizmo = null;
-				}
-
 				node = null;
 			}
 		}
@@ -142,8 +128,6 @@ namespace Astrogator {
 			if (node != null && FlightGlobals.ActiveVessel != null) {
 				node.AttachGizmo(MapView.ManeuverNodePrefab,
 					FlightGlobals.ActiveVessel.patchedConicRenderer);
-
-				CheckForOpenGizmo();
 			}
 		}
 	}

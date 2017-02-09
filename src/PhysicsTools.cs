@@ -82,8 +82,9 @@ namespace Astrogator {
 			// https://upload.wikimedia.org/wikipedia/commons/e/eb/Orbit1.svg
 			// The ArgOfPer and TruAno move you the normal amount at Inc=0,
 			// zero at Inc=PI/2, and backwards at Inc=PI.
-			// That's a cosine as far as I can tell.
-			double cosInc = Math.Cos(o.inclination * Mathf.Deg2Rad);
+			// That's similar to a cosine, except that it doesn't really make
+			// sense to bias the angle towards the LAN when ArgPe+TruAno=PI/2.
+			double cosInc = o.inclination < 90f ? 1 : -1;
 			return clamp(
 				Mathf.Deg2Rad * (
 					  o.LAN
