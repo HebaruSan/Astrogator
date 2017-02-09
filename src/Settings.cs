@@ -79,54 +79,24 @@ namespace Astrogator {
 		/// Screen position of the main window.
 		/// </value>
 		public Vector2 MainWindowPosition {
-			get {
-				Vector2 pos = new Vector2(0.75f, 0.75f);
-				config.TryGetValue(MainWindowPositionKey, ref pos);
-				return pos;
-			}
-			set {
-				if (config.HasValue(MainWindowPositionKey)) {
-					config.SetValue(MainWindowPositionKey, value);
-				} else {
-					config.AddValue(MainWindowPositionKey, value);
-				}
-			}
+			get { return GetValue(MainWindowPositionKey, new Vector2(0.75f, 0.75f));}
+			set { SetValue(MainWindowPositionKey, value); }
 		}
 
 		/// <value>
 		/// Whether main window is visible or not.
 		/// </value>
 		public bool MainWindowVisible {
-			get {
-				bool visible = false;
-				config.TryGetValue(MainWindowVisibleKey, ref visible);
-				return visible;
-			}
-			set {
-				if (config.HasValue(MainWindowVisibleKey)) {
-					config.SetValue(MainWindowVisibleKey, value);
-				} else {
-					config.AddValue(MainWindowVisibleKey, value);
-				}
-			}
+			get { return GetValue(MainWindowVisibleKey, false); }
+			set { SetValue(MainWindowVisibleKey, value); }
 		}
 
 		/// <value>
 		/// Whether settings are visible or not.
 		/// </value>
 		public bool ShowSettings {
-			get {
-				bool show = false;
-				config.TryGetValue(ShowSettingsKey, ref show);
-				return show;
-			}
-			set {
-				if (config.HasValue(ShowSettingsKey)) {
-					config.SetValue(ShowSettingsKey, value);
-				} else {
-					config.AddValue(ShowSettingsKey, value);
-				}
-			}
+			get { return GetValue(ShowSettingsKey, false); }
+			set { SetValue(ShowSettingsKey, value); }
 		}
 
 		/// <value>
@@ -134,18 +104,8 @@ namespace Astrogator {
 		/// False by default because this could be very disruptive.
 		/// </value>
 		public bool DeleteExistingManeuvers {
-			get {
-				bool delete = false;
-				config.TryGetValue(DeleteExistingManeuversKey, ref delete);
-				return delete;
-			}
-			set {
-				if (config.HasValue(DeleteExistingManeuversKey)) {
-					config.SetValue(DeleteExistingManeuversKey, value);
-				} else {
-					config.AddValue(DeleteExistingManeuversKey, value);
-				}
-			}
+			get { return GetValue(DeleteExistingManeuversKey, false); }
+			set { SetValue(DeleteExistingManeuversKey, value); }
 		}
 
 		/// <value>
@@ -153,17 +113,9 @@ namespace Astrogator {
 		/// On by default because otherwise the ejection maneuver may not be enough.
 		/// </value>
 		public bool GeneratePlaneChangeBurns {
-			get {
-				bool generate = true;
-				config.TryGetValue(GeneratePlaneChangeBurnsKey, ref generate);
-				return generate;
-			}
+			get { return GetValue(GeneratePlaneChangeBurnsKey, true); }
 			set {
-				if (config.HasValue(GeneratePlaneChangeBurnsKey)) {
-					config.SetValue(GeneratePlaneChangeBurnsKey, value);
-				} else {
-					config.AddValue(GeneratePlaneChangeBurnsKey, value);
-				}
+				SetValue(GeneratePlaneChangeBurnsKey, value);
 				if (!value) {
 					DeleteExistingManeuvers = false;
 					AutoEditPlaneChangeNode = false;
@@ -177,17 +129,9 @@ namespace Astrogator {
 		/// Default to false because otherwise people might burn the total amount to eject.
 		/// </value>
 		public bool AddPlaneChangeDeltaV {
-			get {
-				bool include = false;
-				config.TryGetValue(AddPlaneChangeDeltaVKey, ref include);
-				return include;
-			}
+			get { return GetValue(AddPlaneChangeDeltaVKey, false); }
 			set {
-				if (config.HasValue(AddPlaneChangeDeltaVKey)) {
-					config.SetValue(AddPlaneChangeDeltaVKey, value);
-				} else {
-					config.AddValue(AddPlaneChangeDeltaVKey, value);
-				}
+				SetValue(AddPlaneChangeDeltaVKey, value);
 				if (value) {
 					GeneratePlaneChangeBurns = true;
 				}
@@ -199,18 +143,8 @@ namespace Astrogator {
 		/// On by default because it's almost always what you'd want.
 		/// </value>
 		public bool AutoTargetDestination {
-			get {
-				bool autoTarget = true;
-				config.TryGetValue(AutoTargetDestinationKey, ref autoTarget);
-				return autoTarget;
-			}
-			set {
-				if (config.HasValue(AutoTargetDestinationKey)) {
-					config.SetValue(AutoTargetDestinationKey, value);
-				} else {
-					config.AddValue(AutoTargetDestinationKey, value);
-				}
-			}
+			get { return GetValue(AutoTargetDestinationKey, true); }
+			set { SetValue(AutoTargetDestinationKey, value); }
 		}
 
 		/// <value>
@@ -220,18 +154,8 @@ namespace Astrogator {
 		/// the parent body of the transfer instead (usually Sun).
 		/// </value>
 		public bool AutoFocusDestination {
-			get {
-				bool autoFocus = true;
-				config.TryGetValue(AutoFocusDestinationKey, ref autoFocus);
-				return autoFocus;
-			}
-			set {
-				if (config.HasValue(AutoFocusDestinationKey)) {
-					config.SetValue(AutoFocusDestinationKey, value);
-				} else {
-					config.AddValue(AutoFocusDestinationKey, value);
-				}
-			}
+			get { return GetValue(AutoFocusDestinationKey, true); }
+			set { SetValue(AutoFocusDestinationKey, value); }
 		}
 
 		/// <value>
@@ -239,17 +163,9 @@ namespace Astrogator {
 		/// On by default because it's the first one you'll want to use for fine tuning.
 		/// </value>
 		public bool AutoEditEjectionNode {
-			get {
-				bool autoEdit = true;
-				config.TryGetValue(AutoEditEjectionNodeKey, ref autoEdit);
-				return autoEdit;
-			}
+			get { return GetValue(AutoEditEjectionNodeKey, true); }
 			set {
-				if (config.HasValue(AutoEditEjectionNodeKey)) {
-					config.SetValue(AutoEditEjectionNodeKey, value);
-				} else {
-					config.AddValue(AutoEditEjectionNodeKey, value);
-				}
+				SetValue(AutoEditEjectionNodeKey, value);
 				if (value) {
 					AutoEditPlaneChangeNode = false;
 				}
@@ -261,17 +177,9 @@ namespace Astrogator {
 		/// Off by default because usually you'd want to edit the ejection node instead.
 		/// </value>
 		public bool AutoEditPlaneChangeNode {
-			get {
-				bool autoEdit = false;
-				config.TryGetValue(AutoEditPlaneChangeNodeKey, ref autoEdit);
-				return autoEdit;
-			}
+			get { return GetValue(AutoEditPlaneChangeNodeKey, false); }
 			set {
-				if (config.HasValue(AutoEditPlaneChangeNodeKey)) {
-					config.SetValue(AutoEditPlaneChangeNodeKey, value);
-				} else {
-					config.AddValue(AutoEditPlaneChangeNodeKey, value);
-				}
+				SetValue(AutoEditPlaneChangeNodeKey, value);
 				if (value) {
 					GeneratePlaneChangeBurns = true;
 					AutoEditEjectionNode = false;
@@ -283,60 +191,24 @@ namespace Astrogator {
 		/// How to sort the table.
 		/// </summary>
 		public SortEnum TransferSort {
-			get {
-				SortEnum ts = SortEnum.Position;
-				string savedValue = "";
-				if (config.TryGetValue(TransferSortKey, ref savedValue)) {
-					ts = ParseEnum<SortEnum>(savedValue, SortEnum.Position);
-				}
-				return ts;
-			}
-			set {
-				if (config.HasValue(TransferSortKey)) {
-					config.SetValue(TransferSortKey, value.ToString());
-				} else {
-					config.AddValue(TransferSortKey, value.ToString());
-				}
-			}
+			get { return GetValue<SortEnum>(TransferSortKey, SortEnum.Position);}
+			set { SetValue(TransferSortKey, value.ToString()); }
 		}
 
 		/// <summary>
 		/// True if the sort should be largest value at the top, false otherwise.
 		/// </summary>
 		public bool DescendingSort {
-			get {
-				bool descend = false;
-				config.TryGetValue(DescendingSortKey, ref descend);
-				return descend;
-			}
-			set {
-				if (config.HasValue(DescendingSortKey)) {
-					config.SetValue(DescendingSortKey, value);
-				} else {
-					config.AddValue(DescendingSortKey, value);
-				}
-			}
+			get { return GetValue(DescendingSortKey, false); }
+			set { SetValue(DescendingSortKey, value); }
 		}
 
 		/// <summary>
 		/// Unit system for display of physical quantities.
 		/// </summary>
 		public DisplayUnitsEnum DisplayUnits {
-			get {
-				DisplayUnitsEnum du = DisplayUnitsEnum.Metric;
-				string savedValue = "";
-				if (config.TryGetValue(DisplayUnitsKey, ref savedValue)) {
-					du = ParseEnum<DisplayUnitsEnum>(savedValue, DisplayUnitsEnum.Metric);
-				}
-				return du;
-			}
-			set {
-				if (config.HasValue(DisplayUnitsKey)) {
-					config.SetValue(DisplayUnitsKey, value.ToString());
-				} else {
-					config.AddValue(DisplayUnitsKey, value.ToString());
-				}
-			}
+			get { return GetValue<DisplayUnitsEnum>(DisplayUnitsKey, DisplayUnitsEnum.Metric); }
+			set { SetValue(DisplayUnitsKey, value.ToString()); }
 		}
 
 		/// <summary>
@@ -345,17 +217,56 @@ namespace Astrogator {
 		/// Only applies when RCS is turned off!
 		/// </summary>
 		public bool TranslationAdjust {
-			get {
-				bool ta = true;
-				config.TryGetValue(TranslationAdjustKey, ref ta);
-				return ta;
+			get { return GetValue(TranslationAdjustKey, true); }
+			set { SetValue(TranslationAdjustKey, value); }
+		}
+
+		// We can't use generics here because ALL allowed types must have callable functions available,
+		// C#'s generic constraints doesn't support "T must be one of any of the following types",
+		// and KSP only defines these functions for certain specific types.
+		private bool GetValue(string key, bool defaultVal)
+		{
+			bool val = defaultVal;
+			config.TryGetValue(key, ref val);
+			return val;
+		}
+		private void SetValue(string key, bool val)
+		{
+			if (config.HasValue(key)) {
+				config.SetValue(key, val);
+			} else {
+				config.AddValue(key, val);
 			}
-			set {
-				if (config.HasValue(TranslationAdjustKey)) {
-					config.SetValue(TranslationAdjustKey, value);
-				} else {
-					config.AddValue(TranslationAdjustKey, value);
-				}
+		}
+		private T GetValue<T>(string key, T defaultVal) where T : IConvertible
+		{
+			T val = defaultVal;
+			string savedValue = "";
+			if (config.TryGetValue(key, ref savedValue)) {
+				val = ParseEnum<T>(savedValue, defaultVal);
+			}
+			return val;
+		}
+		private void SetValue(string key, string val)
+		{
+			if (config.HasValue(key)) {
+				config.SetValue(key, val);
+			} else {
+				config.AddValue(key, val);
+			}
+		}
+		private Vector2 GetValue(string key, Vector2 defaultVal)
+		{
+			Vector2 val = defaultVal;
+			config.TryGetValue(key, ref val);
+			return val;
+		}
+		private void SetValue(string key, Vector2 val)
+		{
+			if (config.HasValue(key)) {
+				config.SetValue(key, val);
+			} else {
+				config.AddValue(key, val);
 			}
 		}
 

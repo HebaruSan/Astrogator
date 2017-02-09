@@ -75,6 +75,7 @@ Click the wrench to open and close the settings panel:
 - Useful numbers for launches/landed
 - Return-to-LKO burns from Mun and Minmus
 - Capture burns for inbound hyperbolic orbits
+- Reduce ejection burn by the amount the plane change burn adds to it (i.e., fix Minmus overshoots)
 - Allow a window of times for transfers
   - Could calculate 2-3 additional ejection backwards and forwards in time
   - Return "bad" transfer burns in the recent past, until we confirm that it's truly too late
@@ -86,6 +87,13 @@ Click the wrench to open and close the settings panel:
   - Split ViewTools: Truly generic stuff versus this project's stuff
   - KerbalTools: redundant versions of StartBody & ParentBody
   - Split MathTools off from PhysicsTools
+  - Factor out a SimpleMod base class
+    - App launcher button
+      - Tooltip
+    - Main window
+    - Settings
+    - Resources
+    - Event handlers
 
 ## Building
 

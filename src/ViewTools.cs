@@ -43,7 +43,7 @@ namespace Astrogator {
 		/// <returns>
 		/// Enum value matching the string, if any
 		/// </returns>
-		public static T ParseEnum<T>(string val, T defaultVal)
+		public static T ParseEnum<T>(string val, T defaultVal) where T : IConvertible
 		{
 			try {
 				return (T) Enum.Parse(typeof(T), val, true);
