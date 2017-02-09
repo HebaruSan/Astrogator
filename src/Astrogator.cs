@@ -349,6 +349,10 @@ namespace Astrogator {
 					} else {
 						n.DeltaV += DELTA_V_INCREMENT_LARGE * fraction * direction;
 					}
+					if (n.attachedGizmo != null) {
+						n.attachedGizmo.DeltaV = n.DeltaV;
+					}
+					n.OnGizmoUpdated(n.DeltaV, burn.atTime);
 					n.solver.UpdateFlightPlan();
 				}
 			}
@@ -368,7 +372,7 @@ namespace Astrogator {
 				}
 			}, {
 				GameSettings.TRANSLATE_UP, (AstrogationModel m) => {
-					if (m.retrogradeOrbit) {
+					if (m.ActiveTransfer?.retrogradeTransfer ?? false) {
 						AdjustManeuver(m.ActivePlaneChangeBurn, Vector3d.up);
 					} else {
 						AdjustManeuver(m.ActivePlaneChangeBurn, Vector3d.down);
@@ -376,7 +380,7 @@ namespace Astrogator {
 				}
 			}, {
 				GameSettings.TRANSLATE_DOWN, (AstrogationModel m) => {
-					if (m.retrogradeOrbit) {
+					if (m.ActiveTransfer?.retrogradeTransfer ?? false) {
 						AdjustManeuver(m.ActivePlaneChangeBurn, Vector3d.down);
 					} else {
 						AdjustManeuver(m.ActivePlaneChangeBurn, Vector3d.up);
@@ -384,7 +388,7 @@ namespace Astrogator {
 				}
 			}, {
 				GameSettings.TRANSLATE_LEFT, (AstrogationModel m) => {
-					if (m.retrogradeOrbit) {
+					if (m.ActiveTransfer?.retrogradeTransfer ?? false) {
 						AdjustManeuver(m.ActivePlaneChangeBurn, Vector3d.right);
 					} else {
 						AdjustManeuver(m.ActivePlaneChangeBurn, Vector3d.left);
@@ -392,7 +396,7 @@ namespace Astrogator {
 				}
 			}, {
 				GameSettings.TRANSLATE_RIGHT, (AstrogationModel m) => {
-					if (m.retrogradeOrbit) {
+					if (m.ActiveTransfer?.retrogradeTransfer ?? false) {
 						AdjustManeuver(m.ActivePlaneChangeBurn, Vector3d.left);
 					} else {
 						AdjustManeuver(m.ActivePlaneChangeBurn, Vector3d.right);
@@ -407,7 +411,7 @@ namespace Astrogator {
 		private Dictionary<AxisBinding, AxisCallback> axes = new Dictionary<AxisBinding, AxisCallback>() {
 			{
 				GameSettings.AXIS_TRANSLATE_X, (AstrogationModel m, double axisValue) => {
-					if (m.retrogradeOrbit) {
+					if (m.ActiveTransfer?.retrogradeTransfer ?? false) {
 						AdjustManeuver(m.ActivePlaneChangeBurn, Vector3d.left, axisValue);
 					} else {
 						AdjustManeuver(m.ActivePlaneChangeBurn, Vector3d.right, axisValue);
@@ -415,7 +419,7 @@ namespace Astrogator {
 				}
 			}, {
 				GameSettings.AXIS_TRANSLATE_Y, (AstrogationModel m, double axisValue) => {
-					if (m.retrogradeOrbit) {
+					if (m.ActiveTransfer?.retrogradeTransfer ?? false) {
 						AdjustManeuver(m.ActivePlaneChangeBurn, Vector3d.up, axisValue);
 					} else {
 						AdjustManeuver(m.ActivePlaneChangeBurn, Vector3d.down, axisValue);

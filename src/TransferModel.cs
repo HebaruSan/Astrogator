@@ -34,6 +34,12 @@ namespace Astrogator {
 		public CelestialBody transferParent      { get; private set; }
 
 		/// <summary>
+		/// True if the transfer portion of this trajectory is retrograde, false otherwise.
+		/// So for a retrograde Kerbin orbit, this is true for Mun and false for Duna.
+		/// </summary>
+		public bool retrogradeTransfer { get; private set; }
+
+		/// <summary>
 		/// The body we're transferring from.
 		/// </summary>
 		public ITargetable   origin              { get; private set; }
@@ -114,7 +120,9 @@ namespace Astrogator {
 
 					// How many radians the phase angle increases or decreases by each second
 					double phaseAnglePerSecond, angleToMakeUp;
-					if (currentOrbit.GetRelativeInclination(transferDestination.GetOrbit()) < 90f) {
+					retrogradeTransfer = (currentOrbit.GetRelativeInclination(transferDestination.GetOrbit()) > 90f);
+
+					if (!retrogradeTransfer) {
 
 						// Normal prograde orbits
 						double optimalPhaseAngle = clamp(Math.PI * (

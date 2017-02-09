@@ -185,13 +185,13 @@ namespace Astrogator {
 		}
 
 		/// <summary>
-		/// Find the ejection burn that's currently instantiated as a real maneuver node, if any.
+		/// Find the transfer that currently has an ejection burn instantiated as a real maneuver node, if any.
 		/// </summary>
-		public BurnModel ActiveEjectionBurn {
+		public TransferModel ActiveTransfer {
 			get {
 				for (int i = 0; i < transfers.Count; ++i) {
 					if (transfers[i].ejectionBurn?.node != null) {
-						return transfers[i].ejectionBurn;
+						return transfers[i];
 					}
 				}
 				return null;
@@ -199,17 +199,17 @@ namespace Astrogator {
 		}
 
 		/// <summary>
+		/// Find the ejection burn that's currently instantiated as a real maneuver node, if any.
+		/// </summary>
+		public BurnModel ActiveEjectionBurn {
+			get { return ActiveTransfer?.ejectionBurn; }
+		}
+
+		/// <summary>
 		/// Find the plane change burn that's currently instantiated as a real maneuver node, if any.
 		/// </summary>
 		public BurnModel ActivePlaneChangeBurn {
-			get {
-				for (int i = 0; i < transfers.Count; ++i) {
-					if (transfers[i].planeChangeBurn?.node != null) {
-						return transfers[i].planeChangeBurn;
-					}
-				}
-				return null;
-			}
+			get { return ActiveTransfer?.planeChangeBurn; }
 		}
 	}
 
