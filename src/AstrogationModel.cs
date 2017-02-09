@@ -14,33 +14,26 @@ namespace Astrogator {
 		/// <summary>
 		/// Construct a model object for the given origin objects.
 		/// </summary>
-		/// <param name="b">Body to start at, overridden by v</param>
-		/// <param name="v">Vessel to start at</param>
-		public AstrogationModel(CelestialBody b = null, Vessel v = null)
+		/// <param name="org">Body or vessel to start at</param>
+		public AstrogationModel(ITargetable org)
 		{
-			body = b;
-			vessel = v;
+			origin = org;
 			transfers = new List<TransferModel>();
 
-			if (!badInclination) {
-				CreateTransfers(b, v);
+			if (!ErrorCondition) {
+				CreateTransfers(org);
 			}
 		}
+
+		/// <summary>
+		/// The vessel or body that we're starting from.
+		/// </summary>
+		public ITargetable origin { get; private set; }
 
 		/// <summary>
 		/// Transfers to calculate and show in the window.
 		/// </summary>
 		public List<TransferModel> transfers { get; private set; }
-
-		/// <summary>
-		/// Origin body for all the current transfers.
-		/// </summary>
-		public CelestialBody body { get; private set; }
-
-		/// <summary>
-		/// Vessel for calculating transfers.
-		/// </summary>
-		public Vessel vessel { get; private set; }
 
 		/// <summary>
 		/// The inclination past which we refuse to do any calculations.
@@ -50,14 +43,23 @@ namespace Astrogator {
 		public const double maxInclination = Tau / 12.0;
 
 		/// <summary>
+		/// True if there's a reason we can't calculate transfers, false if everything is OK.
+		/// </summary>
+		public bool ErrorCondition {
+			get {
+				return badInclination || hyperbolicOrbit || notOrbiting;
+			}
+		}
+
+		/// <summary>
 		/// True if the vessel's inclination is too big to be worth bothering.
 		/// </summary>
 		public bool badInclination {
 			get {
 				// Orbit.inclination is in degrees
 				// A bad inclination is one that is closer to Tau/4 than the limit is
-				return vessel?.orbit != null
-					&& Math.Abs(0.25 * Tau - Math.Abs(vessel.orbit.inclination * Mathf.Deg2Rad)) < 0.25 * Tau - maxInclination;
+				return origin?.GetOrbit() != null
+					&& AngleFromEquatorial(origin.GetOrbit().inclination * Mathf.Deg2Rad) > maxInclination;
 			}
 		}
 
@@ -66,8 +68,8 @@ namespace Astrogator {
 		/// </summary>
 		public bool retrogradeOrbit {
 			get {
-				return vessel != null
-					&& Math.Abs(vessel.orbit.inclination * Mathf.Deg2Rad) > 0.25 * Tau;
+				return origin?.GetOrbit() != null
+					&& Math.Abs(origin.GetOrbit().inclination * Mathf.Deg2Rad) > 0.25 * Tau;
 			}
 		}
 
@@ -76,7 +78,7 @@ namespace Astrogator {
 		/// </summary>
 		public bool hyperbolicOrbit {
 			get {
-				return vessel?.GetOrbit().eccentricity > 1.0;
+				return origin?.GetOrbit().eccentricity > 1.0;
 			}
 		}
 
@@ -85,6 +87,7 @@ namespace Astrogator {
 		/// </summary>
 		public bool notOrbiting {
 			get {
+				Vessel vessel = origin.GetVessel();
 				return vessel != null
 					&& (vessel.situation == Vessel.Situations.PRELAUNCH
 						|| vessel.situation == Vessel.Situations.LANDED
@@ -95,31 +98,14 @@ namespace Astrogator {
 		/// <summary>
 		/// Re-initialize a model object for the given origin objects.
 		/// </summary>
-		/// <param name="b">Body to start at, overridden by v</param>
-		/// <param name="v">Vessel to start at</param>
-		public void Reset(CelestialBody b = null, Vessel v = null)
+		/// <param name="org">Body or vessel to start at</param>
+		public void Reset(ITargetable org)
 		{
-			body = b;
-			vessel = v;
+			origin = org;
 			transfers = new List<TransferModel>();
 
-			if (!badInclination) {
-				CreateTransfers(b, v);
-			}
-		}
-
-		/// <returns>
-		/// Description of the transfers contained in this model.
-		/// </returns>
-		public string OriginDescription {
-			get {
-				if (vessel != null) {
-					return vessel.GetName();
-				} else if (body != null) {
-					return body.theName;
-				} else {
-					return "";
-				}
+			if (!ErrorCondition) {
+				CreateTransfers(org);
 			}
 		}
 
@@ -141,43 +127,38 @@ namespace Astrogator {
 			return false;
 		}
 
-		private void CreateTransfers(CelestialBody body, Vessel vessel)
+		private void CreateTransfers(ITargetable start)
 		{
 			DbgFmt("Fabricating transfers");
 
 			bool foundTarget = false;
-			int discoveryOrder = 0;
 
-			CelestialBody origin = StartBody(body, vessel);
-			CelestialBody targetBody = FlightGlobals.fetch.VesselTarget as CelestialBody;
+			CelestialBody first = start.GetOrbit().referenceBody,
+				targetBody = FlightGlobals.fetch.VesselTarget as CelestialBody;
 
-			for (CelestialBody b = origin, toSkip = null;
+			for (CelestialBody b = first, toSkip = start as CelestialBody;
 					b != null;
 					toSkip = b, b = ParentBody(b)) {
 
-				// Skip the first body unless we can actually transfer to its children
-				// (i.e., we have a vessel)
-				if (vessel != null || toSkip != null) {
-					DbgFmt("Checking transfers around {0}", b.theName);
+				DbgFmt("Checking transfers around {0}", b.theName);
 
-					int numBodies = b.orbitingBodies.Count;
-					for (int i = 0; i < numBodies; ++i) {
-						CelestialBody satellite = b.orbitingBodies[i];
-						if (satellite != toSkip) {
-							DbgFmt("Allocating transfer to {0}", satellite.theName);
-							transfers.Add(new TransferModel(origin, satellite, vessel, ++discoveryOrder));
+				int numBodies = b.orbitingBodies.Count;
+				for (int i = 0; i < numBodies; ++i) {
+					CelestialBody satellite = b.orbitingBodies[i];
+					if (satellite != toSkip) {
+						DbgFmt("Allocating transfer to {0}", satellite.theName);
+						transfers.Add(new TransferModel(origin, satellite));
 
-							if (satellite == targetBody) {
-								DbgFmt("Found target as satellite");
-								foundTarget = true;
-							}
+						if (satellite == targetBody) {
+							DbgFmt("Found target as satellite");
+							foundTarget = true;
 						}
 					}
-					DbgFmt("Exhausted transfers around {0}", b.theName);
 				}
+				DbgFmt("Exhausted transfers around {0}", b.theName);
 
 				if (toSkip == targetBody && targetBody != null) {
-					DbgFmt("Found target as toSkip");
+					DbgFmt("Found target as ancestor");
 					foundTarget = true;
 				}
 			}
@@ -186,7 +167,7 @@ namespace Astrogator {
 					&& FlightGlobals.ActiveVessel != null
 					&& FlightGlobals.fetch.VesselTarget != null) {
 				DbgFmt("Allocating transfer to {0}", FlightGlobals.fetch.VesselTarget.GetName());
-				transfers.Insert(0, new TransferModel(origin, FlightGlobals.fetch.VesselTarget, vessel, -1));
+				transfers.Insert(0, new TransferModel(origin, FlightGlobals.fetch.VesselTarget));
 			}
 
 			DbgFmt("Shipping completed transfers");
@@ -198,10 +179,8 @@ namespace Astrogator {
 		/// </summary>
 		public void CheckIfNodesDisappeared()
 		{
-			if (transfers != null) {
-				for (int i = 0; i < transfers.Count; ++i) {
-					transfers[i].CheckIfNodesDisappeared();
-				}
+			for (int i = 0; i < transfers.Count; ++i) {
+				transfers[i].CheckIfNodesDisappeared();
 			}
 		}
 

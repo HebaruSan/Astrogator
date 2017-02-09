@@ -46,6 +46,19 @@ namespace Astrogator {
 		}
 
 		/// <summary>
+		/// Calculate a user-friendly inclination value, the angle between
+		/// the orbit and the equator. Never negative, never > PI/2.
+		/// </summary>
+		/// <param name="inclination">The true inclination of the orbit in radians</param>
+		/// <returns>
+		/// Angle between orbit and equator in radians.
+		/// </returns>
+		public static double AngleFromEquatorial(double inclination)
+		{
+			return 0.25 * Tau - Math.Abs(0.25 * Tau - Math.Abs(inclination));
+		}
+
+		/// <summary>
 		/// Estimate the delta V needed for the given vessel to get to orbit around the given body.
 		/// </summary>
 		/// <param name="body">Body to launch from</param>
@@ -53,12 +66,12 @@ namespace Astrogator {
 		/// <returns>
 		/// Delta V it would take to launch from vessel's current position to a comfortable orbit.
 		/// </returns>
-		public static double DeltaVToOrbit(CelestialBody body, Vessel vessel)
+		public static double DeltaVToOrbit(CelestialBody body, ITargetable vessel)
 		{
 			double targetRadius = GoodLowOrbitRadius(body);
 
 			return SpeedAtPeriapsis(body, targetRadius, body.Radius)
-				- vessel.obt_speed
+				- vessel.GetOrbit().orbitalSpeed
 				+ SpeedAtPeriapsis(body, targetRadius, targetRadius)
 				- SpeedAtApoapsis(body, targetRadius, body.Radius);
 		}

@@ -78,12 +78,14 @@ Click the wrench to open and close the settings panel:
 - Allow a window of times for transfers
   - Could calculate 2-3 additional ejection backwards and forwards in time
   - Return "bad" transfer burns in the recent past, until we confirm that it's truly too late
+  - Calculate current absolute time, then use a fudge factor that scales with orbital period to choose a range, and translate outer ranges into sets of inner ranges
+- i18n / l10n
 - Clean up hacks
   - Split CalculateEjectionBurn into transfer versus ejection functions
-  - Represent starting point with ITargetable
   - Retrograde orbit special cases
   - Split ViewTools: Truly generic stuff versus this project's stuff
   - KerbalTools: redundant versions of StartBody & ParentBody
+  - Split MathTools off from PhysicsTools
 
 ## Building
 

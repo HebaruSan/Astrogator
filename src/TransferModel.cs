@@ -15,48 +15,48 @@ namespace Astrogator {
 		/// <summary>
 		/// Construct a model object.
 		/// </summary>
-		public TransferModel(CelestialBody org, ITargetable dest, Vessel v, int order)
+		public TransferModel(ITargetable org, ITargetable dest)
 		{
 			origin = org;
 			destination = dest;
-			vessel = v;
-			DiscoveryOrder = order;
 		}
 
 		/// <summary>
 		/// The body we're transferring to.
 		/// </summary>
-		public ITargetable   destination     { get; private set; }
+		public ITargetable   destination         { get; private set; }
+
+		private ITargetable  transferDestination { get; set; }
 
 		/// <summary>
 		/// The reference body of the transfer portion of our route.
 		/// </summary>
-		public CelestialBody transferParent  { get; private set; }
+		public CelestialBody transferParent      { get; private set; }
 
 		/// <summary>
 		/// The body we're transferring from.
 		/// </summary>
-		public CelestialBody origin          { get; private set; }
-
-		/// <summary>
-		/// The vessel we're flying, if any.
-		/// </summary>
-		public Vessel        vessel          { get; private set; }
+		public ITargetable   origin              { get; private set; }
 
 		/// <summary>
 		/// Representation of the initial burn to start the transfer.
 		/// </summary>
-		public BurnModel     ejectionBurn    { get; private set; }
+		public BurnModel     ejectionBurn        { get; private set; }
 
 		/// <summary>
 		/// Representation of the burn to change into the destination's orbital plane.
 		/// </summary>
-		public BurnModel     planeChangeBurn { get; private set; }
+		public BurnModel     planeChangeBurn     { get; private set; }
 
-		/// <summary>
-		/// Number representing the position of this row when sorted by position.
-		/// </summary>
-		public int           DiscoveryOrder  { get; private set; }
+		private bool Landed {
+			get {
+				Vessel vessel = origin.GetVessel();
+				return vessel != null
+						&& (vessel.situation == Vessel.Situations.PRELAUNCH
+							|| vessel.situation == Vessel.Situations.LANDED
+							|| vessel.situation == Vessel.Situations.SPLASHED);
+			}
+		}
 
 		private BurnModel GenerateEjectionBurn(Orbit currentOrbit)
 		{
@@ -70,67 +70,65 @@ namespace Astrogator {
 				// Sanity check just in case something unexpected happens.
 				return null;
 
-			} else if (vessel != null
-					&& (vessel.situation == Vessel.Situations.PRELAUNCH
-						|| vessel.situation == Vessel.Situations.LANDED
-						|| vessel.situation == Vessel.Situations.SPLASHED)) {
+			} else if (Landed) {
 
-				DbgFmt("Delta V to orbit: {0}", DeltaVToOrbit(origin, vessel));
-
+				// TODO - Launch to orbit
+				DbgFmt("Delta V to orbit: {0}", DeltaVToOrbit(origin.GetOrbit().referenceBody, origin));
 				return null;
 
 			} else if (currentOrbit.eccentricity > 1.0) {
 
+				// TODO - Capture burn if inbound
 				DbgFmt("No point in trying to calculate on hyperbolic orbit.");
-
 				return null;
 
 			} else {
+				double now = Planetarium.GetUniversalTime();
+
 				// If you want to go somewhere deep inside another SOI, we will
 				// just aim at whatever ancestor we can see.
 				// So Kerbin -> Laythe would be the same as Kerbin -> Jool.
-				ITargetable immediateDestination = null;
 				for (ITargetable b = StartBody(destination), prevBody = null;
 						b != null;
 						prevBody = b, b = ParentBody(b)) {
 
 					if (currentOrbit.referenceBody == b as CelestialBody) {
-						immediateDestination = prevBody;
+						// Note which body is boss of the patch where we transfer
+						transferParent = b as CelestialBody;
+						transferDestination = prevBody;
+						DbgFmt("Found transfer patch, parent: {0}, destination: {0}",
+							TheName(transferParent), TheName(transferDestination));
 						break;
 					}
 				}
 
-				if (origin == immediateDestination as CelestialBody) {
-					// Trying to get to the start SOI or one of its sub-SOIs
+				if (origin == transferDestination) {
+					// Trying to get to the start SOI or one of its sub-SOIs.
+					// TODO - Transfers to LKO from Mun.
 					DbgFmt("Skipping origin destination");
 					return null;
 				}
 
-				if (immediateDestination != null) {
+				if (transferDestination != null) {
 					// Our normal recursive base case - just a normal transfer
-
-					// Note which body is boss in the zone where we transfer
-					transferParent = immediateDestination.GetOrbit().referenceBody;
-
-					double now = Planetarium.GetUniversalTime();
 
 					// How many radians the phase angle increases or decreases by each second
 					double phaseAnglePerSecond, angleToMakeUp;
-					if (currentOrbit.GetRelativeInclination(immediateDestination.GetOrbit()) < 90f) {
+					if (currentOrbit.GetRelativeInclination(transferDestination.GetOrbit()) < 90f) {
 
 						// Normal prograde orbits
 						double optimalPhaseAngle = clamp(Math.PI * (
 							1 - Math.Pow(
-								(currentOrbit.semiMajorAxis + immediateDestination.GetOrbit().semiMajorAxis)
-									/ (2 * immediateDestination.GetOrbit().semiMajorAxis),
+								(currentOrbit.semiMajorAxis + transferDestination.GetOrbit().semiMajorAxis)
+									/ (2 * transferDestination.GetOrbit().semiMajorAxis),
 								1.5)
 						));
 						double currentPhaseAngle = clamp(
-							  AbsolutePhaseAngle(immediateDestination.GetOrbit(), now)
+							  AbsolutePhaseAngle(transferDestination.GetOrbit(), now)
 							- AbsolutePhaseAngle(currentOrbit, now));
 						angleToMakeUp = currentPhaseAngle - optimalPhaseAngle;
 						phaseAnglePerSecond =
-							  (Tau / immediateDestination.GetOrbit().period)
+							  (Tau / transferDestination.GetOrbit().period)
 							- (Tau / currentOrbit.period);
 						// This whole section borrowed from Kerbal Alarm Clock; thanks, TriggerAu!
 						if (angleToMakeUp > 0 && phaseAnglePerSecond > 0)
@@ -144,17 +142,18 @@ namespace Astrogator {
 						// The phase angle is the opposite part of the unit circle
 						double optimalPhaseAngle = Tau - clamp(Math.PI * (
 							1 - Math.Pow(
-								(currentOrbit.semiMajorAxis + immediateDestination.GetOrbit().semiMajorAxis)
-									/ (2 * immediateDestination.GetOrbit().semiMajorAxis),
+								(currentOrbit.semiMajorAxis + transferDestination.GetOrbit().semiMajorAxis)
+									/ (2 * transferDestination.GetOrbit().semiMajorAxis),
 								1.5)
 						));
 						// The phase angle always decreases by the sum of the angular velocities
 						double currentPhaseAngle = Tau - clamp(
-							  AbsolutePhaseAngle(immediateDestination.GetOrbit(), now)
+							  AbsolutePhaseAngle(transferDestination.GetOrbit(), now)
 							- AbsolutePhaseAngle(currentOrbit, now));
+						// Angle to make up is always positive
 						angleToMakeUp = clamp(currentPhaseAngle - optimalPhaseAngle);
 						phaseAnglePerSecond =
-							  (Tau / immediateDestination.GetOrbit().period)
+							  (Tau / transferDestination.GetOrbit().period)
 							+ (Tau / currentOrbit.period);
 
 					}
@@ -162,19 +161,19 @@ namespace Astrogator {
 					double timeTillBurn = Math.Abs(angleToMakeUp / phaseAnglePerSecond);
 					double ejectionBurnTime = now + timeTillBurn;
 					double arrivalTime = ejectionBurnTime + 0.5 * OrbitalPeriod(
-						immediateDestination.GetOrbit().referenceBody,
-						immediateDestination.GetOrbit().semiMajorAxis,
+						transferDestination.GetOrbit().referenceBody,
+						transferDestination.GetOrbit().semiMajorAxis,
 						currentOrbit.semiMajorAxis
 					);
 
-					if (currentOrbit.semiMajorAxis < immediateDestination.GetOrbit().semiMajorAxis) {
+					if (currentOrbit.semiMajorAxis < transferDestination.GetOrbit().semiMajorAxis) {
 						return new BurnModel(
 							ejectionBurnTime,
 							BurnToNewAp(
 								currentOrbit,
 								ejectionBurnTime,
-								RadiusAtTime(immediateDestination.GetOrbit(), arrivalTime)
-									- 0.25 * SphereOfInfluence(immediateDestination)
+								RadiusAtTime(transferDestination.GetOrbit(), arrivalTime)
+									- 0.25 * SphereOfInfluence(transferDestination)
 							)
 						);
 					} else {
@@ -183,8 +182,8 @@ namespace Astrogator {
 							BurnToNewPe(
 								currentOrbit,
 								ejectionBurnTime,
-								RadiusAtTime(immediateDestination.GetOrbit(), arrivalTime)
-									+ 0.25 * SphereOfInfluence(immediateDestination)
+								RadiusAtTime(transferDestination.GetOrbit(), arrivalTime)
+									+ 0.25 * SphereOfInfluence(transferDestination)
 							)
 						);
 					}
@@ -242,10 +241,8 @@ namespace Astrogator {
 		/// </summary>
 		public void CalculateEjectionBurn()
 		{
-			if (vessel != null) {
-				ejectionBurn = GenerateEjectionBurn(vessel.orbit);
-			} else if (origin != null) {
-				ejectionBurn = GenerateEjectionBurn(origin.orbit);
+			if (origin != null) {
+				ejectionBurn = GenerateEjectionBurn(origin.GetOrbit());
 			} else {
 				ejectionBurn = null;
 			}
@@ -263,17 +260,18 @@ namespace Astrogator {
 		/// </summary>
 		public void CalculatePlaneChangeBurn()
 		{
-			if (FlightGlobals.ActiveVessel == vessel
-					&& vessel?.patchedConicSolver?.maneuverNodes != null) {
+			if (FlightGlobals.ActiveVessel?.patchedConicSolver?.maneuverNodes != null
+					&& transferDestination != null
+					&& transferParent != null) {
 
 				bool ejectionAlreadyActive = false;
 
-				if (vessel.patchedConicSolver.maneuverNodes.Count > 0) {
+				if (FlightGlobals.ActiveVessel.patchedConicSolver.maneuverNodes.Count > 0) {
 					if (Settings.Instance.DeleteExistingManeuvers) {
 
 						ClearManeuverNodes();
 
-					} else if (vessel.patchedConicSolver.maneuverNodes.Count == 1
+					} else if (FlightGlobals.ActiveVessel.patchedConicSolver.maneuverNodes.Count == 1
 							&& ejectionBurn.node != null) {
 
 						ejectionAlreadyActive = true;
@@ -285,18 +283,16 @@ namespace Astrogator {
 					}
 				}
 
-				DbgFmt("Temporarily activating ejection burn to {0}", destination.GetName());
-
 				if (ejectionBurn != null) {
 
 					ManeuverNode eNode;
 					if (ejectionAlreadyActive) {
 						eNode = ejectionBurn.node;
 					} else {
+						DbgFmt("Temporarily activating ejection burn to {0}", destination.GetName());
 						eNode = ejectionBurn.ToActiveManeuver();
+						DbgFmt("Activated ejection burn to {0}", destination.GetName());
 					}
-
-					DbgFmt("Activated ejection burn to {0}", destination.GetName());
 
 					if (eNode != null) {
 
@@ -307,27 +303,27 @@ namespace Astrogator {
 						// Find the orbit patch that intersects the target orbit
 						for (Orbit o = eNode.nextPatch; o != null; o = NextPatch(o)) {
 							// Skip the patches that are in the wrong SoI
-							if (o.referenceBody == transferParent.GetOrbit().referenceBody) {
+							if (o.referenceBody == transferParent) {
 
 								DbgFmt("Identified matching reference body for {0}", transferParent.GetName());
 
 								// Find the AN or DN
 								bool ascendingNode;
-								double planeTime = TimeOfPlaneChange(o, transferParent.GetOrbit(), ejectionBurn.atTime, out ascendingNode);
+								double planeTime = TimeOfPlaneChange(o, transferDestination.GetOrbit(), ejectionBurn.atTime, out ascendingNode);
 
 								DbgFmt("Pinpointed plane change for {0}", transferParent.GetName());
 
 								if (planeTime > 0 && planeTime > ejectionBurn.atTime) {
-									double magnitude = PlaneChangeDeltaV(o, transferParent.GetOrbit(), planeTime, ascendingNode);
+									double magnitude = PlaneChangeDeltaV(o, transferDestination.GetOrbit(), planeTime, ascendingNode);
 									// Don't bother to create tiny maneuver nodes
 									if (Math.Abs(magnitude) > 0.05) {
 										// Add a maneuver node to change planes
 										planeChangeBurn = new BurnModel(planeTime, 0,
 											magnitude);
-										DbgFmt("Transmitted correction burn for {0}: {1}", transferParent.GetName(), magnitude);
+										DbgFmt("Transmitted correction burn for {0}: {1}", transferDestination.GetName(), magnitude);
 									} else {
 										planeChangeBurn = null;
-										DbgFmt("No plane change needed for {0}", transferParent.GetName());
+										DbgFmt("No plane change needed for {0}", transferDestination.GetName());
 									}
 
 									// Stop looping through orbit patches since we found what we want
@@ -365,13 +361,9 @@ namespace Astrogator {
 		/// </returns>
 		public bool HaveEncounter()
 		{
-			if (FlightGlobals.ActiveVessel == vessel
-					&& vessel?.patchedConicSolver?.maneuverNodes != null) {
-
-				for (Orbit o = ejectionBurn.node.nextPatch; o != null; o = NextPatch(o)) {
-					if (o.referenceBody == destination as CelestialBody) {
-						return true;
-					}
+			for (Orbit o = ejectionBurn?.node?.nextPatch; o != null; o = NextPatch(o)) {
+				if (o.referenceBody == destination as CelestialBody) {
+					return true;
 				}
 			}
 			return false;

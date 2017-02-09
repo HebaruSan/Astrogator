@@ -7,6 +7,7 @@ namespace Astrogator {
 	using static DebugTools;
 	using static KerbalTools;
 	using static ViewTools;
+	using static PhysicsTools;
 
 	/// <summary>
 	/// A DialogGUI* object that displays our app's data.
@@ -47,8 +48,8 @@ namespace Astrogator {
 			}
 		}
 
-		private AstrogationModel model { get; set; }
-		private PopupDialog dialog { get; set; }
+		private AstrogationModel model  { get; set; }
+		private PopupDialog      dialog { get; set; }
 
 		/// <summary>
 		/// Type of function pointer used to request a re-creation of the UI.
@@ -108,7 +109,7 @@ namespace Astrogator {
 			for (int i = 0; i < Columns.Length; ++i) {
 				ColumnDefinition col = Columns[i];
 				// Skip columns that require an active vessel if we don't have one
-				if (!col.vesselSpecific || model.vessel != null) {
+				if (!col.vesselSpecific || model.origin.GetVessel() != null) {
 					float width = 0;
 					for (int span = 0; span < col.headerColSpan; ++span) {
 						width += Columns[i + span].width;
@@ -152,8 +153,7 @@ namespace Astrogator {
 						a?.destination?.GetName().CompareTo(b?.destination?.GetName()) ?? 0);
 					break;
 				case SortEnum.Position:
-					transfers.Sort((a, b) =>
-						a?.DiscoveryOrder.CompareTo(b?.DiscoveryOrder) ?? 0);
+					// Use the natural/default ordering in the model
 					break;
 				case SortEnum.Time:
 					transfers.Sort((a, b) =>
@@ -189,9 +189,7 @@ namespace Astrogator {
 			get {
 				return model == null
 					|| model.transfers.Count == 0
-					|| model.badInclination
-					|| model.hyperbolicOrbit
-					|| model.notOrbiting;
+					|| model.ErrorCondition;
 			}
 		}
 
@@ -201,23 +199,23 @@ namespace Astrogator {
 					if (model.hyperbolicOrbit) {
 						return string.Format(
 							"{0} is on a hyperbolic trajectory. Capture to see transfer info.",
-							TheName(model.vessel)
+							TheName(model.origin)
 						);
 					} else if (model.notOrbiting) {
 						return string.Format(
 							"{0} is landed. Launch to orbit to see transfer info.",
-							TheName(model.vessel)
+							TheName(model.origin)
 						);
 					} else if (model.badInclination) {
 						return string.Format(
 							"Inclination is {0:0.0}°, accuracy too low past {1:0.}°",
-							Math.Abs(model.vessel.orbit.inclination),
+							AngleFromEquatorial(model.origin.GetOrbit().inclination * Mathf.Rad2Deg),
 							AstrogationModel.maxInclination * Mathf.Rad2Deg
 						);
 					} else if (model.transfers.Count == 0) {
 						return "No transfers available";
 					} else {
-						return string.Format("Transfers from {0}", model.OriginDescription);
+						return string.Format("Transfers from {0}", TheName(model.origin));
 					}
 				} else {
 					return "Internal error: Model not found";

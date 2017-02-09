@@ -175,7 +175,8 @@ namespace Astrogator {
 		{
 			DbgFmt("Ready for action");
 			if (model == null) {
-				StartLoadingModel(FlightGlobals.getMainBody(), FlightGlobals.ActiveVessel);
+				StartLoadingModel((ITargetable)FlightGlobals.ActiveVessel
+					?? (ITargetable)FlightGlobals.getMainBody());
 			}
 			ShowMainWindow();
 		}
@@ -200,20 +201,20 @@ namespace Astrogator {
 			flightReady = true;
 			if (Settings.Instance.GeneratePlaneChangeBurns
 					&& Settings.Instance.AddPlaneChangeDeltaV) {
-				StartLoadingModel(model.body, model.vessel);
+				StartLoadingModel(model.origin);
 				ResetView();
 			}
 		}
 
-		private void StartLoadingModel(CelestialBody b = null, Vessel v = null, bool fromScratch = false)
+		private void StartLoadingModel(ITargetable origin, bool fromScratch = false)
 		{
 			// Set up the very basics of the model so the view has something to display during load
 			if (fromScratch || model == null) {
 				DbgFmt("Assembling model");
-				model = new AstrogationModel(b, v);
+				model = new AstrogationModel(origin);
 				DbgFmt("Model assembled");
 			} else {
-				model.Reset(b, v);
+				model.Reset(origin);
 			}
 
 			// Do the easy calculations in the foreground so the view can sort properly right away
@@ -247,7 +248,7 @@ namespace Astrogator {
 				try {
 					model.transfers[i].CalculateEjectionBurn();
 				} catch (Exception ex) {
-					DbgExc("Problem with background load of ejection burn", ex);
+					DbgExc("Problem with load of ejection burn", ex);
 				}
 			}
 		}
@@ -436,6 +437,7 @@ namespace Astrogator {
 
 			if (Settings.Instance.TranslationAdjust
 					&& model != null
+					&& FlightGlobals.ActiveVessel != null
 					&& !FlightGlobals.ActiveVessel.ActionGroups[KSPActionGroup.RCS]) {
 
 				foreach (KeyValuePair<KeyBinding, KeyPressedCallback> k in keys) {
@@ -490,7 +492,7 @@ namespace Astrogator {
 			if (model != null) {
 				if (!model.HasDestination(FlightGlobals.fetch.VesselTarget)) {
 					DbgFmt("Reloading model and view on target change");
-					StartLoadingModel(model.body, model.vessel);
+					StartLoadingModel(model.origin);
 					ResetView();
 				}
 			}
@@ -534,7 +536,7 @@ namespace Astrogator {
 		private void OnSituationChanged()
 		{
 			if (model != null && view != null) {
-				StartLoadingModel(FlightGlobals.ActiveVessel?.mainBody, FlightGlobals.ActiveVessel);
+				StartLoadingModel(FlightGlobals.ActiveVessel);
 				ResetView();
 			}
 		}
@@ -548,7 +550,7 @@ namespace Astrogator {
 
 			if (model != null && view != null) {
 				// The old list no longer applies because reachable bodies depend on current SOI
-				StartLoadingModel(newBody, FlightGlobals.ActiveVessel);
+				StartLoadingModel(FlightGlobals.ActiveVessel);
 				ResetView();
 			}
 		}
@@ -565,7 +567,8 @@ namespace Astrogator {
 					&& target != null) {
 
 				DbgFmt("Tracking station changed target to {0}", target);
-				StartLoadingModel(target.celestialBody, target.vessel);
+				StartLoadingModel((ITargetable)target.vessel
+					?? (ITargetable)target.celestialBody);
 				ResetView();
 			}
 		}
