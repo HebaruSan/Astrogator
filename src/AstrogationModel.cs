@@ -46,9 +46,7 @@ namespace Astrogator {
 		/// True if there's a reason we can't calculate transfers, false if everything is OK.
 		/// </summary>
 		public bool ErrorCondition {
-			get {
-				return badInclination || hyperbolicOrbit || notOrbiting;
-			}
+			get { return badInclination || notOrbiting; }
 		}
 
 		/// <summary>
