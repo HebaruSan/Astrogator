@@ -31,7 +31,7 @@ namespace Astrogator {
 		}
 
 		private ConfigNode config { get; set; }
-		private static string filename = FilePath(Astrogator.Name + ".settings");
+		private static string filename = FilePath(Astrogator.Name + ".settings", false);
 
 		/// <summary>
 		/// We don't want multiple copies of this floating around clobbering one another.
