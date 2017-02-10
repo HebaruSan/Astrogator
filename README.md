@@ -73,38 +73,11 @@ Click the wrench to open and close the settings panel:
 
 ## Future plans
 
-- Useful numbers for launches/landed
-- Return-to-LKO burns from Mun and Minmus
-- Capture burns for inbound hyperbolic orbits
-- Reduce ejection burn by the amount the plane change burn adds to it (i.e., fix Minmus overshoots)
-- Allow a window of times for transfers
-  - Could calculate 2-3 additional ejection backwards and forwards in time
-  - Return "bad" transfer burns in the recent past, until we confirm that it's truly too late
-  - Calculate current absolute time, then use a fudge factor that scales with orbital period to choose a range, and translate outer ranges into sets of inner ranges
-- i18n / l10n
-- Clean up hacks
-  - Split CalculateEjectionBurn into transfer versus ejection functions
-  - Retrograde orbit special cases
-  - Split ViewTools: Truly generic stuff versus this project's stuff
-  - Split MathTools off from PhysicsTools
-  - Factor out a SimpleMod base class
-    - App launcher button
-      - Tooltip
-    - Main window
-    - Settings
-    - Resources
-    - Event handlers
+See [TODO.md](TODO.md).
 
 ## Building
 
-### Linux
-
-```sh
-git clone git@github.com:HebaruSan/Astrogator.git
-cd Astrogator
-ln -s /path/to/KSP/KSP_x64_Data src
-make
-```
+See [INSTALL.md](INSTALL.md).
 
 ## References
 
