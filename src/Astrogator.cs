@@ -318,8 +318,11 @@ namespace Astrogator {
 
 		#endregion Main window
 
-		private void ResetView()
+		private void ResetView(bool resetModel = false)
 		{
+			if (resetModel) {
+				StartLoadingModel(model.origin);
+			}
 			if (view != null) {
 				HideMainWindow();
 				ShowMainWindow();
