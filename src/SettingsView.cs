@@ -47,6 +47,12 @@ namespace Astrogator {
 					(bool b) => { Settings.Instance.DeleteExistingManeuvers = b; }
 				));
 
+				AddChild(new DialogGUIToggle(
+					() => Settings.Instance.ShowTrackedAsteroids,
+					"Calculate transfers to tracked asteroids",
+					(bool b) => { Settings.Instance.ShowTrackedAsteroids = b; }
+				));
+
 				AddChild(LabelWithStyleAndSize(
 					"Maneuver creation:",
 					midHdrStyle,

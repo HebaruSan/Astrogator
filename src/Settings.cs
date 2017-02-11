@@ -49,7 +49,9 @@ namespace Astrogator {
 			ShowSettingsKey             = "ShowSettings",
 			TransferSortKey             = "TransferSort",
 			DescendingSortKey           = "DescendingSort",
+
 			DisplayUnitsKey             = "DisplayUnits",
+			ShowTrackedAsteroidsKey     = "ShowTrackedAsteroids",
 
 			GeneratePlaneChangeBurnsKey = "GeneratePlaneChangeBurns",
 			AddPlaneChangeDeltaVKey     = "AddPlaneChangeDeltaV",
@@ -209,6 +211,14 @@ namespace Astrogator {
 		public DisplayUnitsEnum DisplayUnits {
 			get { return GetValue<DisplayUnitsEnum>(DisplayUnitsKey, DisplayUnitsEnum.Metric); }
 			set { SetValue(DisplayUnitsKey, value.ToString()); }
+		}
+
+		/// <summary>
+		/// True if tracked asteroids should be included in the list of transfers, false to leave them out.
+		/// </summary>
+		public bool ShowTrackedAsteroids {
+			get { return GetValue(ShowTrackedAsteroidsKey, true); }
+			set { SetValue(ShowTrackedAsteroidsKey, value); }
 		}
 
 		/// <summary>
