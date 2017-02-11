@@ -123,7 +123,7 @@ namespace Astrogator {
 					AppIcon);
 
 				// Auto open the window if it was open the last time we ran
-				if (visible) {
+				if (Settings.Instance.MainWindowVisible) {
 					launcher.SetTrue();
 				}
 			}
@@ -284,15 +284,6 @@ namespace Astrogator {
 		private AstrogationModel model    { get; set; }
 		private AstrogationView  view     { get; set; }
 
-		private static bool visible {
-			get {
-				return Settings.Instance.MainWindowVisible;
-			}
-			set {
-				Settings.Instance.MainWindowVisible = value;
-			}
-		}
-
 		/// <summary>
 		/// Open the main window listing transfers.
 		/// </summary>
@@ -300,7 +291,7 @@ namespace Astrogator {
 		{
 			DbgFmt("Deploying main window");
 
-			visible = true;
+			Settings.Instance.MainWindowVisible = true;
 			if (view == null) {
 				view = new AstrogationView(model, ResetView);
 				DbgFmt("View mated to booster");
@@ -321,7 +312,7 @@ namespace Astrogator {
 			}
 			if (userInitiated) {
 				// If we close the window because we're exiting, don't set the setting.
-				visible = false;
+				Settings.Instance.MainWindowVisible = false;
 			}
 		}
 
@@ -352,7 +343,11 @@ namespace Astrogator {
 					if (n.attachedGizmo != null) {
 						n.attachedGizmo.DeltaV = n.DeltaV;
 					}
-					n.OnGizmoUpdated(n.DeltaV, burn.atTime);
+					try {
+						n.OnGizmoUpdated(n.DeltaV, burn.atTime);
+					} catch (Exception ex) {
+						DbgExc("Problem updating gizmo", ex);
+					}
 					n.solver.UpdateFlightPlan();
 				}
 			}
