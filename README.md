@@ -88,6 +88,7 @@ See [INSTALL.md](INSTALL.md).
 - http://forum.kerbalspaceprogram.com/index.php?/topic/78231-application-launcher-and-mods/
 - http://forum.kerbalspaceprogram.com/index.php?/topic/154006-solved-texture-issues/&do=findComment&comment=2904233
 - https://kerbalspaceprogram.com/api/index.html
+- http://forum.kerbalspaceprogram.com/index.php?/topic/149324-popupdialog-and-the-dialoggui-classes/&do=findComment&comment=2950891
 
 ### Physics and math
 - https://en.wikipedia.org/wiki/Hohmann_transfer_orbit
