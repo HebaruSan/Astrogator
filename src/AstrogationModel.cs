@@ -153,6 +153,38 @@ namespace Astrogator {
 						}
 					}
 				}
+
+				// Add any tracked asteroids in this SOI.
+				// Insertion sort into bodies according to semiMajorAxis.
+				for (int i = 0; i < FlightGlobals.Vessels.Count; ++i) {
+					Vessel v = FlightGlobals.Vessels[i];
+
+					if (v != start && IsTrackedAsteroid(v) && v.GetOrbit()?.referenceBody == b) {
+
+						// Loop past the end of the array to provide a chance to
+						// append after the last entry.
+						for (int t = 0; t < transfers.Count + 1; ++t) {
+							if (t >= transfers.Count) {
+
+								transfers.Add(new TransferModel(origin, v));
+								if (v == targetBody) {
+									foundTarget = true;
+								}
+								break;
+
+							} else if (transfers[t].destination.GetOrbit().referenceBody == b
+									&& (v.GetOrbit()?.semiMajorAxis ?? 0) < transfers[t].destination.GetOrbit().semiMajorAxis) {
+
+								transfers.Insert(t, new TransferModel(origin, v));
+								if (v == targetBody) {
+									foundTarget = true;
+								}
+								break;
+							}
+						}
+					}
+				}
+
 				DbgFmt("Exhausted transfers around {0}", b.theName);
 
 				if (toSkip == targetBody && targetBody != null) {

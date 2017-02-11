@@ -9,6 +9,20 @@ namespace Astrogator {
 	public static class KerbalTools {
 
 		/// <summary>
+		/// Check whether a vessel is a tracked asteroid.
+		/// Derived from CustomAsteroids and RasterPropMonitor.
+		/// </summary>
+		/// <param name="v">The vessel to check</param>
+		/// <returns>
+		/// True if v is a tracked asteroid, false otherwise.
+		/// </returns>
+		public static bool IsTrackedAsteroid(Vessel v)
+		{
+			return v.vesselType == VesselType.SpaceObject
+				&& (v.DiscoveryInfo?.HaveKnowledgeAbout(DiscoveryLevels.StateVectors) ?? false);
+		}
+
+		/// <summary>
 		/// Make the map view focus move to the given body.
 		/// Borrowed from Precise Node.
 		/// </summary>
