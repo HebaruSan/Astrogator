@@ -107,7 +107,7 @@ namespace Astrogator {
 						// Note which body is boss of the patch where we transfer
 						transferParent = b as CelestialBody;
 						transferDestination = prevBody;
-						DbgFmt("Found transfer patch, parent: {0}, destination: {0}",
+						DbgFmt("Found transfer patch, parent: {0}, destination: {1}",
 							TheName(transferParent), TheName(transferDestination));
 						break;
 					}

@@ -401,7 +401,7 @@ namespace Astrogator {
 
 		/// <summary>
 		/// Calculate the delta V required to change planes from o to target at time burnUT.
-		/// Borrowed from Mechjeb
+		/// Borrowed from MechJeb
 		/// </summary>
 		/// <param name="o">Starting Orbit</param>
 		/// <param name="target">Destination orbit</param>
@@ -469,7 +469,7 @@ namespace Astrogator {
 
 		/// <summary>
 		/// Return the vector with the Y and Z components exchanged
-		/// Borrowed from Mechjeb
+		/// Borrowed from MechJeb
 		/// </summary>
 		/// <param name="v">Input vector</param>
 		/// <returns>
@@ -506,7 +506,7 @@ namespace Astrogator {
 
 		/// <summary>
 		///  Normalized vector pointing radially outward from the planet
-		/// Borrowed from Mechjeb
+		/// Borrowed from MechJeb
 		/// </summary>
 		/// <param name="o">Orbit from which to plot the vector</param>
 		/// <param name="UT">Time at which to plot the vector</param>
@@ -520,7 +520,7 @@ namespace Astrogator {
 
 		/// <summary>
 		/// Get orbital velocity, transformed to work with world space
-		/// Borrowed from Mechjeb
+		/// Borrowed from MechJeb
 		/// </summary>
 		/// <param name="o">Orbit</param>
 		/// <param name="UT">Time at which to get the velocity</param>
@@ -535,7 +535,7 @@ namespace Astrogator {
 		/// <summary>
 		/// Get position of orbiting entity relative to its parent body at a given time,
 		/// transformed to work with world space
-		/// Borrowed from Mechjeb
+		/// Borrowed from MechJeb
 		/// </summary>
 		/// <param name="o">Orbit of entity</param>
 		/// <param name="UT">Time at which to get the position</param>

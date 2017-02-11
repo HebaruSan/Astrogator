@@ -36,12 +36,12 @@ I assume opening the `csproj` file in Visual Studio would work, but I haven't tr
 ## Packing a release
 
 1. Commit all changes intended for release
-1. Update [TODO list](TODO.md) to reflect changes
-1. Update version in [AVC file](Astrogator.version)
-1. Update version in [DLL assembly](src/Properties/AssemblyInfo.cs)
-1. Commit and push to Github
-1. Create a new release on Github
-1. `make clean && make`
-1. Attach zip file to Github release
-1. Release the release
-1. Watch CKAN for updates
+2. Update [TODO list](TODO.md) to reflect changes
+3. Update version in [AVC file](Astrogator.version)
+4. Update version in [DLL assembly](src/Properties/AssemblyInfo.cs)
+5. Commit and push to Github
+6. Create a new release on Github
+7. `make clean && make`
+8. Attach zip file to Github release
+9. Publish the release
+10. Watch CKAN for updates

@@ -43,7 +43,7 @@ namespace Astrogator {
 				new DialogGUIFlexibleSpace(),
 				iconButton(settingsIcon, settingsStyle, "Settings", toggleSettingsVisible)
 			));
-			if (ShowSettings) {
+			if (Settings.Instance.ShowSettings) {
 				AddChild(new SettingsView());
 			}
 		}
@@ -70,18 +70,9 @@ namespace Astrogator {
 			}
 		}
 
-		private bool ShowSettings {
-			get {
-				return Settings.Instance.ShowSettings;
-			}
-			set {
-				Settings.Instance.ShowSettings = value;
-			}
-		}
-
 		private void toggleSettingsVisible()
 		{
-			ShowSettings = !ShowSettings;
+			Settings.Instance.ShowSettings = !Settings.Instance.ShowSettings;
 			resetCallback();
 		}
 
