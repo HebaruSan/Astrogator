@@ -371,33 +371,33 @@ namespace Astrogator {
 			}, {
 				GameSettings.TRANSLATE_UP, (AstrogationModel m) => {
 					if (m.ActiveTransfer?.retrogradeTransfer ?? false) {
-						AdjustManeuver(m.ActivePlaneChangeBurn, Vector3d.up);
+						AdjustManeuver(m.ActivePlaneChangeBurn ?? m.ActiveEjectionBurn, Vector3d.up);
 					} else {
-						AdjustManeuver(m.ActivePlaneChangeBurn, Vector3d.down);
+						AdjustManeuver(m.ActivePlaneChangeBurn ?? m.ActiveEjectionBurn, Vector3d.down);
 					}
 				}
 			}, {
 				GameSettings.TRANSLATE_DOWN, (AstrogationModel m) => {
 					if (m.ActiveTransfer?.retrogradeTransfer ?? false) {
-						AdjustManeuver(m.ActivePlaneChangeBurn, Vector3d.down);
+						AdjustManeuver(m.ActivePlaneChangeBurn ?? m.ActiveEjectionBurn, Vector3d.down);
 					} else {
-						AdjustManeuver(m.ActivePlaneChangeBurn, Vector3d.up);
+						AdjustManeuver(m.ActivePlaneChangeBurn ?? m.ActiveEjectionBurn, Vector3d.up);
 					}
 				}
 			}, {
 				GameSettings.TRANSLATE_LEFT, (AstrogationModel m) => {
 					if (m.ActiveTransfer?.retrogradeTransfer ?? false) {
-						AdjustManeuver(m.ActivePlaneChangeBurn, Vector3d.right);
+						AdjustManeuver(m.ActivePlaneChangeBurn ?? m.ActiveEjectionBurn, Vector3d.right);
 					} else {
-						AdjustManeuver(m.ActivePlaneChangeBurn, Vector3d.left);
+						AdjustManeuver(m.ActivePlaneChangeBurn ?? m.ActiveEjectionBurn, Vector3d.left);
 					}
 				}
 			}, {
 				GameSettings.TRANSLATE_RIGHT, (AstrogationModel m) => {
 					if (m.ActiveTransfer?.retrogradeTransfer ?? false) {
-						AdjustManeuver(m.ActivePlaneChangeBurn, Vector3d.left);
+						AdjustManeuver(m.ActivePlaneChangeBurn ?? m.ActiveEjectionBurn, Vector3d.left);
 					} else {
-						AdjustManeuver(m.ActivePlaneChangeBurn, Vector3d.right);
+						AdjustManeuver(m.ActivePlaneChangeBurn ?? m.ActiveEjectionBurn, Vector3d.right);
 					}
 				}
 			}
@@ -410,22 +410,22 @@ namespace Astrogator {
 			{
 				GameSettings.AXIS_TRANSLATE_X, (AstrogationModel m, double axisValue) => {
 					if (m.ActiveTransfer?.retrogradeTransfer ?? false) {
-						AdjustManeuver(m.ActivePlaneChangeBurn, Vector3d.left, axisValue);
+						AdjustManeuver(m.ActivePlaneChangeBurn ?? m.ActiveEjectionBurn, Vector3d.left, axisValue);
 					} else {
-						AdjustManeuver(m.ActivePlaneChangeBurn, Vector3d.right, axisValue);
+						AdjustManeuver(m.ActivePlaneChangeBurn ?? m.ActiveEjectionBurn, Vector3d.right, axisValue);
 					}
 				}
 			}, {
 				GameSettings.AXIS_TRANSLATE_Y, (AstrogationModel m, double axisValue) => {
 					if (m.ActiveTransfer?.retrogradeTransfer ?? false) {
-						AdjustManeuver(m.ActivePlaneChangeBurn, Vector3d.up, axisValue);
+						AdjustManeuver(m.ActivePlaneChangeBurn ?? m.ActiveEjectionBurn, Vector3d.up, axisValue);
 					} else {
-						AdjustManeuver(m.ActivePlaneChangeBurn, Vector3d.down, axisValue);
+						AdjustManeuver(m.ActivePlaneChangeBurn ?? m.ActiveEjectionBurn, Vector3d.down, axisValue);
 					}
 				}
 			}, {
 				GameSettings.AXIS_TRANSLATE_Z, (AstrogationModel m, double axisValue) => {
-					AdjustManeuver(m.ActivePlaneChangeBurn, Vector3d.back, axisValue);
+					AdjustManeuver(m.ActiveEjectionBurn, 0.1 * Vector3d.back, axisValue);
 				}
 			}
 		};
