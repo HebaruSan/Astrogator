@@ -29,9 +29,16 @@ namespace Astrogator {
 		/// The full relative path from the main KSP folder to a given resource from this mod.
 		/// </returns>
 		/// <param name="filename">Name of file located in our plugin folder</param>
-		public static string FilePath(string filename)
+		/// <param name="GameDataRelative">True if the KSP/GameData portion of the path is assumed, false if we need to provide the full path</param>
+		public static string FilePath(string filename, bool GameDataRelative = true)
 		{
-			return string.Format("GameData/{0}/{1}", Astrogator.Name, filename);
+			if (GameDataRelative) {
+				return string.Format("{0}/{1}", Astrogator.Name, filename);
+			} else {
+				return string.Format("{0}/{1}",
+					System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location),
+					filename);
+			}
 		}
 
 		/// <summary>
@@ -56,7 +63,7 @@ namespace Astrogator {
 		/// <value>
 		/// The icon to show for this mod in the app launcher.
 		/// </value>
-		public static Texture2D AppIcon = GetImage(FilePath("Astrogator.png"));
+		public static Texture2D AppIcon = GetImage(FilePath("Astrogator"));
 
 		/// <returns>
 		/// A texture object for the image file at the given path.
@@ -64,9 +71,7 @@ namespace Astrogator {
 		/// <param name="filepath">Path to image file to load</param>
 		public static Texture2D GetImage(string filepath)
 		{
-			Texture2D tex = new Texture2D(38, 38, TextureFormat.ARGB32, false);
-			tex.LoadImage(System.IO.File.ReadAllBytes(filepath));
-			return tex;
+			return GameDatabase.Instance.GetTexture(filepath, false);
 		}
 
 		/// <summary>
@@ -86,12 +91,16 @@ namespace Astrogator {
 
 		private static Sprite SpriteFromTexture(Texture2D tex)
 		{
-			return Sprite.Create(
-				tex,
-				new Rect(0, 0, tex.width, tex.height),
-				new Vector2(0.5f, 0.5f),
-				tex.width
-			);
+			if (tex != null) {
+				return Sprite.Create(
+					tex,
+					new Rect(0, 0, tex.width, tex.height),
+					new Vector2(0.5f, 0.5f),
+					tex.width
+				);
+			} else {
+				return null;
+			}
 		}
 
 		/// <returns>
@@ -244,7 +253,7 @@ namespace Astrogator {
 		/// <value>
 		/// Icon for normal state of settings button.
 		/// </value>
-		public static Sprite settingsIcon = GetSprite(FilePath("settings.png"));
+		public static Sprite settingsIcon = GetSprite(FilePath("settings"));
 
 		/// <value>
 		/// Icon for normal state of settings button.
@@ -257,7 +266,7 @@ namespace Astrogator {
 		/// <value>
 		/// Icon for hovered state of settings button.
 		/// </value>
-		public static Sprite settingsHoverIcon = GetSprite(FilePath("settingsHover.png"));
+		public static Sprite settingsHoverIcon = GetSprite(FilePath("settingsHover"));
 
 		/// <value>
 		/// Icon for hovered state of settings button.
@@ -281,7 +290,7 @@ namespace Astrogator {
 		/// <value>
 		/// Icon for normal state of maneuver node creation button.
 		/// </value>
-		public static Sprite maneuverIcon = GetSprite(FilePath("maneuver.png"));
+		public static Sprite maneuverIcon = GetSprite(FilePath("maneuver"));
 
 		/// <value>
 		/// Icon for normal state of maneuver creation button.
@@ -294,7 +303,7 @@ namespace Astrogator {
 		/// <value>
 		/// Icon for hovered state of maneuver node creation button.
 		/// </value>
-		public static Sprite maneuverHoverIcon = GetSprite(FilePath("maneuverHover.png"));
+		public static Sprite maneuverHoverIcon = GetSprite(FilePath("maneuverHover"));
 
 		/// <value>
 		/// Icon for hovered state of maneuver creation button.
@@ -317,7 +326,7 @@ namespace Astrogator {
 		/// <value>
 		/// Icon for normal state of warp button.
 		/// </value>
-		public static Sprite warpIcon = GetSprite(FilePath("warp.png"));
+		public static Sprite warpIcon = GetSprite(FilePath("warp"));
 
 		/// <value>
 		/// Icon for normal state of warp button.
@@ -330,7 +339,7 @@ namespace Astrogator {
 		/// <value>
 		/// Icon for hovered state of warp button.
 		/// </value>
-		public static Sprite warpHoverIcon = GetSprite(FilePath("warpHover.png"));
+		public static Sprite warpHoverIcon = GetSprite(FilePath("warpHover"));
 
 		/// <value>
 		/// Icon for hovered state of warp button.
