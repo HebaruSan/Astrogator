@@ -88,7 +88,7 @@ namespace Astrogator {
 				if (currentOrbit.TrueAnomalyAtUT(now) < 0) {
 					DbgFmt("We could attempt a capture burn here");
 
-					double burnTime = currentOrbit.GetUTforTrueAnomaly(0, Planetarium.GetUniversalTime()),
+					double burnTime = currentOrbit.GetUTforTrueAnomaly(0, now),
 						currentPeSpeed = currentOrbit.getOrbitalVelocityAtTrueAnomaly(0).magnitude;
 					double periapsis = RadiusAtTime(currentOrbit, burnTime);
 					double capturedPeSpeed = SpeedAtPeriapsis(
