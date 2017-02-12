@@ -29,3 +29,4 @@
   - Settings
   - Resources
   - Event handlers
+- [ ] Implement TaxiService's method of updating the UI without close/reopen
