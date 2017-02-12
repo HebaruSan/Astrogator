@@ -86,7 +86,7 @@ namespace Astrogator {
 			} else if (currentOrbit.eccentricity > 1.0) {
 
 				if (currentOrbit.TrueAnomalyAtUT(now) < 0) {
-					DbgFmt("We could attempt a capture burn here");
+					DbgFmt("Generating capture burn");
 
 					double burnTime = currentOrbit.GetUTforTrueAnomaly(0, now),
 						currentPeSpeed = currentOrbit.getOrbitalVelocityAtTrueAnomaly(0).magnitude;
