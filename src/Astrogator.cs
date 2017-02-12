@@ -345,11 +345,11 @@ namespace Astrogator {
 					}
 					if (n.attachedGizmo != null) {
 						n.attachedGizmo.DeltaV = n.DeltaV;
-					}
-					try {
-						n.OnGizmoUpdated(n.DeltaV, burn.atTime);
-					} catch (Exception ex) {
-						DbgExc("Problem updating gizmo", ex);
+						try {
+							n.OnGizmoUpdated(n.DeltaV, burn.atTime);
+						} catch (Exception ex) {
+							DbgExc("Problem updating gizmo", ex);
+						}
 					}
 					n.solver.UpdateFlightPlan();
 				}
