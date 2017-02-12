@@ -12,9 +12,7 @@
 
 ## More transfer types
 
-- [X] To tracked asteroids
 - [ ] Rendezvous with asteroids near Pe of their future encounter/escape trajectories
-- [ ] Capture burns for inbound hyperbolic orbits
 - [ ] Launch to orbit
 - [ ] Return-to-LKO from Mun and Minmus
 
