@@ -44,7 +44,7 @@ namespace Astrogator {
 				iconButton(settingsIcon, settingsStyle, "Settings", toggleSettingsVisible)
 			));
 			if (Settings.Instance.ShowSettings) {
-				AddChild(new SettingsView());
+				AddChild(new SettingsView(resetCallback));
 			}
 		}
 
@@ -56,7 +56,7 @@ namespace Astrogator {
 		/// This is needed because the DialogGUI* functions don't allow us to
 		/// make dynamic chnages to a UI beyond changing a label's text.
 		/// </summary>
-		public delegate void ResetCallback();
+		public delegate void ResetCallback(bool resetModel = false);
 
 		private ResetCallback resetCallback { get; set; }
 

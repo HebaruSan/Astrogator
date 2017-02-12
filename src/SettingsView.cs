@@ -14,13 +14,15 @@ namespace Astrogator {
 		/// <summary>
 		/// Construct a GUI object that allows the user to edit the settings.
 		/// </summary>
-		public SettingsView()
+		public SettingsView(AstrogationView.ResetCallback reset)
 			: base(
 				mainWindowMinWidth, 10,
 				mainWindowSpacing,  settingsPadding,
 				TextAnchor.UpperLeft
 			)
 		{
+			resetCallback = reset;
+
 			try {
 
 				AddChild(LabelWithStyleAndSize(
@@ -38,13 +40,19 @@ namespace Astrogator {
 				AddChild(new DialogGUIToggle(
 					() => Settings.Instance.AddPlaneChangeDeltaV,
 					"Include plane change burns in Δv display",
-					(bool b) => { Settings.Instance.AddPlaneChangeDeltaV = b; }
+					(bool b) => { Settings.Instance.AddPlaneChangeDeltaV = b; resetCallback(true); }
 				));
 
 				AddChild(new DialogGUIToggle(
 					() => Settings.Instance.DeleteExistingManeuvers,
 					"Delete existing maneuvers",
 					(bool b) => { Settings.Instance.DeleteExistingManeuvers = b; }
+				));
+
+				AddChild(new DialogGUIToggle(
+					() => Settings.Instance.ShowTrackedAsteroids,
+					"Calculate transfers to tracked asteroids",
+					(bool b) => { Settings.Instance.ShowTrackedAsteroids = b; resetCallback(true); }
 				));
 
 				AddChild(LabelWithStyleAndSize(
@@ -105,6 +113,8 @@ namespace Astrogator {
 				DbgExc("Problem constructing settings view", ex);
 			}
 		}
+
+		private AstrogationView.ResetCallback resetCallback { get; set; }
 
 	}
 
