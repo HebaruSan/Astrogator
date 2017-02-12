@@ -188,13 +188,20 @@ namespace Astrogator {
 			get {
 				if (model != null) {
 					if (model.hyperbolicOrbit) {
-						return string.Format(
-							"{0} is on a hyperbolic trajectory. Capture to see transfer info.",
-							TheName(model.origin)
-						);
+						if (model.inbound) {
+							return string.Format(
+								"{0} is on an escape trajectory. Capture to see more transfers.",
+								TheName(model.origin)
+							);
+						} else {
+							return string.Format(
+								"{0} is on an escape trajectory. Capture to see transfers.",
+								TheName(model.origin)
+							);
+						}
 					} else if (model.notOrbiting) {
 						return string.Format(
-							"{0} is landed. Launch to orbit to see transfer info.",
+							"{0} is landed. Launch to orbit to see transfers.",
 							TheName(model.origin)
 						);
 					} else if (model.badInclination) {

@@ -46,9 +46,7 @@ namespace Astrogator {
 		/// True if there's a reason we can't calculate transfers, false if everything is OK.
 		/// </summary>
 		public bool ErrorCondition {
-			get {
-				return badInclination || hyperbolicOrbit || notOrbiting;
-			}
+			get { return badInclination || notOrbiting || (hyperbolicOrbit && !inbound); }
 		}
 
 		/// <summary>
@@ -70,6 +68,16 @@ namespace Astrogator {
 			get {
 				return origin?.GetOrbit() != null
 					&& Math.Abs(origin.GetOrbit().inclination * Mathf.Deg2Rad) > 0.25 * Tau;
+			}
+		}
+
+		/// <summary>
+		/// Returns whether we're on an inbound hyperbolic orbit.
+		/// Used to determine whether to provide a capture burn.
+		/// </summary>
+		public bool inbound {
+			get {
+				return hyperbolicOrbit && origin.GetOrbit().trueAnomaly < 0;
 			}
 		}
 
@@ -129,77 +137,87 @@ namespace Astrogator {
 		{
 			DbgFmt("Fabricating transfers around {0}", TheName(start));
 
-			bool foundTarget = false;
+			if (hyperbolicOrbit && inbound) {
 
-			CelestialBody first = start.GetOrbit()?.referenceBody,
+				// Just try to calculate a capture burn
+				DbgFmt("Orbit is hyperbolic, creating transfer for capture");
+				transfers.Add(new TransferModel(origin, origin.GetOrbit().referenceBody));
+
+			} else {
+
+				// Normal orbit, load up everything
+				bool foundTarget = false;
+
+				CelestialBody first = start.GetOrbit()?.referenceBody,
 				targetBody = FlightGlobals.fetch.VesselTarget as CelestialBody;
 
-			for (CelestialBody b = first, toSkip = start as CelestialBody;
-					b != null;
-					toSkip = b, b = ParentBody(b)) {
+				for (CelestialBody b = first, toSkip = start as CelestialBody;
+						b != null;
+						toSkip = b, b = ParentBody(b)) {
 
-				DbgFmt("Checking transfers around {0}", b.theName);
+					DbgFmt("Checking transfers around {0}", b.theName);
 
-				int numBodies = b.orbitingBodies.Count;
-				for (int i = 0; i < numBodies; ++i) {
-					CelestialBody satellite = b.orbitingBodies[i];
-					if (satellite != toSkip) {
-						DbgFmt("Allocating transfer to {0}", satellite.theName);
-						transfers.Add(new TransferModel(origin, satellite));
+					int numBodies = b.orbitingBodies.Count;
+					for (int i = 0; i < numBodies; ++i) {
+						CelestialBody satellite = b.orbitingBodies[i];
+						if (satellite != toSkip) {
+							DbgFmt("Allocating transfer to {0}", satellite.theName);
+							transfers.Add(new TransferModel(origin, satellite));
 
-						if (satellite == targetBody) {
-							DbgFmt("Found target as satellite");
-							foundTarget = true;
+							if (satellite == targetBody) {
+								DbgFmt("Found target as satellite");
+								foundTarget = true;
+							}
 						}
 					}
-				}
 
-				if (Settings.Instance.ShowTrackedAsteroids) {
-					// Add any tracked asteroids in this SOI.
-					// Insertion sort into bodies according to semiMajorAxis.
-					for (int i = 0; i < FlightGlobals.Vessels.Count; ++i) {
-						Vessel v = FlightGlobals.Vessels[i];
+					if (Settings.Instance.ShowTrackedAsteroids) {
+						// Add any tracked asteroids in this SOI.
+						// Insertion sort into bodies according to semiMajorAxis.
+						for (int i = 0; i < FlightGlobals.Vessels.Count; ++i) {
+							Vessel v = FlightGlobals.Vessels[i];
 
-						if (v != start as Vessel && IsTrackedAsteroid(v) && v.GetOrbit()?.referenceBody == b) {
+							if (v != start as Vessel && IsTrackedAsteroid(v) && v.GetOrbit()?.referenceBody == b) {
 
-							// Loop past the end of the array to provide a chance to
-							// append after the last entry.
-							for (int t = 0; t < transfers.Count + 1; ++t) {
-								if (t >= transfers.Count) {
+								// Loop past the end of the array to provide a chance to
+								// append after the last entry.
+								for (int t = 0; t < transfers.Count + 1; ++t) {
+									if (t >= transfers.Count) {
 
-									transfers.Add(new TransferModel(origin, v));
-									if (v == targetBody) {
-										foundTarget = true;
+										transfers.Add(new TransferModel(origin, v));
+										if (v == targetBody) {
+											foundTarget = true;
+										}
+										break;
+
+									} else if (transfers[t].destination.GetOrbit().referenceBody == b
+									&& (v.GetOrbit()?.semiMajorAxis ?? 0) < transfers[t].destination.GetOrbit().semiMajorAxis) {
+
+										transfers.Insert(t, new TransferModel(origin, v));
+										if (v == targetBody) {
+											foundTarget = true;
+										}
+										break;
 									}
-									break;
-
-								} else if (transfers[t].destination.GetOrbit().referenceBody == b
-								&& (v.GetOrbit()?.semiMajorAxis ?? 0) < transfers[t].destination.GetOrbit().semiMajorAxis) {
-
-									transfers.Insert(t, new TransferModel(origin, v));
-									if (v == targetBody) {
-										foundTarget = true;
-									}
-									break;
 								}
 							}
 						}
 					}
+
+					DbgFmt("Exhausted transfers around {0}", b.theName);
+
+					if (toSkip == targetBody && targetBody != null) {
+						DbgFmt("Found target as ancestor");
+						foundTarget = true;
+					}
 				}
 
-				DbgFmt("Exhausted transfers around {0}", b.theName);
-
-				if (toSkip == targetBody && targetBody != null) {
-					DbgFmt("Found target as ancestor");
-					foundTarget = true;
+				if (!foundTarget
+						&& FlightGlobals.ActiveVessel != null
+						&& FlightGlobals.fetch.VesselTarget != null) {
+					DbgFmt("Allocating transfer to {0}", FlightGlobals.fetch.VesselTarget.GetName());
+					transfers.Insert(0, new TransferModel(origin, FlightGlobals.fetch.VesselTarget));
 				}
-			}
-
-			if (!foundTarget
-					&& FlightGlobals.ActiveVessel != null
-					&& FlightGlobals.fetch.VesselTarget != null) {
-				DbgFmt("Allocating transfer to {0}", FlightGlobals.fetch.VesselTarget.GetName());
-				transfers.Insert(0, new TransferModel(origin, FlightGlobals.fetch.VesselTarget));
 			}
 
 			DbgFmt("Shipping completed transfers");

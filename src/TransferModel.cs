@@ -66,6 +66,7 @@ namespace Astrogator {
 
 		private BurnModel GenerateEjectionBurn(Orbit currentOrbit)
 		{
+			double now = Planetarium.GetUniversalTime();
 			if (currentOrbit == null) {
 				DbgFmt("Skipping transfer from null starting orbit.");
 				// Sanity check just in case something unexpected happens.
@@ -84,12 +85,22 @@ namespace Astrogator {
 
 			} else if (currentOrbit.eccentricity > 1.0) {
 
-				// TODO - Capture burn if inbound
-				DbgFmt("No point in trying to calculate on hyperbolic orbit.");
+				if (currentOrbit.TrueAnomalyAtUT(now) < 0) {
+					DbgFmt("We could attempt a capture burn here");
+
+					double burnTime = currentOrbit.GetUTforTrueAnomaly(0, Planetarium.GetUniversalTime()),
+						currentPeSpeed = currentOrbit.getOrbitalVelocityAtTrueAnomaly(0).magnitude;
+					double periapsis = RadiusAtTime(currentOrbit, burnTime);
+					double capturedPeSpeed = SpeedAtPeriapsis(
+						currentOrbit.referenceBody, periapsis, periapsis);
+					return new BurnModel(burnTime, capturedPeSpeed - currentPeSpeed);
+
+				} else {
+					DbgFmt("Too late for a decent capture burn");
+				}
 				return null;
 
 			} else {
-				double now = Planetarium.GetUniversalTime();
 
 				// If you want to go somewhere deep inside another SOI, we will
 				// just aim at whatever ancestor we can see.
