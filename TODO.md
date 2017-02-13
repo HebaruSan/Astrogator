@@ -14,7 +14,6 @@
 
 - [ ] Rendezvous with asteroids near Pe of their future encounter/escape trajectories
 - [ ] Launch to orbit
-- [ ] Return-to-LKO from Mun and Minmus
 
 ## Code style
 

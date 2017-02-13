@@ -60,12 +60,12 @@ namespace Astrogator {
 			}
 
 			// Degrees
-			if (!CloseEnough(LongitudeOfAscendingNode, o.LAN, 0.1)) {
+			if (!CloseEnough(LongitudeOfAscendingNode, o.LAN, 1)) {
 				ret += " lan";
 			}
 
 			// Degrees
-			if (!CloseEnough(ArgumentOfPeriapsis, o.argumentOfPeriapsis, 0.5)) {
+			if (!CloseEnough(ArgumentOfPeriapsis, o.argumentOfPeriapsis, 1)) {
 				ret += " aop";
 			}
 
@@ -84,8 +84,8 @@ namespace Astrogator {
 			return CloseEnough(Eccentricity, o.eccentricity, 0.01)
 				&& CloseEnough(SemiMajorAxis, o.semiMajorAxis, 1)
 				&& CloseEnough(Inclination, o.inclination, 0.1)
-				&& CloseEnough(LongitudeOfAscendingNode, o.LAN, 0.1)
-				&& CloseEnough(ArgumentOfPeriapsis, o.argumentOfPeriapsis, 0.5);
+				&& CloseEnough(LongitudeOfAscendingNode, o.LAN, 1)
+				&& CloseEnough(ArgumentOfPeriapsis, o.argumentOfPeriapsis, 1);
 		}
 	}
 

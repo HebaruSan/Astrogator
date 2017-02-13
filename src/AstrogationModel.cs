@@ -149,13 +149,20 @@ namespace Astrogator {
 				bool foundTarget = false;
 
 				CelestialBody first = start.GetOrbit()?.referenceBody,
-				targetBody = FlightGlobals.fetch.VesselTarget as CelestialBody;
+					targetBody = FlightGlobals.fetch.VesselTarget as CelestialBody;
 
 				for (CelestialBody b = first, toSkip = start as CelestialBody;
 						b != null;
 						toSkip = b, b = ParentBody(b)) {
 
 					DbgFmt("Checking transfers around {0}", b.theName);
+
+					// It's worth calculating return-from-satellite burns for Eve, Kerbin, and Duna,
+					// but not for Jool or the Sun.
+					if (b.hasSolidSurface && b != first) {
+						DbgFmt("Adding return-to-parent transfer to {0}", b.theName);
+						transfers.Add(new TransferModel(origin, b));
+					}
 
 					int numBodies = b.orbitingBodies.Count;
 					for (int i = 0; i < numBodies; ++i) {

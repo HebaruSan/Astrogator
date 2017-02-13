@@ -58,14 +58,16 @@ namespace Astrogator {
 			get {
 				Vessel vessel = origin.GetVessel();
 				return vessel != null
-						&& (vessel.situation == Vessel.Situations.PRELAUNCH
-							|| vessel.situation == Vessel.Situations.LANDED
-							|| vessel.situation == Vessel.Situations.SPLASHED);
+					&& (vessel.situation == Vessel.Situations.PRELAUNCH
+						|| vessel.situation == Vessel.Situations.LANDED
+						|| vessel.situation == Vessel.Situations.SPLASHED);
 			}
 		}
 
 		private BurnModel GenerateEjectionBurn(Orbit currentOrbit)
 		{
+			DbgFmt("Looking for a route from {0} to {1}, via {2}", TheName(origin), TheName(destination), TheName(currentOrbit.referenceBody));
+
 			double now = Planetarium.GetUniversalTime();
 			if (currentOrbit == null) {
 				DbgFmt("Skipping transfer from null starting orbit.");
@@ -102,6 +104,10 @@ namespace Astrogator {
 
 			} else {
 
+				// These need to be reset before the below loop to avoid messing things up
+				transferParent = null;
+				transferDestination = null;
+
 				// If you want to go somewhere deep inside another SOI, we will
 				// just aim at whatever ancestor we can see.
 				// So Kerbin -> Laythe would be the same as Kerbin -> Jool.
@@ -111,19 +117,26 @@ namespace Astrogator {
 
 					if (currentOrbit.referenceBody == b as CelestialBody) {
 						// Note which body is boss of the patch where we transfer
-						transferParent = b as CelestialBody;
-						transferDestination = prevBody;
-						DbgFmt("Found transfer patch, parent: {0}, destination: {1}",
-							TheName(transferParent), TheName(transferDestination));
-						break;
-					}
-				}
 
-				if (origin == transferDestination) {
-					// Trying to get to the start SOI or one of its sub-SOIs.
-					// TODO - Transfers to LKO from Mun.
-					DbgFmt("Skipping origin destination");
-					return null;
+						if (prevBody == null) {
+							// Return to LKO burn from Mun/Minmus
+							DbgFmt("Found intermediate recursive origin {0} in destination ancestors; calculating return burn", TheName(currentOrbit.referenceBody));
+
+							return new BurnModel(now, BurnToNewPe(
+								currentOrbit,
+								now,
+								GoodLowOrbitRadius(currentOrbit.referenceBody)
+							));
+
+						} else {
+
+							transferParent = b as CelestialBody;
+							transferDestination = prevBody;
+							DbgFmt("Found transfer patch, parent: {0}, destination: {1}",
+								TheName(transferParent), TheName(transferDestination));
+							break;
+						}
+					}
 				}
 
 				if (transferDestination != null) {
@@ -210,8 +223,10 @@ namespace Astrogator {
 				} else {
 					// Recursive case - get an orbit from the parent body and adjust it for ejection from here
 
+					DbgFmt("Direct route to {0} not found, recursing through parent {1}", TheName(destination), TheName(currentOrbit.referenceBody));
 					BurnModel outerBurn = GenerateEjectionBurn(ParentOrbit(currentOrbit));
 					if (outerBurn != null) {
+						DbgFmt("Got route from {0}, calculating ejection", TheName(currentOrbit.referenceBody));
 
 						double angleOffset = outerBurn.prograde < 0
 							? 0
@@ -249,8 +264,10 @@ namespace Astrogator {
 								outerBurn.totalDeltaV,
 								burnTime)
 						);
+					} else {
+						DbgFmt("No outer burn found");
+						return null;
 					}
-					return outerBurn;
 				}
 			}
 		}
