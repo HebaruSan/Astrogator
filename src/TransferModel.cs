@@ -54,7 +54,10 @@ namespace Astrogator {
 		/// </summary>
 		public BurnModel     planeChangeBurn     { get; private set; }
 
-		private bool Landed {
+		/// <summary>
+		/// True if the craft is sitting on a surface (solid or liquid) rather than on an orbit.
+		/// </summary>
+		public bool Landed {
 			get {
 				Vessel vessel = origin.GetVessel();
 				return vessel != null

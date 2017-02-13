@@ -12,8 +12,14 @@
 
 ## More transfer types
 
-- [ ] Rendezvous with asteroids near Pe of their future encounter/escape trajectories
 - [ ] Launch to orbit
+- [ ] Rendezvous with asteroids near Pe of their future encounter/escape trajectories
+
+## Fixes
+
+- [ ] Crash on probe loss of radio contact
+- [ ] Keys stop working when nested encounter established
+- [ ] Freeze on set orbit cheat
 
 ## Code style
 
@@ -28,4 +34,10 @@
   - Settings
   - Resources
   - Event handlers
-- [ ] Implement TaxiService's method of updating the UI without close/reopen
+- [ ] Implement [TaxiService's method of updating the UI without close/reopen](http://forum.kerbalspaceprogram.com/index.php?/topic/149324-popupdialog-and-the-dialoggui-classes/&do=findComment&comment=2950891)
+- [ ] Unit tests
+
+## Documentation
+
+- [ ] New main screenshot
+- [ ] New settings screenshot

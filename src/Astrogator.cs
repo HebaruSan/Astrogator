@@ -44,7 +44,9 @@ namespace Astrogator {
 		/// </summary>
 		public const string Description = "Summary of transfer windows of reachable bodies";
 
+		/// <summary>
 		/// This is called at creation
+		/// </summary>
 		public void Start()
 		{
 			// This event fires when KSP is ready for mods to add toolbar buttons
@@ -60,6 +62,9 @@ namespace Astrogator {
 			// We need that to be able to calculate plane changes.
 			GameEvents.onFlightReady.Add(OnFlightReady);
 
+			// Reset the view when we take off or land, etc.
+			GameEvents.onVesselSituationChange.Add(OnSituationChanged);
+
 			// This event fires on SOI change
 			if (FlightGlobals.ActiveVessel != null) {
 				VesselMode = true;
@@ -69,7 +74,9 @@ namespace Astrogator {
 			}
 		}
 
+		/// <summary>
 		/// This is called at destroy
+		/// </summary>
 		public void OnDisable()
 		{
 			// Tear down the window (saves the position as a side effect)
@@ -90,6 +97,9 @@ namespace Astrogator {
 			// This is called in the flight scene when the vessel is fully loaded.
 			// We need that to be able to calculate plane changes.
 			GameEvents.onFlightReady.Remove(OnFlightReady);
+
+			// Reset the view when we take off or land, etc.
+			GameEvents.onVesselSituationChange.Remove(OnSituationChanged);
 
 			// The launcher destroyed event doesn't always fire when we need it (?)
 			RemoveLauncher();
@@ -142,7 +152,7 @@ namespace Astrogator {
 		/// <summary>
 		/// React to user hovering over the app launcher by showing the tooltip.
 		/// </summary>
-		public void onAppLaunchHover()
+		private void onAppLaunchHover()
 		{
 			DbgFmt("Hovered over");
 
@@ -158,7 +168,7 @@ namespace Astrogator {
 		/// <summary>
 		/// React to the user de-hovering the app launcher by hiding the tooltip.
 		/// </summary>
-		public void onAppLaunchHoverOut()
+		private void onAppLaunchHoverOut()
 		{
 			DbgFmt("Unhovered");
 
@@ -171,7 +181,7 @@ namespace Astrogator {
 		/// <summary>
 		/// This is called when they click our toolbar button
 		/// </summary>
-		public void onAppLaunchToggleOn()
+		private void onAppLaunchToggleOn()
 		{
 			DbgFmt("Ready for action");
 			if (model == null) {
@@ -184,7 +194,7 @@ namespace Astrogator {
 		/// <summary>
 		/// This is called when they click our toolbar button again
 		/// </summary>
-		public void onAppLaunchToggleOff()
+		private void onAppLaunchToggleOff()
 		{
 			DbgFmt("Returning to hangar");
 			HideMainWindow();
@@ -220,14 +230,18 @@ namespace Astrogator {
 			// Do the easy calculations in the foreground so the view can sort properly right away
 			CalculateEjectionBurns();
 
-			DbgFmt("Delegating load to background");
+			if (Settings.Instance.GeneratePlaneChangeBurns
+					&& Settings.Instance.AddPlaneChangeDeltaV) {
 
-			BackgroundWorker bgworker = new BackgroundWorker();
-			bgworker.DoWork += bw_LoadModel;
-			bgworker.RunWorkerCompleted += bw_DoneLoadingModel;
-			bgworker.RunWorkerAsync();
+				DbgFmt("Delegating load to background");
 
-			DbgFmt("Launched background");
+				BackgroundWorker bgworker = new BackgroundWorker();
+				bgworker.DoWork += bw_LoadModel;
+				bgworker.RunWorkerCompleted += bw_DoneLoadingModel;
+				bgworker.RunWorkerAsync();
+
+				DbgFmt("Launched background");
+			}
 		}
 
 		private static readonly object bgLoadMutex = new object();
@@ -287,7 +301,7 @@ namespace Astrogator {
 		/// <summary>
 		/// Open the main window listing transfers.
 		/// </summary>
-		public void ShowMainWindow()
+		private void ShowMainWindow()
 		{
 			DbgFmt("Deploying main window");
 
@@ -304,7 +318,7 @@ namespace Astrogator {
 		/// <summary>
 		/// Close the main window.
 		/// </summary>
-		public void HideMainWindow(bool userInitiated = true)
+		private void HideMainWindow(bool userInitiated = true)
 		{
 			if (view != null) {
 				view.Dismiss();
@@ -474,10 +488,6 @@ namespace Astrogator {
 					prevTarget = FlightGlobals.fetch.VesselTarget;
 				}
 
-				if (SituationChanged()) {
-					OnSituationChanged();
-					prevSituation = FlightGlobals.ActiveVessel.situation;
-				}
 			}
 		}
 
@@ -529,16 +539,10 @@ namespace Astrogator {
 			}
 		}
 
-		private Vessel.Situations prevSituation { get; set; }
-		private bool SituationChanged()
-		{
-			return prevSituation != FlightGlobals.ActiveVessel.situation;
-		}
-
-		private void OnSituationChanged()
+		private void OnSituationChanged(GameEvents.HostedFromToAction<Vessel, Vessel.Situations> e)
 		{
 			if (model != null && view != null) {
-				StartLoadingModel(FlightGlobals.ActiveVessel);
+				StartLoadingModel(e.host);
 				ResetView();
 			}
 		}
@@ -546,13 +550,13 @@ namespace Astrogator {
 		/// <summary>
 		/// React to the sphere of influence of the vessel changing by resetting the model and view.
 		/// </summary>
-		public void SOIChanged(CelestialBody newBody)
+		private void SOIChanged(CelestialBody newBody)
 		{
 			DbgFmt("Entered {0}'s sphere of influence", newBody.theName);
 
 			if (model != null && view != null) {
 				// The old list no longer applies because reachable bodies depend on current SOI
-				StartLoadingModel(FlightGlobals.ActiveVessel);
+				StartLoadingModel(model.origin ?? (ITargetable)FlightGlobals.ActiveVessel);
 				ResetView();
 			}
 		}
@@ -562,7 +566,7 @@ namespace Astrogator {
 		/// Note that we have to make sure there's no active vessel to avoid doing this
 		/// in flight mode's map view.
 		/// </summary>
-		public void TrackingStationTargetChanged(MapObject target)
+		private void TrackingStationTargetChanged(MapObject target)
 		{
 			if (!VesselMode
 					&& model != null

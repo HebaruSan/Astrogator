@@ -26,10 +26,10 @@ namespace Astrogator {
 			CreateLayout();
 		}
 
-		private TransferModel model { get; set; }
-		private double lastUniversalTime { get; set; }
-		private DateTimeParts timeToWait { get; set; }
-		private AstrogationView.ResetCallback resetCallback { get; set; }
+		private TransferModel                 model             { get; set; }
+		private double                        lastUniversalTime { get; set; }
+		private DateTimeParts                 timeToWait        { get; set; }
+		private AstrogationView.ResetCallback resetCallback     { get; set; }
 
 		private void CreateLayout()
 		{
@@ -42,7 +42,8 @@ namespace Astrogator {
 				}
 
 				// Skip columns that require maneuver nodes if they're not unlocked
-				if (col.requiresPatchedConics && !patchedConicsUnlocked()) {
+				if (col.requiresPatchedConics
+						&& (!patchedConicsUnlocked() || model.Landed)) {
 					continue;
 				}
 

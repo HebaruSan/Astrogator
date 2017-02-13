@@ -99,13 +99,13 @@ namespace Astrogator {
 
 				AddChild(new DialogGUIToggle(
 					() => Settings.Instance.DisplayUnits == DisplayUnitsEnum.Metric,
-					"Metric",
+					"Système International d'Unités (Metric)",
 					(bool b) => { if (b) Settings.Instance.DisplayUnits = DisplayUnitsEnum.Metric; }
 				));
 
 				AddChild(new DialogGUIToggle(
 					() => Settings.Instance.DisplayUnits == DisplayUnitsEnum.UnitedStatesCustomary,
-					"United States Customary",
+					"United States Customary (Imperial)",
 					(bool b) => { if (b) Settings.Instance.DisplayUnits = DisplayUnitsEnum.UnitedStatesCustomary; }
 				));
 
