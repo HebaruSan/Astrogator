@@ -37,10 +37,10 @@ namespace Astrogator {
 				createRows();
 			}
 			AddChild(new DialogGUIHorizontalLayout(
-				mainWindowMinWidth, 10,
+				RowWidth, 10,
 				0, wrenchPadding,
 				TextAnchor.UpperRight,
-				new DialogGUIFlexibleSpace(),
+				new DialogGUILabel(getMessage, notificationStyle, true, true),
 				iconButton(settingsIcon, settingsStyle, "Settings", toggleSettingsVisible)
 			));
 			if (Settings.Instance.ShowSettings) {
@@ -218,6 +218,17 @@ namespace Astrogator {
 				} else {
 					return "Internal error: Model not found";
 				}
+			}
+		}
+
+		private string getMessage()
+		{
+			if (model.ActiveEjectionBurn != null
+					&& FlightGlobals.ActiveVessel != null
+					&& !FlightGlobals.ActiveVessel.ActionGroups[KSPActionGroup.RCS]) {
+				return "Use translation controls to adjust nodes";
+			} else {
+				return "";
 			}
 		}
 

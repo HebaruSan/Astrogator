@@ -541,7 +541,8 @@ namespace Astrogator {
 
 		private void OnSituationChanged(GameEvents.HostedFromToAction<Vessel, Vessel.Situations> e)
 		{
-			if (model != null && view != null) {
+			if (model != null && view != null && e.host == FlightGlobals.ActiveVessel) {
+				DbgFmt("Situation of {0} changed from {1} to {2}", TheName(e.host), e.from, e.to);
 				StartLoadingModel(e.host);
 				ResetView();
 			}
@@ -552,9 +553,8 @@ namespace Astrogator {
 		/// </summary>
 		private void SOIChanged(CelestialBody newBody)
 		{
-			DbgFmt("Entered {0}'s sphere of influence", newBody.theName);
-
 			if (model != null && view != null) {
+				DbgFmt("Entered {0}'s sphere of influence", newBody.theName);
 				// The old list no longer applies because reachable bodies depend on current SOI
 				StartLoadingModel(model.origin ?? (ITargetable)FlightGlobals.ActiveVessel);
 				ResetView();

@@ -373,6 +373,19 @@ namespace Astrogator {
 		};
 
 		/// <value>
+		/// Left aligned italic text for telling the user things.
+		/// </value>
+		public static UIStyle notificationStyle = new UIStyle() {
+			normal	= subTitleFont,
+			active	= subTitleFont,
+			disabled	= subTitleFont,
+			highlight	= subTitleFont,
+			alignment	= TextAnchor.MiddleLeft,
+			fontSize	= fontSize,
+			fontStyle	= FontStyle.Italic,
+		};
+
+		/// <value>
 		/// A red, centered variant of the normal content font for error messages.
 		/// </value>
 		public static UIStyle subTitleErrorStyle = new UIStyle() {
