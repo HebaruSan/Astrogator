@@ -224,6 +224,7 @@ namespace Astrogator {
 		private string getMessage()
 		{
 			if (model.ActiveEjectionBurn != null
+					&& Settings.Instance.TranslationAdjust
 					&& FlightGlobals.ActiveVessel != null
 					&& !FlightGlobals.ActiveVessel.ActionGroups[KSPActionGroup.RCS]) {
 				return "Use translation controls to adjust nodes";

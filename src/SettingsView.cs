@@ -40,7 +40,13 @@ namespace Astrogator {
 				AddChild(new DialogGUIToggle(
 					() => Settings.Instance.AddPlaneChangeDeltaV,
 					"Include plane change burns in Δv display",
-					(bool b) => { Settings.Instance.AddPlaneChangeDeltaV = b; resetCallback(true); }
+					(bool b) => {
+						Settings.Instance.AddPlaneChangeDeltaV = b;
+						// Only need to reload if we don't already have the plane change values
+						if (b) {
+							resetCallback(true);
+						}
+					}
 				));
 
 				AddChild(new DialogGUIToggle(
