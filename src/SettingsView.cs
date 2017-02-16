@@ -100,6 +100,12 @@ namespace Astrogator {
 				));
 
 				AddChild(new DialogGUIToggle(
+					() => Settings.Instance.AutoSetSAS,
+					"Automatically set SAS to maneuver mode",
+					(bool b) => { Settings.Instance.AutoSetSAS = b; }
+				));
+
+				AddChild(new DialogGUIToggle(
 					() => Settings.Instance.TranslationAdjust,
 					"Adjust nodes with translation controls when RCS is off",
 					(bool b) => { Settings.Instance.TranslationAdjust = b; }

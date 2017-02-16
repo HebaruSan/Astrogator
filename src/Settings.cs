@@ -61,6 +61,7 @@ namespace Astrogator {
 			AutoFocusDestinationKey     = "AutoFocusDestination",
 			AutoEditEjectionNodeKey     = "AutoEditEjectionNode",
 			AutoEditPlaneChangeNodeKey  = "AutoEditPlaneChangeNode",
+			AutoSetSASKey               = "AutoSetSAS",
 			TranslationAdjustKey        = "TranslationAdjust";
 
 		/// <summary>
@@ -158,6 +159,14 @@ namespace Astrogator {
 		public bool AutoFocusDestination {
 			get { return GetValue(AutoFocusDestinationKey, true); }
 			set { SetValue(AutoFocusDestinationKey, value); }
+		}
+
+		/// <value>
+		/// If true, creating a maneuver node will enable SAS and set it to maneuver mode.
+		/// </value>
+		public bool AutoSetSAS {
+			get { return GetValue(AutoSetSASKey, true); }
+			set { SetValue(AutoSetSASKey, value); }
 		}
 
 		/// <value>

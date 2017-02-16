@@ -9,7 +9,6 @@
   - Pick the soonest range when showing times or making maneuvers
   - Only rule out a range once the entire thing is overdue
 - [ ] i18n / l10n (once SQUAD releases their version of it)
-- [ ] Option to FlightGlobals.ActiveVessel.Autopilot.SetMode(VesselAutopilot.AutopilotMode.Maneuver);
 
 ## [Kottabos](https://www.youtube.com/watch?v=bcl9sy6CJAY) feedback
 

@@ -263,6 +263,20 @@ namespace Astrogator {
 						FocusMap(model.transferParent, model.transferDestination);
 					}
 				}
+
+				if (Settings.Instance.AutoSetSAS
+						&& FlightGlobals.ActiveVessel != null
+						&& FlightGlobals.ActiveVessel.Autopilot.CanSetMode(VesselAutopilot.AutopilotMode.Maneuver)) {
+					try {
+						if (FlightGlobals.ActiveVessel.Autopilot.Enabled) {
+							FlightGlobals.ActiveVessel.Autopilot.SetMode(VesselAutopilot.AutopilotMode.Maneuver);
+						} else {
+							FlightGlobals.ActiveVessel.Autopilot.Enable(VesselAutopilot.AutopilotMode.Maneuver);
+						}
+					} catch (Exception ex) {
+						DbgExc("Problem setting SAS to maneuver mode", ex);
+					}
+				}
 			}
 		}
 
