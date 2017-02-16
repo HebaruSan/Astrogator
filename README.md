@@ -8,7 +8,7 @@ See all the transfers that you could choose from your current location at a glan
 
 ## Download
 
-The [latest version](https://github.com/HebaruSan/Astrogator/releases) is available on Github.
+The [latest version](https://github.com/HebaruSan/Astrogator/releases/latest) is available on Github.
 
 Unzip to your GameData folder.
 
