@@ -22,6 +22,7 @@
         { "name": "PreciseNode" },
         { "name": "PreciseManeuver" },
         { "name": "LandingHeight" },
-        { "name": "NavballDockingIndicator" }
+        { "name": "NavballDockingIndicator" },
+        { "name": "WarpEverywhere" }
     ]
 }
