@@ -70,10 +70,45 @@ namespace Astrogator {
 		{
 			double targetRadius = GoodLowOrbitRadius(body);
 
+			DbgFmt("Target radius: {0}", targetRadius);
+			DbgFmt("Current speed: {0}", vessel.GetOrbit().orbitalSpeed);
+
+			// TODO - Gravity and drag losses.
+			//        Probably sufficient to measure on Kerbin and scale linearly.
+			// http://forum.kerbalspaceprogram.com/index.php?/topic/144538-delta-v-calculations-accuracy/&do=findComment&comment=2692269
+
+			// Gravity loss: Integral<time>(ignition time, burnout time, parent.GeeASL * Math.Sin(pitch))
+			//   pitch = PI at t=0, PI/2 by 10 km, and 0 by the end
+
+			// Drag loss: Integral<time>(ignition time, burnout time, drag force * mass)
+			//   mass = wetMass - t * fuelMass / totalLaunchTime
+			//   drag force = 0 in space, more lower, proportional to speed
+
 			return SpeedAtPeriapsis(body, targetRadius, body.Radius)
-				- vessel.GetOrbit().orbitalSpeed
+				- SpeedAtApoapsis(body, body.Radius, 1)
 				+ SpeedAtPeriapsis(body, targetRadius, targetRadius)
 				- SpeedAtApoapsis(body, targetRadius, body.Radius);
+		}
+
+		/// <summary>
+		/// Calculate the offset from the hidden "reference direction"
+		/// of the given longitude on body b at the given time.
+		/// </summary>
+		/// <param name="b">The body whose surface we're concerned about</param>
+		/// <param name="time">UT at which to calculate the angle</param>
+		/// <param name="longitude">Longitude of the point on the surface we care about</param>
+		/// <returns>
+		/// Angle in radians. Can be compared to AbsolutePhaseAngle for an orbit.
+		/// </returns>
+		public static double AbsolutePhaseAngle(CelestialBody b, double time, double longitude)
+		{
+			if (!b.rotates || b.rotationPeriod == 0) {
+				// If a body doesn't rotate, then dividing by its rotation period may raise an exception.
+				return Mathf.Deg2Rad * (b.initialRotation + longitude);
+			} else {
+				return Mathf.Deg2Rad * (b.initialRotation + longitude)
+					+ (Tau / b.rotationPeriod) * time;
+			}
 		}
 
 		/// <summary>

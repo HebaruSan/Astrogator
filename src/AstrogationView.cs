@@ -199,11 +199,6 @@ namespace Astrogator {
 								TheName(model.origin)
 							);
 						}
-					} else if (model.notOrbiting) {
-						return string.Format(
-							"{0} is landed. Launch to orbit to see transfers.",
-							TheName(model.origin)
-						);
 					} else if (model.badInclination) {
 						return string.Format(
 							"Inclination is {0:0.0}°, accuracy too low past {1:0.}°",

@@ -82,11 +82,57 @@ namespace Astrogator {
 				// Sanity check just in case something unexpected happens.
 				return null;
 
-			} else if (Landed) {
+			} else if (Landed && currentOrbit == origin.GetOrbit()) {
+				// TODO - Include space center scene here
 
-				// TODO - Launch to orbit
-				DbgFmt("Delta V to orbit: {0}", DeltaVToOrbit(origin.GetOrbit().referenceBody, origin));
-				return null;
+				CelestialBody body = origin.GetOrbit().referenceBody;
+
+				if (!body.rotates) {
+					// A non-rotating body means we never get any closer to the
+					// point where we want to escape. No calculation possible.
+					// (This also lets us sidestep a divide by zero risk.)
+					return null;
+				}
+
+				// This will give us a burn with the right delta V from low orbit.
+				// The time will be now plus the time it takes to get from the absolute
+				// reference direction to the burn at the orbital speed of fakeOrbit.
+				double targetRadius = GoodLowOrbitRadius(body);
+				Orbit fakeOrbit = new Orbit(0, 0, targetRadius, 0, 0, 0, 0, body);
+				BurnModel ejection = GenerateEjectionBurn(fakeOrbit);
+
+				// Now we figure out where the vessel (or KSC) will be at the time of that burn.
+				double currentPhaseAngle = AbsolutePhaseAngle(
+					body,
+					ejection.atTime,
+					origin.GetVessel()?.longitude ?? SpaceCenter.Instance.Longitude
+				);
+
+				// This will tell us approximately where our ship should be to launch
+				double targetAbsolutePhaseAngle = AbsolutePhaseAngle(fakeOrbit, ejection.atTime);
+
+				// This tells us how fast the body rotates.
+				// Note that we already have our divide-by-zero guard above.
+				double phaseAnglePerSecond = Tau / body.rotationPeriod;
+
+				// Now we adjust the original burn time to account for the planet rotating
+				// into position for us.
+				// TODO - The Mun may have moved a significant distance during the offset!
+				//        Adjust somehow.
+				double burnTime = ejection.atTime + clamp(targetAbsolutePhaseAngle - currentPhaseAngle) / phaseAnglePerSecond;
+
+				// Number of seconds to adjust burn time to account for launch
+				const double LAUNCH_OFFSET = 0;
+
+				// Finally, generate the real burn if it seems OK.
+				if (burnTime + LAUNCH_OFFSET < now) {
+					return null;
+				} else {
+					return new BurnModel(
+						burnTime + LAUNCH_OFFSET,
+						ejection.prograde + DeltaVToOrbit(body, origin)
+					);
+				}
 
 			} else if (currentOrbit.eccentricity > 1.0) {
 
