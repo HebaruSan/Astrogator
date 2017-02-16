@@ -168,6 +168,14 @@ namespace Astrogator {
 		};
 
 		/// <value>
+		/// Text color for the line under the title.
+		/// </value>
+		public static UIStyleState linkFont = new UIStyleState() {
+			background	= transparent,
+			textColor	= Color.HSVToRGB(0.6f, 0.7f, 0.9f)
+		};
+
+		/// <value>
 		/// Font sizes, normal/highlight styles, and alignment for the tooltip and main window.
 		/// </value>
 		public static UIStyle windowStyle = new UIStyle() {
@@ -408,6 +416,19 @@ namespace Astrogator {
 			font	= UISkinManager.defaultSkin.font,
 			label	= subTitleStyle,
 			toggle	= UISkinManager.defaultSkin.toggle,
+		};
+
+		/// <value>
+		/// Left aligned blue text for a link to the README in the settings.
+		/// </value>
+		public static UIStyle linkStyle = new UIStyle() {
+			normal	= linkFont,
+			active	= linkFont,
+			disabled	= linkFont,
+			highlight	= linkFont,
+			alignment	= TextAnchor.MiddleLeft,
+			fontSize	= fontSize + 2,
+			fontStyle	= FontStyle.BoldAndItalic,
 		};
 
 		/// <value>
