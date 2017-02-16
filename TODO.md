@@ -13,7 +13,6 @@
 
 ## [Kottabos](https://www.youtube.com/watch?v=bcl9sy6CJAY) feedback
 
-- [ ] Allow warp buttons to cancel warp
 - [ ] RasterPropMonitor integration
 - [ ] Shove the README in their face
   - Link when you open the settings

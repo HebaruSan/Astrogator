@@ -272,18 +272,25 @@ namespace Astrogator {
 		/// to that five minute mark. This should allow for most of the long burns.
 		/// If you're closer than five minutes from the burn, then we warp
 		/// right up to the moment of the actual burn.
+		/// If you're _already_ warping, cancel the warp (suggested by Kottabos).
 		/// </summary>
 		public void WarpToBurn()
 		{
-			DbgFmt("Attempting to warp to burn from {0} to {1}", Planetarium.GetUniversalTime(), model.ejectionBurn.atTime);
-			if (Planetarium.GetUniversalTime() < model.ejectionBurn.atTime - BURN_PADDING ) {
-				DbgFmt("Warping to burn minus offset");
-				TimeWarp.fetch.WarpTo(model.ejectionBurn.atTime - BURN_PADDING);
-			} else if (Planetarium.GetUniversalTime() < model.ejectionBurn.atTime) {
-				DbgFmt("Already within offset; warping to burn");
-				TimeWarp.fetch.WarpTo(model.ejectionBurn.atTime);
+			if (TimeWarp.CurrentRate > 1) {
+				DbgFmt("Warp button clicked while already in warp, cancelling warp");
+				TimeWarp.fetch?.CancelAutoWarp();
+				TimeWarp.SetRate(0, false);
 			} else {
-				DbgFmt("Can't warp to the past!");
+				DbgFmt("Attempting to warp to burn from {0} to {1}", Planetarium.GetUniversalTime(), model.ejectionBurn.atTime);
+				if (Planetarium.GetUniversalTime() < model.ejectionBurn.atTime - BURN_PADDING ) {
+					DbgFmt("Warping to burn minus offset");
+					TimeWarp.fetch.WarpTo(model.ejectionBurn.atTime - BURN_PADDING);
+				} else if (Planetarium.GetUniversalTime() < model.ejectionBurn.atTime) {
+					DbgFmt("Already within offset; warping to burn");
+					TimeWarp.fetch.WarpTo(model.ejectionBurn.atTime);
+				} else {
+					DbgFmt("Can't warp to the past!");
+				}
 			}
 		}
 	}
