@@ -39,7 +39,7 @@ namespace Astrogator {
 
 				AddChild(new DialogGUIToggle(
 					() => Settings.Instance.AddPlaneChangeDeltaV,
-					"Include plane change burns in Δv display",
+					"Add plane change burns to Δv column",
 					(bool b) => {
 						Settings.Instance.AddPlaneChangeDeltaV = b;
 						// Only need to reload if we don't already have the plane change values
@@ -51,7 +51,7 @@ namespace Astrogator {
 
 				AddChild(new DialogGUIToggle(
 					() => Settings.Instance.DeleteExistingManeuvers,
-					"Delete existing maneuvers",
+					"Auto-delete user-created maneuver nodes",
 					(bool b) => { Settings.Instance.DeleteExistingManeuvers = b; }
 				));
 

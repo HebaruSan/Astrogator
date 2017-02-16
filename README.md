@@ -52,8 +52,8 @@ Click the wrench to open and close the settings panel:
 | Setting | Description |
 | --- | --- |
 | Generate plane change burns | If you turn this off, then only (prograde) ejection maneuvers will be calculated. This may be needed if the plane change calculations become disruptive. |
-| Include plane change burns in Δv display | If you enable this, then the delta V shown in the table will be the ejection node plus the plane change node. Otherwise only the ejection delta V is shown, to make ejection burns less confusing when flying without maneuver nodes. |
-| Delete existing maneuvers | Our method for calculating plane changes doesn't work if other unrelated maneuvers are active. By default, we simply don't calculate them if that happens. Enabling this setting tells Astrogator to go ahead and delete your nodes if it needs to. **Use with caution!** |
+| Add plane change burns to Δv column | If you enable this, then the delta V shown in the table will be the ejection node plus the plane change node. Otherwise only the ejection delta V is shown, to make ejection burns less confusing when flying without maneuver nodes. |
+| Auto-delete user-created maneuver nodes | Our method for calculating plane changes doesn't work if other unrelated maneuvers are active. By default, we simply don't calculate them if that happens. Enabling this setting tells Astrogator to go ahead and delete your nodes if it needs to. **Use with caution!** |
 | Automatically target destination | When this is enabled, clicking the maneuver node icon will set the destination as the active vessel's target. This can be helpful because it enables the close approach markers. |
 | Automatically focus destination | When this is enabled, clicking the maneuver icon will change the map view focus. If the default maneuvers create an encounter with the desired body, then that body will be focused so you can fine tune your arrival; otherwise the destination's parent body will be focused so you can establish the encounter. |
 | Automatically edit ejection node | When this is enabled, clicking the maneuver icon will leave the first node open for editing. |

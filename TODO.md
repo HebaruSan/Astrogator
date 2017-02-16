@@ -12,13 +12,13 @@
 - [ ] Option to FlightGlobals.ActiveVessel.Autopilot.SetMode(VesselAutopilot.AutopilotMode.Maneuver);
 
 ## [Kottabos](https://www.youtube.com/watch?v=bcl9sy6CJAY) feedback
+
 - [ ] Allow warp buttons to cancel warp
 - [ ] RasterPropMonitor integration
 - [ ] Shove the README in their face
   - Link when you open the settings
   - Separate popup w/ documentation
 - [ ] Turn off auto-focus if no encounter
-- [ ] Remove the "Delete..." setting
 - [ ] Make it clearer that some adjustment of nodes will almost always be necessary
 
 ## More transfer types
