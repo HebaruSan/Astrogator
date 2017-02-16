@@ -9,6 +9,7 @@
   - Pick the soonest range when showing times or making maneuvers
   - Only rule out a range once the entire thing is overdue
 - [ ] i18n / l10n (once SQUAD releases their version of it)
+- [ ] Option to FlightGlobals.ActiveVessel.Autopilot.SetMode(VesselAutopilot.AutopilotMode.Maneuver);
 
 ## More transfer types
 
@@ -23,6 +24,7 @@
 
 ## Code style
 
+- [ ] onVesselGoOffRails / onVesselGoOnRails for the OnOrbitChanged checks
 - [ ] Split CalculateEjectionBurn into transfer versus ejection functions
 - [ ] Generalize retrograde orbit special cases
 - [ ] Split ViewTools: Truly generic stuff versus this project's stuff
