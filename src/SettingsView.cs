@@ -11,6 +11,8 @@ namespace Astrogator {
 	/// </summary>
 	public class SettingsView : DialogGUIVerticalLayout {
 
+		private const string docsURL = "https://github.com/HebaruSan/Astrogator/blob/master/README.md#settings";
+
 		/// <summary>
 		/// Construct a GUI object that allows the user to edit the settings.
 		/// </summary>
@@ -24,6 +26,12 @@ namespace Astrogator {
 			resetCallback = reset;
 
 			try {
+
+				AddChild(headerButton(
+					"Click for online manual",
+					linkStyle, "The meaning of each setting is explained in the README.md file", RowWidth, rowHeight,
+					() => { Application.OpenURL(docsURL); }
+				));
 
 				AddChild(LabelWithStyleAndSize(
 					"Settings:",
