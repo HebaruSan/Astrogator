@@ -46,18 +46,5 @@ namespace Astrogator {
 			);
 		}
 
-		/// <summary>
-		/// Show a formattable string to the user.
-		/// </summary>
-		/// <param name="format">String.Format format string</param>
-		/// <param name="args">Parameters for the format string, if any</param>
-		[System.Diagnostics.Conditional("DEBUG")]
-		public static void ScreenFmt(string format, params object[] args)
-		{
-			ScreenMessages.PostScreenMessage(
-				string.Format(format, args)
-			);
-		}
-
 	}
 }

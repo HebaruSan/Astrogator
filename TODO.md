@@ -18,8 +18,6 @@
 - [ ] Shove the README in their face
   - Link when you open the settings
   - Separate popup w/ documentation
-- [ ] Turn off auto-focus if no encounter
-- [ ] Make it clearer that some adjustment of nodes will almost always be necessary
 
 ## More transfer types
 
