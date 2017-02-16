@@ -26,7 +26,11 @@ namespace Astrogator {
 		/// </summary>
 		public ITargetable   destination         { get; private set; }
 
-		private ITargetable  transferDestination { get; set; }
+		/// <summary>
+		/// The SOI that we're aiming at, possibly an ancestor of our ultimate
+		/// destination if the user targeted a distant moon.
+		/// </summary>
+		public ITargetable   transferDestination { get; private set; }
 
 		/// <summary>
 		/// The reference body of the transfer portion of our route.

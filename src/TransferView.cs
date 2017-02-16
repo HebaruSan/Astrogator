@@ -258,7 +258,9 @@ namespace Astrogator {
 						FocusMap(model.destination);
 					} else if (model.transferParent != null) {
 						// Otherwise focus on the parent of the transfer orbit so we can get an encounter
-						FocusMap(model.transferParent);
+						// Try to explain why this is happening with a screen message
+						ScreenFmt("Adjust maneuvers to establish encounter");
+						FocusMap(model.transferParent, model.transferDestination);
 					}
 				}
 			}

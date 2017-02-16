@@ -9,6 +9,16 @@ namespace Astrogator {
 	public static class KerbalTools {
 
 		/// <summary>
+		/// Show a formattable string to the user.
+		/// </summary>
+		/// <param name="format">String.Format format string</param>
+		/// <param name="args">Parameters for the format string, if any</param>
+		public static void ScreenFmt(string format, params object[] args)
+		{
+			ScreenMessages.PostScreenMessage(string.Format(format, args));
+		}
+
+		/// <summary>
 		/// Check whether a vessel is a tracked asteroid.
 		/// Derived from CustomAsteroids and RasterPropMonitor.
 		/// </summary>
@@ -24,17 +34,52 @@ namespace Astrogator {
 
 		/// <summary>
 		/// Make the map view focus move to the given body.
-		/// Borrowed from Precise Node.
+		/// Borrowed and modified from Precise Node.
 		/// </summary>
-		/// <param name="destination">The body to focus</param>
-		public static void FocusMap(ITargetable destination)
+		/// <param name="center">The body or vessel to put at the middle of the screen</param>
+		/// <param name="edge">A body or vessel to keep barely visible when we zoom</param>
+		public static void FocusMap(ITargetable center, ITargetable edge = null)
 		{
 			MapView.MapCamera.SetTarget(
 				PlanetariumCamera.fetch.targets.Find(
 					mapObj => mapObj.celestialBody != null
-						&& mapObj.celestialBody.Equals(destination)
+						&& mapObj.celestialBody.Equals(center)
 				)
 			);
+
+			// Zoom the camera to facilitate the next step.
+			if (edge != null) {
+				// Without an encounter, the next step is establishing the encounter within the transfer SOI.
+				SetMapZoom((float) edge.GetOrbit().semiMajorAxis);
+			} else {
+				// With an encounter, the next step is fine tuning within the destination SOI.
+				CelestialBody b = center as CelestialBody;
+				if (b != null) {
+					SetMapZoom((float) b.sphereOfInfluence);
+				}
+			}
+		}
+
+		/// <summary>
+		/// Zoom map view based on a desired screen width in meters.
+		/// </summary>
+		/// <param name="widthInMeters">Number of meters we'd like to be able to see across the screen</param>
+		public static void SetMapZoom(float widthInMeters)
+		{
+			// Conversion factor determined empirically:
+
+			//   Scenario        Distance  Width of orbit
+			//   Initial zoom:     87,200             ???
+			//   Moho:          1,452,381   5,263,138,304
+			//   Kerbin:        3,596,042  13,599,840,256
+			//   Jool:         19,683,170  68,773,560,320
+			//   Eeloo:        34,688,480  90,118,820,000
+
+			// Distance seems to be in km, so 1000 of this comes from that conversion.
+			// The remaining 3 probably relate to field of view and radius vs diameter.
+			const float CAMERA_DISTANCE_SCALING_FACTOR = 3000;
+
+			MapView.MapCamera.SetDistance(widthInMeters / CAMERA_DISTANCE_SCALING_FACTOR);
 		}
 
 		/// <summary>
