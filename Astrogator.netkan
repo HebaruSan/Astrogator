@@ -15,6 +15,9 @@
         "bugtracker": "https://github.com/HebaruSan/Astrogator/issues",
         "repository": "https://github.com/HebaruSan/Astrogator"
     },
+    "depends": [
+        { "name": "ModuleManager" }
+    ],
     "suggests": [
         { "name": "GravityTurn" },
         { "name": "Trajectories" },
@@ -23,6 +26,7 @@
         { "name": "PreciseManeuver" },
         { "name": "LandingHeight" },
         { "name": "NavballDockingIndicator" },
-        { "name": "WarpEverywhere" }
+        { "name": "WarpEverywhere" },
+        { "name": "RasterPropMonitor" }
     ]
 }
