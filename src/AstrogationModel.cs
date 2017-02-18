@@ -26,6 +26,14 @@ namespace Astrogator {
 		}
 
 		/// <summary>
+		/// We need to allow an empty object to be valid so we can load most of it in the background.
+		/// </summary>
+		public AstrogationModel()
+		{
+			transfers = new List<TransferModel>();
+		}
+
+		/// <summary>
 		/// The vessel or body that we're starting from.
 		/// </summary>
 		public ITargetable origin { get; private set; }

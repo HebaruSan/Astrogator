@@ -41,7 +41,7 @@ namespace Astrogator {
 		/// True if the transfer portion of this trajectory is retrograde, false otherwise.
 		/// So for a retrograde Kerbin orbit, this is true for Mun and false for Duna.
 		/// </summary>
-		public bool retrogradeTransfer { get; private set; }
+		public bool          retrogradeTransfer  { get; private set; }
 
 		/// <summary>
 		/// The body we're transferring from.
@@ -84,6 +84,11 @@ namespace Astrogator {
 			} else if (destination == null) {
 				DbgFmt("Skipping transfer to null destination.");
 				// Sanity check just in case something unexpected happens.
+				return null;
+
+			} else if (destination.GetOrbit().eccentricity > 1) {
+				DbgFmt("{0} is on an escape trajectory; bailing", TheName(destination));
+
 				return null;
 
 			} else if (Landed) {
@@ -305,7 +310,8 @@ namespace Astrogator {
 		{
 			if (FlightGlobals.ActiveVessel?.patchedConicSolver?.maneuverNodes != null
 					&& transferDestination != null
-					&& transferParent != null) {
+					&& transferParent != null
+					&& destination.GetOrbit().eccentricity < 1) {
 
 				bool ejectionAlreadyActive = false;
 
@@ -410,33 +416,6 @@ namespace Astrogator {
 				}
 			}
 			return false;
-		}
-
-		/// Returns true if UI needs an update
-		public bool Refresh()
-		{
-			if (ejectionBurn != null) {
-				if (ejectionBurn.atTime < Planetarium.GetUniversalTime()) {
-					CalculateEjectionBurn();
-
-					// Apply the same filters we do everywhere else to suppress phantom nodes
-					if (Settings.Instance.GeneratePlaneChangeBurns
-							&& Settings.Instance.AddPlaneChangeDeltaV) {
-
-						try {
-							CalculatePlaneChangeBurn();
-						} catch (Exception ex) {
-							DbgExc("Problem with plane change at expiration", ex);
-							ClearManeuverNodes();
-						}
-					}
-					return true;
-				} else {
-					return false;
-				}
-			} else {
-				return false;
-			}
 		}
 
 		/// <summary>
