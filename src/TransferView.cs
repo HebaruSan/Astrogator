@@ -106,15 +106,9 @@ namespace Astrogator {
 		/// </returns>
 		public bool Refresh()
 		{
-			bool modelNeedsUIUpdate = model.Refresh();
 			double now = Math.Floor(Planetarium.GetUniversalTime());
 
-			if (modelNeedsUIUpdate) {
-				// We have a new ejection burn, so we might need a totally new view
-				// because the sort could be wrong now.
-				resetCallback();
-				return true;
-			} else if (lastUniversalTime != now && model.ejectionBurn != null) {
+			if (lastUniversalTime != now && model.ejectionBurn != null) {
 				timeToWait = new DateTimeParts(model.ejectionBurn.atTime - Planetarium.GetUniversalTime());
 				lastUniversalTime = now;
 				return true;
@@ -124,13 +118,19 @@ namespace Astrogator {
 
 		private const string LoadingText = "---";
 
+		private bool showLoadingText {
+			get {
+				return timeToWait == null || model.ejectionBurn.atTime < Planetarium.GetUniversalTime();
+			}
+		}
+
 		/// <returns>
 		/// String representing years till burn.
 		/// </returns>
 		public string getYearValue()
 		{
 			Refresh();
-			if (timeToWait == null) {
+			if (showLoadingText) {
 				return LoadingText;
 			} else {
 				return TimePieceString("{0}y", timeToWait.years, timeToWait.needYears);
@@ -143,7 +143,7 @@ namespace Astrogator {
 		public string getDayValue()
 		{
 			Refresh();
-			if (timeToWait == null) {
+			if (showLoadingText) {
 				return LoadingText;
 			} else {
 				return TimePieceString("{0}d", timeToWait.days, timeToWait.needDays);
@@ -156,7 +156,7 @@ namespace Astrogator {
 		public string getHourValue()
 		{
 			Refresh();
-			if (timeToWait == null) {
+			if (showLoadingText) {
 				return LoadingText;
 			} else {
 				return TimePieceString("{0}h", timeToWait.hours, timeToWait.needHours);
@@ -169,7 +169,7 @@ namespace Astrogator {
 		public string getMinuteValue()
 		{
 			Refresh();
-			if (timeToWait == null) {
+			if (showLoadingText) {
 				return LoadingText;
 			} else {
 				return TimePieceString("{0}m", timeToWait.minutes, timeToWait.needMinutes);
@@ -182,7 +182,7 @@ namespace Astrogator {
 		public string getSecondValue()
 		{
 			Refresh();
-			if (timeToWait == null) {
+			if (showLoadingText) {
 				return LoadingText;
 			} else {
 				return TimePieceString("{0}s", timeToWait.seconds, true);
@@ -267,10 +267,14 @@ namespace Astrogator {
 				if (Settings.Instance.AutoSetSAS
 						&& FlightGlobals.ActiveVessel != null
 						&& FlightGlobals.ActiveVessel.Autopilot.CanSetMode(VesselAutopilot.AutopilotMode.Maneuver)) {
+					// The API for SAS is ... peculiar.
+					// http://forum.kerbalspaceprogram.com/index.php?/topic/153420-enabledisable-autopilot/
 					try {
 						if (FlightGlobals.ActiveVessel.Autopilot.Enabled) {
 							FlightGlobals.ActiveVessel.Autopilot.SetMode(VesselAutopilot.AutopilotMode.Maneuver);
 						} else {
+							DbgFmt("Not enabled, trying to enable");
+							FlightGlobals.ActiveVessel.ActionGroups.SetGroup(KSPActionGroup.SAS, true);
 							FlightGlobals.ActiveVessel.Autopilot.Enable(VesselAutopilot.AutopilotMode.Maneuver);
 						}
 					} catch (Exception ex) {
