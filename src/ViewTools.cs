@@ -6,6 +6,7 @@ using KSP.UI.TooltipTypes;
 namespace Astrogator {
 
 	using static DebugTools;
+	using static ViewTools;
 
 	/// Anything UI-related that needs to be used from multiple places.
 	public static class ViewTools {
@@ -845,7 +846,6 @@ namespace Astrogator {
 					return string.Format("{0:0} m/s", speed);
 			}
 		}
-
 	}
 
 	/// <summary>
@@ -854,10 +854,12 @@ namespace Astrogator {
 	/// </summary>
 	public class DateTimeParts {
 		private const double
-			daysPerYear      = 426,
-			hoursPerDay      =   6,
 			minutesPerHour   =  60,
 			secondsPerMinute =  60;
+
+		public static double
+			hoursPerDay = FlightGlobals.GetHomeBody().rotationPeriod / secondsPerMinute / minutesPerHour,
+			daysPerYear = FlightGlobals.GetHomeBody().GetOrbit().period / secondsPerMinute / minutesPerHour / hoursPerDay;
 
 		private int mod(double numerator, double denominator)
 		{
