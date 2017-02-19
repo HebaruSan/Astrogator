@@ -591,7 +591,7 @@ namespace Astrogator {
 				contentStyle	= planetStyle,
 				content	= ContentEnum.PlanetName,
 				sortKey	= SortEnum.Position,
-				monospaceWidth	= 7
+				monospaceWidth	= 6
 			}, new ColumnDefinition() {
 				header	= "Time Till Burn",
 				width	= 30,
@@ -616,7 +616,7 @@ namespace Astrogator {
 				headerStyle	= rightHdrStyle,
 				contentStyle	= numberStyle,
 				content	= ContentEnum.HoursTillBurn,
-				monospaceWidth = 2
+				monospaceWidth = 3
 			}, new ColumnDefinition() {
 				header	= "",
 				width	= 25,
@@ -857,7 +857,7 @@ namespace Astrogator {
 			minutesPerHour   =  60,
 			secondsPerMinute =  60;
 
-		public static double
+		private static double
 			hoursPerDay = FlightGlobals.GetHomeBody().rotationPeriod / secondsPerMinute / minutesPerHour,
 			daysPerYear = FlightGlobals.GetHomeBody().GetOrbit().period / secondsPerMinute / minutesPerHour / hoursPerDay;
 

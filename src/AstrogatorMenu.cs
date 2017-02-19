@@ -28,20 +28,54 @@ namespace Astrogator {
 			loader.TryStartLoad(model.origin, null, null, null);
 		}
 
+		/// <summary>
+		/// Key code for the upward pointing wedge button, overridable by RPM configuration.
+		/// We use it to move the selection up by one row.
+		/// </summary>
 		[KSPField]
 		public int buttonUp = 0;
 
+		/// <summary>
+		/// Key code for the downward pointing wedge button, overridable by RPM configuration.
+		/// We use it to move the selection down by one row.
+		/// </summary>
 		[KSPField]
 		public int buttonDown = 1;
 
+		/// <summary>
+		/// Key code for the left arrow button, overridable by RPM configuration.
+		/// We use it to create maneuvers for the selected transfer.
+		/// </summary>
 		[KSPField]
 		public int buttonEnter = 2;
 
+		/// <summary>
+		/// Key code for the X button, overridable by RPM configuration.
+		/// We use it to delete all active maneuvers.
+		/// </summary>
 		[KSPField]
 		public int buttonEsc = 3;
 
+		/// <summary>
+		/// Key code for the circle button, overridable by RPM configuration.
+		/// We use it to warp to the selected transfer.
+		/// </summary>
 		[KSPField]
 		public int buttonHome = 4;
+
+		/// <summary>
+		/// Key code for the rightward pointing wedge button, overridable by RPM configuration.
+		/// We use it to scroll to the next page of transfers, if any.
+		/// </summary>
+		[KSPField]
+		public int buttonRight = 5;
+
+		/// <summary>
+		/// Key code for the leftward pointing wedge button, overridable by RPM configuration.
+		/// We use it to scroll to the previous page of transfers, if any.
+		/// </summary>
+		[KSPField]
+		public int buttonLeft = 6;
 
 		private AstrogationModel            model             { get; set; }
 		private AstrogationLoadBehaviorette loader            { get; set; }
@@ -51,6 +85,7 @@ namespace Astrogator {
 		private bool                        cursorMoved       { get; set; }
 		private string                      menu              { get; set; }
 		private int?                        activeButton      { get; set; }
+		private int                         rowsPerPage       { get; set; }
 
 		private void addHeaders(StringBuilder sb)
 		{
@@ -70,7 +105,7 @@ namespace Astrogator {
 					switch (col.headerStyle.alignment) {
 						case TextAnchor.LowerLeft:
 							sb.AppendFormat(
-								string.Format("{0}0,-{1}{2}", "{", width, "}"),
+								string.Format("{0}{1}0,-{2}{3}", styleColorString(col.headerStyle), "{", width, "}"),
 								col.header
 							);
 							break;
@@ -79,7 +114,7 @@ namespace Astrogator {
 							break;
 						case TextAnchor.LowerRight:
 							sb.AppendFormat(
-								string.Format("{0}0,{1}{2}", "{", width, "}"),
+								string.Format("{0}{1}0,{2}{3}", styleColorString(col.headerStyle), "{", width, "}"),
 								col.header
 							);
 							break;
@@ -89,15 +124,30 @@ namespace Astrogator {
 			}
 		}
 
+		private const string LoadingText = "---";
+
+		private string styleColorString(UIStyle style)
+		{
+			// [#rrggbbaa]
+			Color c = style.normal.textColor;
+			return string.Format(
+				"[#{0,2:X}{1,2:X}{2,2:X}ff]",
+				(int)Math.Floor(255 * c.r),
+				(int)Math.Floor(255 * c.g),
+				(int)Math.Floor(255 * c.b)
+			);
+		}
+
 		private string colContentFormat(ColumnDefinition col)
 		{
 			switch (col.contentStyle.alignment) {
+
 				case TextAnchor.MiddleLeft:
-					return string.Format("{0}0,-{1}{2}", "{", col.monospaceWidth, "}");
-					break;
+					return string.Format("{0}{1}0,-{2}{3}", styleColorString(col.contentStyle), "{", col.monospaceWidth, "}");
+
 				case TextAnchor.MiddleRight:
-					return string.Format("{0}0,{1}{2}", "{", col.monospaceWidth, "}");
-					break;
+					return string.Format("{0}{1}0,{2}{3}", styleColorString(col.contentStyle), "{", col.monospaceWidth, "}");
+
 			}
 			return "{0}";
 		}
@@ -110,7 +160,7 @@ namespace Astrogator {
 			sb.Append(selected ? "> " : "  ");
 			for (int i = 0; i < Columns.Length; ++i) {
 				ColumnDefinition col = Columns[i];
-				// TODO - check style's text color and convert to [#rrggbbaa]
+
 				switch (col.content) {
 					case ContentEnum.PlanetName:
 						sb.AppendFormat(
@@ -120,49 +170,73 @@ namespace Astrogator {
 						break;
 
 					case ContentEnum.YearsTillBurn:
-						sb.AppendFormat(
-							colContentFormat(col),
-							TimePieceString("{0}y", dt.years, dt.needYears)
-						);
+						if (dt == null) {
+							sb.AppendFormat(colContentFormat(col), LoadingText);
+						} else {
+							sb.AppendFormat(
+								colContentFormat(col),
+								TimePieceString("{0}y", dt.years, dt.needYears)
+							);
+						}
 						break;
 
 					case ContentEnum.DaysTillBurn:
-						sb.AppendFormat(
-							colContentFormat(col),
-							TimePieceString("{0}d", dt.days, dt.needDays)
-						);
+						if (dt == null) {
+							sb.AppendFormat(colContentFormat(col), LoadingText);
+						} else {
+							sb.AppendFormat(
+								colContentFormat(col),
+								TimePieceString("{0}d", dt.days, dt.needDays)
+							);
+						}
 						break;
 
 					case ContentEnum.HoursTillBurn:
-						sb.AppendFormat(
-							colContentFormat(col),
-							TimePieceString("{0}h", dt.hours, dt.needHours)
-						);
+						if (dt == null) {
+							sb.AppendFormat(colContentFormat(col), LoadingText);
+						} else {
+							sb.AppendFormat(
+								colContentFormat(col),
+								TimePieceString("{0}h", dt.hours, dt.needHours)
+							);
+						}
 						break;
 
 					case ContentEnum.MinutesTillBurn:
-						sb.AppendFormat(
-							colContentFormat(col),
-							TimePieceString("{0}m", dt.minutes, dt.needMinutes)
-						);
+						if (dt == null) {
+							sb.AppendFormat(colContentFormat(col), LoadingText);
+						} else {
+							sb.AppendFormat(
+								colContentFormat(col),
+								TimePieceString("{0}m", dt.minutes, dt.needMinutes)
+							);
+						}
 						break;
 
 					case ContentEnum.SecondsTillBurn:
-						sb.AppendFormat(
-							colContentFormat(col),
-							TimePieceString("{0}s", dt.seconds, true)
-						);
+						if (dt == null) {
+							sb.AppendFormat(colContentFormat(col), LoadingText);
+						} else {
+							sb.AppendFormat(
+								colContentFormat(col),
+								TimePieceString("{0}s", dt.seconds, true)
+							);
+						}
 						break;
 
 					case ContentEnum.DeltaV:
-						sb.AppendFormat(
-							colContentFormat(col),
-							FormatSpeed(
-								((m.planeChangeBurn == null || !Settings.Instance.AddPlaneChangeDeltaV)
-									? m.ejectionBurn?.totalDeltaV
-									: (m.ejectionBurn?.totalDeltaV + m.planeChangeBurn.totalDeltaV)) ?? 0,
-								Settings.Instance.DisplayUnits)
-						);
+						if (dt == null) {
+							sb.AppendFormat(colContentFormat(col), LoadingText);
+						} else {
+							sb.AppendFormat(
+								colContentFormat(col),
+								FormatSpeed(
+									((m.planeChangeBurn == null || !Settings.Instance.AddPlaneChangeDeltaV)
+										? m.ejectionBurn?.totalDeltaV
+										: (m.ejectionBurn?.totalDeltaV + m.planeChangeBurn.totalDeltaV)) ?? 0,
+									Settings.Instance.DisplayUnits)
+							);
+						}
 						break;
 
 				}
@@ -170,6 +244,20 @@ namespace Astrogator {
 			}
 		}
 
+		/// <summary>
+		/// Generate a text string representing the current transfers.
+		/// Called by RasterPropMonitor based on our cfg file.
+		/// Line 1: Branding title
+		/// Line 2: Subtitle, centered and gray
+		/// Line 3: Blank
+		/// Line 4: Table headers
+		/// Line 5+: Transfer info
+		/// </summary>
+		/// <param name="columns">Number of characters from left edge to right edges</param>
+		/// <param name="rows">Number of characters from top edge to bottom edge</param>
+		/// <returns>
+		/// A string to be displayed on a monitor in IVA.
+		/// </returns>
 		public string ShowMenu(int columns, int rows)
 		{
 			if ((Refresh() || cursorMoved) && model.transfers.Count == timeToWait.Count) {
@@ -182,7 +270,6 @@ namespace Astrogator {
 				sb.Append(Environment.NewLine);
 
 				// [#rrggbbaa]
-				sb.Append("[#22ff22ff]");
 				addHeaders(sb);
 
 				// Wrap the cursor around the edges now because it only tells us dimensions here.
@@ -192,10 +279,13 @@ namespace Astrogator {
 				while (cursorTransfer >= model.transfers.Count) {
 					cursorTransfer -= model.transfers.Count;
 				}
-				// TODO - handle multiple pages of transfers
 
-				for (int i = 0; i < model.transfers.Count && i < rows - 4; ++i) {
-					addRow(sb, model.transfers[i], timeToWait[i], (cursorTransfer == i));
+				rowsPerPage = rows - 4;
+				int screenPage = cursorTransfer / rowsPerPage;
+				for (int t = screenPage * rowsPerPage, r = 0;
+						t < model.transfers.Count && r < rowsPerPage;
+						++t, ++r) {
+					addRow(sb, model.transfers[t], timeToWait[t], (cursorTransfer == t));
 				}
 				menu = sb.ToString();
 				cursorMoved = false;
@@ -203,6 +293,12 @@ namespace Astrogator {
 			return menu;
 		}
 
+		/// <summary>
+		/// Turn data loading on and off.
+		/// Called by RasterPropMonitor based on our cfg file to tell us we're visible or invisible.
+		/// </summary>
+		/// <param name="pageActive">True if active, false otherwise</param>
+		/// <param name="pageNumber">A number that's meaningful to RasterPropMonitor but not to us</param>
 		public void PageActive(bool pageActive, int pageNumber)
 		{
 			if (pageActive) {
@@ -219,6 +315,11 @@ namespace Astrogator {
 			return val.PadLeft(columns - numPads/2, padding).PadRight(columns, padding);
 		}
 
+		/// <summary>
+		/// React to the user pressing buttons on the multifunction display.
+		/// Called by RasterPropMonitor based on our cfg file.
+		/// </summary>
+		/// <param name="buttonNumber">Which button was pressed, to be compared to the button* properties with KSPField attributes</param>
 		public void ButtonClick(int buttonNumber)
 		{
 			DbgFmt("ButtonClick: {0}", buttonNumber);
@@ -236,9 +337,26 @@ namespace Astrogator {
 				ClearManeuverNodes();
 			} else if (activeButton == buttonHome) {
 				model.transfers[cursorTransfer].WarpToBurn();
+			} else if (activeButton == buttonLeft) {
+				cursorTransfer -= rowsPerPage;
+				if (cursorTransfer < 0) {
+					cursorTransfer = 0;
+				}
+				cursorMoved = true;
+			} else if (activeButton == buttonRight) {
+				cursorTransfer += rowsPerPage;
+				if (cursorTransfer >= model.transfers.Count) {
+					cursorTransfer = model.transfers.Count - 1;
+				}
+				cursorMoved = true;
 			}
 		}
 
+		/// <summary>
+		/// React to the user releasing buttons on the multifunction display.
+		/// Called by RasterPropMonitor based on our cfg file.
+		/// </summary>
+		/// <param name="buttonNumber">Which button was released, to be compared to the button* properties with KSPField attributes</param>
 		public void ButtonRelease(int buttonNumber)
 		{
 			DbgFmt("ButtonRelease: {0}", buttonNumber);
@@ -255,7 +373,7 @@ namespace Astrogator {
 					if (model.transfers[i].ejectionBurn != null) {
 						timeToWait.Add(new DateTimeParts(model.transfers[i].ejectionBurn.atTime - Planetarium.GetUniversalTime()));
 					} else {
-						timeToWait.Add(new DateTimeParts(0));
+						timeToWait.Add(null);
 					}
 
 				}
