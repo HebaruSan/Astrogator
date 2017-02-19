@@ -2,6 +2,7 @@ using System;
 using System.Text;
 using System.Globalization;
 using System.Collections.Generic;
+using UnityEngine;
 
 namespace Astrogator {
 
@@ -20,9 +21,11 @@ namespace Astrogator {
 			model = new AstrogationModel(
 				   (ITargetable)FlightGlobals.ActiveVessel
 				?? (ITargetable)FlightGlobals.getMainBody());
+			loader = new AstrogationLoadBehaviorette(model, null);
 			timeToWait = new List<DateTimeParts>();
 			cursorTransfer = 0;
-			CalculateEjectionBurns();
+
+			loader.TryStartLoad(model.origin, null, null, null);
 		}
 
 		[KSPField]
@@ -34,27 +37,153 @@ namespace Astrogator {
 		[KSPField]
 		public int buttonEnter = 2;
 
-		private AstrogationModel    model             { get; set; }
-		private List<DateTimeParts> timeToWait        { get; set; }
-		private double              lastUniversalTime { get; set; }
-		private int                 cursorTransfer    { get; set; }
-		private bool                cursorMoved       { get; set; }
-		private string              menu              { get; set; }
-		private int?                activeButton      { get; set; }
+		[KSPField]
+		public int buttonEsc = 3;
+
+		[KSPField]
+		public int buttonHome = 4;
+
+		private AstrogationModel            model             { get; set; }
+		private AstrogationLoadBehaviorette loader            { get; set; }
+		private List<DateTimeParts>         timeToWait        { get; set; }
+		private double                      lastUniversalTime { get; set; }
+		private int                         cursorTransfer    { get; set; }
+		private bool                        cursorMoved       { get; set; }
+		private string                      menu              { get; set; }
+		private int?                        activeButton      { get; set; }
+
+		private void addHeaders(StringBuilder sb)
+		{
+			bool firstCol = true;
+			for (int i = 0; i < Columns.Length; ++i) {
+				ColumnDefinition col = Columns[i];
+				int width = 0;
+				for (int span = 0; span < col.headerColSpan; ++span) {
+					width += Columns[i + span].monospaceWidth;
+				}
+				if (width > 0) {
+					width += (col.headerColSpan - 1);
+					if (firstCol) {
+						firstCol = false;
+						width += 2;
+					}
+					switch (col.headerStyle.alignment) {
+						case TextAnchor.LowerLeft:
+							sb.AppendFormat(
+								string.Format("{0}0,-{1}{2}", "{", width, "}"),
+								col.header
+							);
+							break;
+						case TextAnchor.LowerCenter:
+							sb.Append(centerString(col.header, width));
+							break;
+						case TextAnchor.LowerRight:
+							sb.AppendFormat(
+								string.Format("{0}0,{1}{2}", "{", width, "}"),
+								col.header
+							);
+							break;
+					}
+					sb.Append(" ");
+				}
+			}
+		}
+
+		private string colContentFormat(ColumnDefinition col)
+		{
+			switch (col.contentStyle.alignment) {
+				case TextAnchor.MiddleLeft:
+					return string.Format("{0}0,-{1}{2}", "{", col.monospaceWidth, "}");
+					break;
+				case TextAnchor.MiddleRight:
+					return string.Format("{0}0,{1}{2}", "{", col.monospaceWidth, "}");
+					break;
+			}
+			return "{0}";
+		}
+
+		private void addRow(StringBuilder sb, TransferModel m, DateTimeParts dt, bool selected)
+		{
+			string destLabel = CultureInfo.InstalledUICulture.TextInfo.ToTitleCase(TheName(m.destination));
+
+			sb.Append(Environment.NewLine);
+			sb.Append(selected ? "> " : "  ");
+			for (int i = 0; i < Columns.Length; ++i) {
+				ColumnDefinition col = Columns[i];
+				// TODO - check style's text color and convert to [#rrggbbaa]
+				switch (col.content) {
+					case ContentEnum.PlanetName:
+						sb.AppendFormat(
+							colContentFormat(col),
+							(destLabel.Length > col.monospaceWidth ? destLabel.Substring(0, col.monospaceWidth) : destLabel)
+						);
+						break;
+
+					case ContentEnum.YearsTillBurn:
+						sb.AppendFormat(
+							colContentFormat(col),
+							TimePieceString("{0}y", dt.years, dt.needYears)
+						);
+						break;
+
+					case ContentEnum.DaysTillBurn:
+						sb.AppendFormat(
+							colContentFormat(col),
+							TimePieceString("{0}d", dt.days, dt.needDays)
+						);
+						break;
+
+					case ContentEnum.HoursTillBurn:
+						sb.AppendFormat(
+							colContentFormat(col),
+							TimePieceString("{0}h", dt.hours, dt.needHours)
+						);
+						break;
+
+					case ContentEnum.MinutesTillBurn:
+						sb.AppendFormat(
+							colContentFormat(col),
+							TimePieceString("{0}m", dt.minutes, dt.needMinutes)
+						);
+						break;
+
+					case ContentEnum.SecondsTillBurn:
+						sb.AppendFormat(
+							colContentFormat(col),
+							TimePieceString("{0}s", dt.seconds, true)
+						);
+						break;
+
+					case ContentEnum.DeltaV:
+						sb.AppendFormat(
+							colContentFormat(col),
+							FormatSpeed(
+								((m.planeChangeBurn == null || !Settings.Instance.AddPlaneChangeDeltaV)
+									? m.ejectionBurn?.totalDeltaV
+									: (m.ejectionBurn?.totalDeltaV + m.planeChangeBurn.totalDeltaV)) ?? 0,
+								Settings.Instance.DisplayUnits)
+						);
+						break;
+
+				}
+				sb.Append(" ");
+			}
+		}
 
 		public string ShowMenu(int columns, int rows)
 		{
-			if (Refresh() || cursorMoved) {
+			if ((Refresh() || cursorMoved) && model.transfers.Count == timeToWait.Count) {
 				StringBuilder sb = new StringBuilder();
 				sb.Append(centerString(" " + AstrogationView.DisplayName + " ", columns, '-'));
 				sb.Append(Environment.NewLine);
+				sb.Append("[#a0a0a0ff]");
 				sb.Append(centerString(String.Format("Transfers from {0}", TheName(model.origin)), columns));
 				sb.Append(Environment.NewLine);
 				sb.Append(Environment.NewLine);
 
 				// [#rrggbbaa]
-				sb.AppendFormat("[#22ff22ff]{0,-9} {1,20} {2,9}",
-					"Transfer", "Time Till Burn", "Δv");
+				sb.Append("[#22ff22ff]");
+				addHeaders(sb);
 
 				// Wrap the cursor around the edges now because it only tells us dimensions here.
 				while (cursorTransfer < 0) {
@@ -66,30 +195,22 @@ namespace Astrogator {
 				// TODO - handle multiple pages of transfers
 
 				for (int i = 0; i < model.transfers.Count && i < rows - 4; ++i) {
-					if (model?.transfers[i]?.ejectionBurn != null) {
-						sb.Append(Environment.NewLine);
-
-						string destLabel = CultureInfo.InstalledUICulture.TextInfo.ToTitleCase(TheName(model.transfers[i].destination));
-
-						sb.AppendFormat("{0,2}[#22ff22ff]{1,-7}[#ffffffff] {2,4} {3,4} {4,2} {5,3} {6,3} {7,9}",
-							(cursorTransfer == i ? "> " : "  "),
-							(destLabel.Length > 7 ? destLabel.Substring(0, 7) : destLabel),
-							TimePieceString("{0}y", timeToWait[i].years,   timeToWait[i].needYears),
-							TimePieceString("{0}d", timeToWait[i].days,    timeToWait[i].needDays),
-							TimePieceString("{0}h", timeToWait[i].hours,   timeToWait[i].needHours),
-							TimePieceString("{0}m", timeToWait[i].minutes, timeToWait[i].needMinutes),
-							TimePieceString("{0}s", timeToWait[i].seconds, true),
-							FormatSpeed(
-								(model.transfers[i].planeChangeBurn == null || !Settings.Instance.AddPlaneChangeDeltaV)
-									? model.transfers[i].ejectionBurn.totalDeltaV
-									: (model.transfers[i].ejectionBurn.totalDeltaV + model.transfers[i].planeChangeBurn.totalDeltaV),
-								Settings.Instance.DisplayUnits));
-					}
+					addRow(sb, model.transfers[i], timeToWait[i], (cursorTransfer == i));
 				}
 				menu = sb.ToString();
 				cursorMoved = false;
 			}
 			return menu;
+		}
+
+		public void PageActive(bool pageActive, int pageNumber)
+		{
+			if (pageActive) {
+				loader.OnDisplayOpened();
+				loader.TryStartLoad(model.origin, null, null, null);
+			} else {
+				loader.OnDisplayClosed();
+			}
 		}
 
 		private string centerString(string val, int columns, char padding = ' ')
@@ -110,7 +231,11 @@ namespace Astrogator {
 				++cursorTransfer;
 				cursorMoved = true;
 			} else if (activeButton == buttonEnter) {
-				CreateManeuvers();
+				model.transfers[cursorTransfer].CreateManeuvers();
+			} else if (activeButton == buttonEsc) {
+				ClearManeuverNodes();
+			} else if (activeButton == buttonHome) {
+				model.transfers[cursorTransfer].WarpToBurn();
 			}
 		}
 
@@ -124,11 +249,13 @@ namespace Astrogator {
 		{
 			double now = Math.Floor(Planetarium.GetUniversalTime());
 			if (lastUniversalTime != now) {
+				timeToWait = new List<DateTimeParts>();
 				for (int i = 0; i < model.transfers.Count; ++i) {
 
-					model.transfers[i].Refresh();
 					if (model.transfers[i].ejectionBurn != null) {
-						timeToWait[i] = new DateTimeParts(model.transfers[i].ejectionBurn.atTime - Planetarium.GetUniversalTime());
+						timeToWait.Add(new DateTimeParts(model.transfers[i].ejectionBurn.atTime - Planetarium.GetUniversalTime()));
+					} else {
+						timeToWait.Add(new DateTimeParts(0));
 					}
 
 				}
@@ -136,109 +263,6 @@ namespace Astrogator {
 				return true;
 			}
 			return false;
-		}
-
-		private void CalculateEjectionBurns()
-		{
-			for (int i = 0; i < model.transfers.Count; ++i) {
-				timeToWait.Add(null);
-				try {
-					model.transfers[i].CalculateEjectionBurn();
-				} catch (Exception ex) {
-					DbgExc("Problem with load of ejection burn", ex);
-				}
-			}
-		}
-
-		private void CalculatePlaneChangeBurns()
-		{
-			if (Settings.Instance.GeneratePlaneChangeBurns
-					&& Settings.Instance.AddPlaneChangeDeltaV) {
-
-				for (int i = 0; i < model.transfers.Count; ++i) {
-					try {
-						model.transfers[i].CalculatePlaneChangeBurn();
-					} catch (Exception ex) {
-						DbgExc("Problem with background load of plane change burn", ex);
-
-						// If a route calculation crashes, it can leave behind a temporary node.
-						ClearManeuverNodes();
-					}
-				}
-			}
-		}
-
-		/// <summary>
-		/// Turn this transfer's burns into user visible maneuver nodes.
-		/// This is the behavior for the maneuver node icon.
-		/// </summary>
-		private void CreateManeuvers()
-		{
-			TransferModel tr = model.transfers[cursorTransfer];
-
-			if (FlightGlobals.ActiveVessel != null) {
-
-				// Remove all maneuver nodes because they'd conflict with the ones we're about to add
-				ClearManeuverNodes();
-
-				if (Settings.Instance.AutoTargetDestination) {
-					// Switch to target mode, targeting the destination body
-					FlightGlobals.fetch.SetVesselTarget(tr.destination);
-				}
-
-				// Create a maneuver node for the ejection burn
-				tr.ejectionBurn.ToActiveManeuver();
-
-				if (Settings.Instance.GeneratePlaneChangeBurns) {
-					if (tr.planeChangeBurn == null) {
-						DbgFmt("Calculating plane change on the fly");
-						tr.CalculatePlaneChangeBurn();
-					}
-
-					if (tr.planeChangeBurn != null) {
-						tr.planeChangeBurn.ToActiveManeuver();
-					} else {
-						DbgFmt("No plane change found");
-					}
-				} else {
-					DbgFmt("Plane changes disabled");
-				}
-
-				if (Settings.Instance.AutoEditEjectionNode) {
-					// Open the initial node for fine tuning
-					tr.ejectionBurn.EditNode();
-				} else if (Settings.Instance.AutoEditPlaneChangeNode) {
-					if (tr.planeChangeBurn != null) {
-						tr.planeChangeBurn.EditNode();
-					}
-				}
-
-				if (Settings.Instance.AutoFocusDestination) {
-					if (tr.HaveEncounter()) {
-						// Move the map to the target for fine-tuning if we have an encounter
-						FocusMap(tr.destination);
-					} else if (tr.transferParent != null) {
-						// Otherwise focus on the parent of the transfer orbit so we can get an encounter
-						// Try to explain why this is happening with a screen message
-						ScreenFmt("Adjust maneuvers to establish encounter");
-						FocusMap(tr.transferParent, tr.transferDestination);
-					}
-				}
-
-				if (Settings.Instance.AutoSetSAS
-						&& FlightGlobals.ActiveVessel != null
-						&& FlightGlobals.ActiveVessel.Autopilot.CanSetMode(VesselAutopilot.AutopilotMode.Maneuver)) {
-					try {
-						if (FlightGlobals.ActiveVessel.Autopilot.Enabled) {
-							FlightGlobals.ActiveVessel.Autopilot.SetMode(VesselAutopilot.AutopilotMode.Maneuver);
-						} else {
-							FlightGlobals.ActiveVessel.Autopilot.Enable(VesselAutopilot.AutopilotMode.Maneuver);
-						}
-					} catch (Exception ex) {
-						DbgExc("Problem setting SAS to maneuver mode", ex);
-					}
-				}
-			}
 		}
 
 	}

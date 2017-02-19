@@ -86,12 +86,12 @@ namespace Astrogator {
 
 					case ContentEnum.CreateManeuverNodeButton:
 						AddChild(iconButton(maneuverIcon,
-							col.contentStyle, "Create maneuver", CreateManeuvers));
+							col.contentStyle, "Create maneuver", model.CreateManeuvers));
 						break;
 
 					case ContentEnum.WarpToBurnButton:
 						AddChild(iconButton(warpIcon,
-							col.contentStyle, "Warp to window", WarpToBurn));
+							col.contentStyle, "Warp to window", model.WarpToBurn));
 						break;
 
 				}
@@ -209,110 +209,6 @@ namespace Astrogator {
 			}
 		}
 
-		/// <summary>
-		/// Turn this transfer's burns into user visible maneuver nodes.
-		/// This is the behavior for the maneuver node icon.
-		/// </summary>
-		public void CreateManeuvers()
-		{
-			if (FlightGlobals.ActiveVessel != null) {
-
-				// Remove all maneuver nodes because they'd conflict with the ones we're about to add
-				ClearManeuverNodes();
-
-				if (Settings.Instance.AutoTargetDestination) {
-					// Switch to target mode, targeting the destination body
-					FlightGlobals.fetch.SetVesselTarget(model.destination);
-				}
-
-				// Create a maneuver node for the ejection burn
-				model.ejectionBurn.ToActiveManeuver();
-
-				if (Settings.Instance.GeneratePlaneChangeBurns) {
-					if (model.planeChangeBurn == null) {
-						DbgFmt("Calculating plane change on the fly");
-						model.CalculatePlaneChangeBurn();
-					}
-
-					if (model.planeChangeBurn != null) {
-						model.planeChangeBurn.ToActiveManeuver();
-					} else {
-						DbgFmt("No plane change found");
-					}
-				} else {
-					DbgFmt("Plane changes disabled");
-				}
-
-				if (Settings.Instance.AutoEditEjectionNode) {
-					// Open the initial node for fine tuning
-					model.ejectionBurn.EditNode();
-				} else if (Settings.Instance.AutoEditPlaneChangeNode) {
-					if (model.planeChangeBurn != null) {
-						model.planeChangeBurn.EditNode();
-					}
-				}
-
-				if (Settings.Instance.AutoFocusDestination) {
-					if (model.HaveEncounter()) {
-						// Move the map to the target for fine-tuning if we have an encounter
-						FocusMap(model.destination);
-					} else if (model.transferParent != null) {
-						// Otherwise focus on the parent of the transfer orbit so we can get an encounter
-						// Try to explain why this is happening with a screen message
-						ScreenFmt("Adjust maneuvers to establish encounter");
-						FocusMap(model.transferParent, model.transferDestination);
-					}
-				}
-
-				if (Settings.Instance.AutoSetSAS
-						&& FlightGlobals.ActiveVessel != null
-						&& FlightGlobals.ActiveVessel.Autopilot.CanSetMode(VesselAutopilot.AutopilotMode.Maneuver)) {
-					// The API for SAS is ... peculiar.
-					// http://forum.kerbalspaceprogram.com/index.php?/topic/153420-enabledisable-autopilot/
-					try {
-						if (FlightGlobals.ActiveVessel.Autopilot.Enabled) {
-							FlightGlobals.ActiveVessel.Autopilot.SetMode(VesselAutopilot.AutopilotMode.Maneuver);
-						} else {
-							DbgFmt("Not enabled, trying to enable");
-							FlightGlobals.ActiveVessel.ActionGroups.SetGroup(KSPActionGroup.SAS, true);
-							FlightGlobals.ActiveVessel.Autopilot.Enable(VesselAutopilot.AutopilotMode.Maneuver);
-						}
-					} catch (Exception ex) {
-						DbgExc("Problem setting SAS to maneuver mode", ex);
-					}
-				}
-			}
-		}
-
-		/// <summary>
-		/// Warp to (near) the burn.
-		/// Since you usually need to start burning before the actual node,
-		/// we use some simple padding logic to determine how far to warp.
-		/// If you're more than five minutes from the burn, then we warp
-		/// to that five minute mark. This should allow for most of the long burns.
-		/// If you're closer than five minutes from the burn, then we warp
-		/// right up to the moment of the actual burn.
-		/// If you're _already_ warping, cancel the warp (suggested by Kottabos).
-		/// </summary>
-		public void WarpToBurn()
-		{
-			if (TimeWarp.CurrentRate > 1) {
-				DbgFmt("Warp button clicked while already in warp, cancelling warp");
-				TimeWarp.fetch?.CancelAutoWarp();
-				TimeWarp.SetRate(0, false);
-			} else {
-				DbgFmt("Attempting to warp to burn from {0} to {1}", Planetarium.GetUniversalTime(), model.ejectionBurn.atTime);
-				if (Planetarium.GetUniversalTime() < model.ejectionBurn.atTime - BURN_PADDING ) {
-					DbgFmt("Warping to burn minus offset");
-					TimeWarp.fetch.WarpTo(model.ejectionBurn.atTime - BURN_PADDING);
-				} else if (Planetarium.GetUniversalTime() < model.ejectionBurn.atTime) {
-					DbgFmt("Already within offset; warping to burn");
-					TimeWarp.fetch.WarpTo(model.ejectionBurn.atTime);
-				} else {
-					DbgFmt("Can't warp to the past!");
-				}
-			}
-		}
 	}
 
 }
