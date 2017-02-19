@@ -571,6 +571,11 @@ namespace Astrogator {
 			/// Sort order to use when the user clicks the header.
 			/// </summary>
 			public SortEnum sortKey { get; set; }
+
+			/// <summary>
+			/// How wide the column is when rendering in a fixed-width font text screen.
+			/// </summary>
+			public int monospaceWidth { get; set; }
 		}
 
 		/// <value>
@@ -584,7 +589,8 @@ namespace Astrogator {
 				headerStyle	= leftHdrStyle,
 				contentStyle	= planetStyle,
 				content	= ContentEnum.PlanetName,
-				sortKey	= SortEnum.Position
+				sortKey	= SortEnum.Position,
+				monospaceWidth	= 7
 			}, new ColumnDefinition() {
 				header	= "Time Till Burn",
 				width	= 30,
@@ -592,35 +598,40 @@ namespace Astrogator {
 				headerStyle	= midHdrStyle,
 				contentStyle	= numberStyle,
 				content	= ContentEnum.YearsTillBurn,
-				sortKey	= SortEnum.Time
+				sortKey	= SortEnum.Time,
+				monospaceWidth	= 4
 			}, new ColumnDefinition() {
 				header	= "",
 				width	= 30,
 				headerColSpan	= 0,
 				headerStyle	= rightHdrStyle,
 				contentStyle	= numberStyle,
-				content	= ContentEnum.DaysTillBurn
+				content	= ContentEnum.DaysTillBurn,
+				monospaceWidth	= 4
 			}, new ColumnDefinition() {
 				header	= "",
 				width	= 20,
 				headerColSpan	= 0,
 				headerStyle	= rightHdrStyle,
 				contentStyle	= numberStyle,
-				content	= ContentEnum.HoursTillBurn
+				content	= ContentEnum.HoursTillBurn,
+				monospaceWidth = 2
 			}, new ColumnDefinition() {
 				header	= "",
 				width	= 25,
 				headerColSpan	= 0,
 				headerStyle	= rightHdrStyle,
 				contentStyle	= numberStyle,
-				content	= ContentEnum.MinutesTillBurn
+				content	= ContentEnum.MinutesTillBurn,
+				monospaceWidth	= 3
 			}, new ColumnDefinition() {
 				header	= "",
 				width	= 25,
 				headerColSpan	= 0,
 				headerStyle	= rightHdrStyle,
 				contentStyle	= numberStyle,
-				content	= ContentEnum.SecondsTillBurn
+				content	= ContentEnum.SecondsTillBurn,
+				monospaceWidth	= 3,
 			}, new ColumnDefinition() {
 				header	= "Δv",
 				width	= 60,
@@ -628,7 +639,8 @@ namespace Astrogator {
 				headerStyle	= rightHdrStyle,
 				contentStyle	= numberStyle,
 				content	= ContentEnum.DeltaV,
-				sortKey	= SortEnum.DeltaV
+				sortKey	= SortEnum.DeltaV,
+				monospaceWidth	= 9
 			}, new ColumnDefinition() {
 				header	= "",
 				width	= buttonIconWidth,
@@ -638,13 +650,15 @@ namespace Astrogator {
 				content	= ContentEnum.CreateManeuverNodeButton,
 				vesselSpecific	= true,
 				requiresPatchedConics	= true,
+				monospaceWidth	= 0,
 			}, new ColumnDefinition() {
 				header	= "",
 				width	= buttonIconWidth,
 				headerColSpan	= 1,
 				headerStyle	= rightHdrStyle,
 				contentStyle	= warpStyle,
-				content	= ContentEnum.WarpToBurnButton
+				content	= ContentEnum.WarpToBurnButton,
+				monospaceWidth = 0
 			},
 		};
 

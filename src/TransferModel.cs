@@ -41,7 +41,7 @@ namespace Astrogator {
 		/// True if the transfer portion of this trajectory is retrograde, false otherwise.
 		/// So for a retrograde Kerbin orbit, this is true for Mun and false for Duna.
 		/// </summary>
-		public bool retrogradeTransfer { get; private set; }
+		public bool          retrogradeTransfer  { get; private set; }
 
 		/// <summary>
 		/// The body we're transferring from.
@@ -84,6 +84,11 @@ namespace Astrogator {
 			} else if (destination == null) {
 				DbgFmt("Skipping transfer to null destination.");
 				// Sanity check just in case something unexpected happens.
+				return null;
+
+			} else if (destination.GetOrbit().eccentricity > 1) {
+				DbgFmt("{0} is on an escape trajectory; bailing", TheName(destination));
+
 				return null;
 
 			} else if (Landed) {
@@ -305,7 +310,8 @@ namespace Astrogator {
 		{
 			if (FlightGlobals.ActiveVessel?.patchedConicSolver?.maneuverNodes != null
 					&& transferDestination != null
-					&& transferParent != null) {
+					&& transferParent != null
+					&& destination.GetOrbit().eccentricity < 1) {
 
 				bool ejectionAlreadyActive = false;
 
@@ -412,33 +418,6 @@ namespace Astrogator {
 			return false;
 		}
 
-		/// Returns true if UI needs an update
-		public bool Refresh()
-		{
-			if (ejectionBurn != null) {
-				if (ejectionBurn.atTime < Planetarium.GetUniversalTime()) {
-					CalculateEjectionBurn();
-
-					// Apply the same filters we do everywhere else to suppress phantom nodes
-					if (Settings.Instance.GeneratePlaneChangeBurns
-							&& Settings.Instance.AddPlaneChangeDeltaV) {
-
-						try {
-							CalculatePlaneChangeBurn();
-						} catch (Exception ex) {
-							DbgExc("Problem with plane change at expiration", ex);
-							ClearManeuverNodes();
-						}
-					}
-					return true;
-				} else {
-					return false;
-				}
-			} else {
-				return false;
-			}
-		}
-
 		/// <summary>
 		/// Check whether the user opened any manuever node editing gizmos since the last tick.
 		/// There doesn't seem to be event-based notification for this, so we just have to poll.
@@ -448,6 +427,112 @@ namespace Astrogator {
 			ejectionBurn?.CheckIfNodeDisappeared();
 			planeChangeBurn?.CheckIfNodeDisappeared();
 		}
+
+		/// <summary>
+		/// Turn this transfer's burns into user visible maneuver nodes.
+		/// This is the behavior for the maneuver node icon.
+		/// </summary>
+		public void CreateManeuvers()
+		{
+			if (FlightGlobals.ActiveVessel != null) {
+
+				// Remove all maneuver nodes because they'd conflict with the ones we're about to add
+				ClearManeuverNodes();
+
+				if (Settings.Instance.AutoTargetDestination) {
+					// Switch to target mode, targeting the destination body
+					FlightGlobals.fetch.SetVesselTarget(destination);
+				}
+
+				// Create a maneuver node for the ejection burn
+				ejectionBurn.ToActiveManeuver();
+
+				if (Settings.Instance.GeneratePlaneChangeBurns) {
+					if (planeChangeBurn == null) {
+						DbgFmt("Calculating plane change on the fly");
+						CalculatePlaneChangeBurn();
+					}
+
+					if (planeChangeBurn != null) {
+						planeChangeBurn.ToActiveManeuver();
+					} else {
+						DbgFmt("No plane change found");
+					}
+				} else {
+					DbgFmt("Plane changes disabled");
+				}
+
+				if (Settings.Instance.AutoEditEjectionNode) {
+					// Open the initial node for fine tuning
+					ejectionBurn.EditNode();
+				} else if (Settings.Instance.AutoEditPlaneChangeNode) {
+					if (planeChangeBurn != null) {
+						planeChangeBurn.EditNode();
+					}
+				}
+
+				if (Settings.Instance.AutoFocusDestination) {
+					if (HaveEncounter()) {
+						// Move the map to the target for fine-tuning if we have an encounter
+						FocusMap(destination);
+					} else if (transferParent != null) {
+						// Otherwise focus on the parent of the transfer orbit so we can get an encounter
+						// Try to explain why this is happening with a screen message
+						ScreenFmt("Adjust maneuvers to establish encounter");
+						FocusMap(transferParent, transferDestination);
+					}
+				}
+
+				if (Settings.Instance.AutoSetSAS
+						&& FlightGlobals.ActiveVessel != null
+						&& FlightGlobals.ActiveVessel.Autopilot.CanSetMode(VesselAutopilot.AutopilotMode.Maneuver)) {
+					// The API for SAS is ... peculiar.
+					// http://forum.kerbalspaceprogram.com/index.php?/topic/153420-enabledisable-autopilot/
+					try {
+						if (FlightGlobals.ActiveVessel.Autopilot.Enabled) {
+							FlightGlobals.ActiveVessel.Autopilot.SetMode(VesselAutopilot.AutopilotMode.Maneuver);
+						} else {
+							DbgFmt("Not enabled, trying to enable");
+							FlightGlobals.ActiveVessel.ActionGroups.SetGroup(KSPActionGroup.SAS, true);
+							FlightGlobals.ActiveVessel.Autopilot.Enable(VesselAutopilot.AutopilotMode.Maneuver);
+						}
+					} catch (Exception ex) {
+						DbgExc("Problem setting SAS to maneuver mode", ex);
+					}
+				}
+			}
+		}
+
+		/// <summary>
+		/// Warp to (near) the burn.
+		/// Since you usually need to start burning before the actual node,
+		/// we use some simple padding logic to determine how far to warp.
+		/// If you're more than five minutes from the burn, then we warp
+		/// to that five minute mark. This should allow for most of the long burns.
+		/// If you're closer than five minutes from the burn, then we warp
+		/// right up to the moment of the actual burn.
+		/// If you're _already_ warping, cancel the warp (suggested by Kottabos).
+		/// </summary>
+		public void WarpToBurn()
+		{
+			if (TimeWarp.CurrentRate > 1) {
+				DbgFmt("Warp button clicked while already in warp, cancelling warp");
+				TimeWarp.fetch?.CancelAutoWarp();
+				TimeWarp.SetRate(0, false);
+			} else {
+				DbgFmt("Attempting to warp to burn from {0} to {1}", Planetarium.GetUniversalTime(), ejectionBurn.atTime);
+				if (Planetarium.GetUniversalTime() < ejectionBurn.atTime - BURN_PADDING ) {
+					DbgFmt("Warping to burn minus offset");
+					TimeWarp.fetch.WarpTo(ejectionBurn.atTime - BURN_PADDING);
+				} else if (Planetarium.GetUniversalTime() < ejectionBurn.atTime) {
+					DbgFmt("Already within offset; warping to burn");
+					TimeWarp.fetch.WarpTo(ejectionBurn.atTime);
+				} else {
+					DbgFmt("Can't warp to the past!");
+				}
+			}
+		}
+
 	}
 
 }
