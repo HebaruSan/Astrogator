@@ -11,6 +11,8 @@ namespace Astrogator {
 	/// </summary>
 	public class SettingsView : DialogGUIVerticalLayout {
 
+		private const string docsURL = "https://github.com/HebaruSan/Astrogator/blob/master/README.md#settings";
+
 		/// <summary>
 		/// Construct a GUI object that allows the user to edit the settings.
 		/// </summary>
@@ -24,6 +26,12 @@ namespace Astrogator {
 			resetCallback = reset;
 
 			try {
+
+				AddChild(headerButton(
+					"Click for online manual",
+					linkStyle, "The meaning of each setting is explained in the README.md file", RowWidth, rowHeight,
+					() => { Application.OpenURL(docsURL); }
+				));
 
 				AddChild(LabelWithStyleAndSize(
 					"Settings:",
@@ -39,7 +47,7 @@ namespace Astrogator {
 
 				AddChild(new DialogGUIToggle(
 					() => Settings.Instance.AddPlaneChangeDeltaV,
-					"Include plane change burns in Δv display",
+					"Add plane change burns to Δv column",
 					(bool b) => {
 						Settings.Instance.AddPlaneChangeDeltaV = b;
 						// Only need to reload if we don't already have the plane change values
@@ -51,7 +59,7 @@ namespace Astrogator {
 
 				AddChild(new DialogGUIToggle(
 					() => Settings.Instance.DeleteExistingManeuvers,
-					"Delete existing maneuvers",
+					"Auto-delete user-created maneuver nodes",
 					(bool b) => { Settings.Instance.DeleteExistingManeuvers = b; }
 				));
 
@@ -89,6 +97,12 @@ namespace Astrogator {
 					() => Settings.Instance.AutoEditPlaneChangeNode,
 					"Automatically edit plane change node",
 					(bool b) => { Settings.Instance.AutoEditPlaneChangeNode = b; }
+				));
+
+				AddChild(new DialogGUIToggle(
+					() => Settings.Instance.AutoSetSAS,
+					"Automatically set SAS to maneuver mode",
+					(bool b) => { Settings.Instance.AutoSetSAS = b; }
 				));
 
 				AddChild(new DialogGUIToggle(

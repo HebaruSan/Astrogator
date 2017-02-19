@@ -23,6 +23,7 @@
 
 ## Code style
 
+- [ ] onVesselGoOffRails / onVesselGoOnRails for the OnOrbitChanged checks
 - [ ] Split CalculateEjectionBurn into transfer versus ejection functions
 - [ ] Generalize retrograde orbit special cases
 - [ ] Split ViewTools: Truly generic stuff versus this project's stuff

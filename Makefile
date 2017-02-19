@@ -4,6 +4,7 @@ SOURCEDIR=src
 SOURCE=$(wildcard $(SOURCEDIR)/*.cs)
 ASSETDIR=assets
 ICONS=$(wildcard $(ASSETDIR)/*.png)
+CONFIGS=$(wildcard $(ASSETDIR)/*.cfg)
 README=README.md
 GAMELINK=$(SOURCEDIR)/KSP_x64_Data
 DEFAULTGAMEDIR="$(HOME)/.local/share/Steam/SteamApps/common/Kerbal Space Program"
@@ -31,7 +32,7 @@ $(DEBUGDLL): $(SOURCE) $(GAMELINK)
 $(RELEASEDLL): $(SOURCE) $(GAMELINK)
 	cd $(SOURCEDIR) && xbuild /p:Configuration=Release
 
-$(RELEASEZIP): $(DEBUGDLL) $(ICONS) $(README) $(DLLDOCS) $(DLLSYMBOLS) $(LICENSE) $(VERSION)
+$(RELEASEZIP): $(DEBUGDLL) $(ICONS) $(README) $(DLLDOCS) $(DLLSYMBOLS) $(LICENSE) $(VERSION) $(CONFIGS)
 	mkdir -p $(DISTDIR)
 	cp $^ $(DISTDIR)
 	zip -r $@ $(DISTDIR)

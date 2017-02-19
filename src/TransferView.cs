@@ -86,12 +86,12 @@ namespace Astrogator {
 
 					case ContentEnum.CreateManeuverNodeButton:
 						AddChild(iconButton(maneuverIcon,
-							col.contentStyle, "Create maneuver", CreateManeuvers));
+							col.contentStyle, "Create maneuver", model.CreateManeuvers));
 						break;
 
 					case ContentEnum.WarpToBurnButton:
 						AddChild(iconButton(warpIcon,
-							col.contentStyle, "Warp to window", WarpToBurn));
+							col.contentStyle, "Warp to window", model.WarpToBurn));
 						break;
 
 				}
@@ -106,15 +106,9 @@ namespace Astrogator {
 		/// </returns>
 		public bool Refresh()
 		{
-			bool modelNeedsUIUpdate = model.Refresh();
 			double now = Math.Floor(Planetarium.GetUniversalTime());
 
-			if (modelNeedsUIUpdate) {
-				// We have a new ejection burn, so we might need a totally new view
-				// because the sort could be wrong now.
-				resetCallback();
-				return true;
-			} else if (lastUniversalTime != now && model.ejectionBurn != null) {
+			if (lastUniversalTime != now && model.ejectionBurn != null) {
 				timeToWait = new DateTimeParts(model.ejectionBurn.atTime - Planetarium.GetUniversalTime());
 				lastUniversalTime = now;
 				return true;
@@ -124,13 +118,19 @@ namespace Astrogator {
 
 		private const string LoadingText = "---";
 
+		private bool showLoadingText {
+			get {
+				return timeToWait == null || model.ejectionBurn.atTime < Planetarium.GetUniversalTime();
+			}
+		}
+
 		/// <returns>
 		/// String representing years till burn.
 		/// </returns>
 		public string getYearValue()
 		{
 			Refresh();
-			if (timeToWait == null) {
+			if (showLoadingText) {
 				return LoadingText;
 			} else {
 				return TimePieceString("{0}y", timeToWait.years, timeToWait.needYears);
@@ -143,7 +143,7 @@ namespace Astrogator {
 		public string getDayValue()
 		{
 			Refresh();
-			if (timeToWait == null) {
+			if (showLoadingText) {
 				return LoadingText;
 			} else {
 				return TimePieceString("{0}d", timeToWait.days, timeToWait.needDays);
@@ -156,7 +156,7 @@ namespace Astrogator {
 		public string getHourValue()
 		{
 			Refresh();
-			if (timeToWait == null) {
+			if (showLoadingText) {
 				return LoadingText;
 			} else {
 				return TimePieceString("{0}h", timeToWait.hours, timeToWait.needHours);
@@ -169,7 +169,7 @@ namespace Astrogator {
 		public string getMinuteValue()
 		{
 			Refresh();
-			if (timeToWait == null) {
+			if (showLoadingText) {
 				return LoadingText;
 			} else {
 				return TimePieceString("{0}m", timeToWait.minutes, timeToWait.needMinutes);
@@ -182,7 +182,7 @@ namespace Astrogator {
 		public string getSecondValue()
 		{
 			Refresh();
-			if (timeToWait == null) {
+			if (showLoadingText) {
 				return LoadingText;
 			} else {
 				return TimePieceString("{0}s", timeToWait.seconds, true);
@@ -209,83 +209,6 @@ namespace Astrogator {
 			}
 		}
 
-		/// <summary>
-		/// Turn this transfer's burns into user visible maneuver nodes.
-		/// This is the behavior for the maneuver node icon.
-		/// </summary>
-		public void CreateManeuvers()
-		{
-			if (FlightGlobals.ActiveVessel != null) {
-
-				// Remove all maneuver nodes because they'd conflict with the ones we're about to add
-				ClearManeuverNodes();
-
-				if (Settings.Instance.AutoTargetDestination) {
-					// Switch to target mode, targeting the destination body
-					FlightGlobals.fetch.SetVesselTarget(model.destination);
-				}
-
-				// Create a maneuver node for the ejection burn
-				model.ejectionBurn.ToActiveManeuver();
-
-				if (Settings.Instance.GeneratePlaneChangeBurns) {
-					if (model.planeChangeBurn == null) {
-						DbgFmt("Calculating plane change on the fly");
-						model.CalculatePlaneChangeBurn();
-					}
-
-					if (model.planeChangeBurn != null) {
-						model.planeChangeBurn.ToActiveManeuver();
-					} else {
-						DbgFmt("No plane change found");
-					}
-				} else {
-					DbgFmt("Plane changes disabled");
-				}
-
-				if (Settings.Instance.AutoEditEjectionNode) {
-					// Open the initial node for fine tuning
-					model.ejectionBurn.EditNode();
-				} else if (Settings.Instance.AutoEditPlaneChangeNode) {
-					if (model.planeChangeBurn != null) {
-						model.planeChangeBurn.EditNode();
-					}
-				}
-
-				if (Settings.Instance.AutoFocusDestination) {
-					if (model.HaveEncounter()) {
-						// Move the map to the target for fine-tuning if we have an encounter
-						FocusMap(model.destination);
-					} else if (model.transferParent != null) {
-						// Otherwise focus on the parent of the transfer orbit so we can get an encounter
-						FocusMap(model.transferParent);
-					}
-				}
-			}
-		}
-
-		/// <summary>
-		/// Warp to (near) the burn.
-		/// Since you usually need to start burning before the actual node,
-		/// we use some simple padding logic to determine how far to warp.
-		/// If you're more than five minutes from the burn, then we warp
-		/// to that five minute mark. This should allow for most of the long burns.
-		/// If you're closer than five minutes from the burn, then we warp
-		/// right up to the moment of the actual burn.
-		/// </summary>
-		public void WarpToBurn()
-		{
-			DbgFmt("Attempting to warp to burn from {0} to {1}", Planetarium.GetUniversalTime(), model.ejectionBurn.atTime);
-			if (Planetarium.GetUniversalTime() < model.ejectionBurn.atTime - BURN_PADDING ) {
-				DbgFmt("Warping to burn minus offset");
-				TimeWarp.fetch.WarpTo(model.ejectionBurn.atTime - BURN_PADDING);
-			} else if (Planetarium.GetUniversalTime() < model.ejectionBurn.atTime) {
-				DbgFmt("Already within offset; warping to burn");
-				TimeWarp.fetch.WarpTo(model.ejectionBurn.atTime);
-			} else {
-				DbgFmt("Can't warp to the past!");
-			}
-		}
 	}
 
 }
