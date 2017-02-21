@@ -128,11 +128,11 @@ namespace Astrogator {
 					null, null,
 					VisibleInScenes,
 					AppIcon);
+			}
 
-				// Auto open the window if it was open the last time we ran
-				if (Settings.Instance.MainWindowVisible) {
-					launcher.SetTrue();
-				}
+			// Auto open the window if it was open the last time we ran
+			if (Settings.Instance.MainWindowVisible) {
+				launcher.SetTrue();
 			}
 		}
 
@@ -211,7 +211,6 @@ namespace Astrogator {
 		private AstrogationModel            model         { get; set; }
 		private AstrogationLoadBehaviorette loader        { get; set; }
 		private AstrogationView             view          { get; set; }
-		private bool                        needViewClose { get; set; }
 		private bool                        needViewOpen  { get; set; }
 
 		/// <summary>
@@ -251,7 +250,9 @@ namespace Astrogator {
 		private void ResetView(bool resetModel = false)
 		{
 			if (resetModel) {
-				loader.TryStartLoad(model.origin, null, ResetViewBackground, null);
+				loader.TryStartLoad(
+					model.origin ?? (ITargetable)FlightGlobals.ActiveVessel ?? (ITargetable)FlightGlobals.getMainBody(),
+					null, ResetViewBackground, null);
 			} else if (view != null) {
 				HideMainWindow(false);
 				ShowMainWindow();
@@ -265,7 +266,7 @@ namespace Astrogator {
 		/// </summary>
 		private void ResetViewBackground()
 		{
-			needViewClose = needViewOpen = true;
+			needViewOpen = true;
 		}
 
 		private static void AdjustManeuver(BurnModel burn, Vector3d direction, double fraction = 1.0)
@@ -374,13 +375,9 @@ namespace Astrogator {
 		/// </summary>
 		public void Update()
 		{
-			// Close the window if a background thread asked us to.
-			if (view != null && (needViewClose || needViewOpen)) {
-				HideMainWindow(false);
-				needViewClose = false;
-			}
 			// Open the window if a background thread asked us to.
 			if (needViewOpen) {
+				HideMainWindow(false);
 				ShowMainWindow();
 				needViewOpen = false;
 			}
@@ -439,8 +436,10 @@ namespace Astrogator {
 			// Refresh the model so it can reflect the latest target data
 			if (model != null) {
 				if (!model.HasDestination(FlightGlobals.fetch.VesselTarget)) {
-					DbgFmt("Reloading model and view on target change");
-					loader.TryStartLoad(model.origin, null, ResetViewBackground, null);
+					DbgFmt("OnTargetChanged");
+					loader.TryStartLoad(
+						model.origin ?? (ITargetable)FlightGlobals.ActiveVessel ?? (ITargetable)FlightGlobals.getMainBody(),
+						null, ResetViewBackground, null);
 				}
 			}
 		}
@@ -455,14 +454,18 @@ namespace Astrogator {
 
 		private void OnOrbitChanged()
 		{
-			loader.TryStartLoad(model.origin, null, ResetViewBackground, null);
+			loader.TryStartLoad(
+				model.origin ?? (ITargetable)FlightGlobals.ActiveVessel ?? (ITargetable)FlightGlobals.getMainBody(),
+				null, ResetViewBackground, null);
 		}
 
 		private void OnSituationChanged(GameEvents.HostedFromToAction<Vessel, Vessel.Situations> e)
 		{
 			if (model != null && view != null && e.host == FlightGlobals.ActiveVessel) {
 				DbgFmt("Situation of {0} changed from {1} to {2}", TheName(e.host), e.from, e.to);
-				loader.TryStartLoad(e.host, null, ResetViewBackground, null);
+				loader.TryStartLoad(
+					e.host ?? (ITargetable)FlightGlobals.ActiveVessel ?? (ITargetable)FlightGlobals.getMainBody(),
+					null, ResetViewBackground, null);
 			}
 		}
 
@@ -474,7 +477,9 @@ namespace Astrogator {
 			if (model != null && view != null) {
 				DbgFmt("Entered {0}'s sphere of influence", newBody.theName);
 				// The old list no longer applies because reachable bodies depend on current SOI
-				loader.TryStartLoad(model.origin, null, ResetViewBackground, null);
+				loader.TryStartLoad(
+					model.origin ?? (ITargetable)FlightGlobals.ActiveVessel ?? (ITargetable)FlightGlobals.getMainBody(),
+					null, ResetViewBackground, null);
 			}
 		}
 

@@ -249,20 +249,23 @@ namespace Astrogator {
 		/// </summary>
 		public PopupDialog Show()
 		{
-			return dialog = PopupDialog.SpawnPopupDialog(
-				mainWindowAnchorMin,
-				mainWindowAnchorMax,
-				new MultiOptionDialog(
-					subTitle,
-					DisplayName,
+			if (dialog == null) {
+				dialog = PopupDialog.SpawnPopupDialog(
+					mainWindowAnchorMin,
+					mainWindowAnchorMax,
+					new MultiOptionDialog(
+						subTitle,
+						DisplayName,
+						skinToUse,
+						geometry,
+						this
+					),
+					false,
 					skinToUse,
-					geometry,
-					this
-				),
-				false,
-				skinToUse,
-				false
-			);
+					false
+				);
+			}
+			return dialog;
 		}
 
 		/// <summary>
@@ -272,6 +275,8 @@ namespace Astrogator {
 		{
 			if (dialog != null) {
 				Vector3 rt = dialog.RTrf.position;
+				DbgFmt("Coordinates at window close: {0}", rt.ToString());
+				DbgFmt("Screen dimensions at window close: {0}x{1}", Screen.width, Screen.height);
 				geometry = new Rect(
 					rt.x / Screen.width  + 0.5f,
 					rt.y / Screen.height + 0.5f,

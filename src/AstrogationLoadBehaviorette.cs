@@ -46,13 +46,21 @@ namespace Astrogator {
 			StartBurnTimePolling();
 		}
 
-		private AstrogationModel       model                       { get; set; }
-		private bool                   loading                     { get; set; }
-		private static readonly object bgLoadMutex = new object();
-		private const double           minSecondsBetweenLoads = 5;
-		private double                 lastUpdateTime              { get; set; }
-		private LoadDoneCallback       unrequestedLoadNotification { get; set; }
-		private int                    numOpenDisplays             { get; set; } = 0;
+		/// <summary>
+		/// Destructor; destroy the timer
+		/// </summary>
+		~AstrogationLoadBehaviorette()
+		{
+			StopBurnTimePolling();
+		}
+
+		private const double     minSecondsBetweenLoads = 5;
+		private AstrogationModel model                       { get; set; }
+		private LoadDoneCallback unrequestedLoadNotification { get; set; }
+		private int              numOpenDisplays             { get; set; } = 0;
+		private bool              loading                    { get; set; }
+		private double            lastUpdateTime             { get; set; }
+		private readonly object   bgLoadMutex = new object();
 
 		/// <summary>
 		/// Tell the loader that we are currently displaying the data.
@@ -110,15 +118,7 @@ namespace Astrogator {
 					return false;
 				} else {
 					// 2. Start background job
-					DbgFmt("Starting background job");
-					BackgroundWorker bgworker = new BackgroundWorker();
-					bgworker.DoWork += Load;
-					bgworker.RunWorkerAsync(new BackgroundParameters() {
-						origin        = newOrigin,
-						partialLoaded = partialLoaded,
-						fullyLoaded   = fullyLoaded,
-						aborted       = aborted
-					});
+					new Thread(() => ThreadStart(newOrigin, partialLoaded, fullyLoaded, aborted)).Start();
 					return true;
 				}
 			} else {
@@ -130,68 +130,59 @@ namespace Astrogator {
 			}
 		}
 
-		private class BackgroundParameters {
-			public ITargetable      origin        { get; set; }
-			public LoadDoneCallback partialLoaded { get; set; }
-			public LoadDoneCallback fullyLoaded   { get; set; }
-			public LoadDoneCallback aborted       { get; set; }
+		private void ThreadStart(ITargetable newOrigin, LoadDoneCallback partialLoaded, LoadDoneCallback fullyLoaded, LoadDoneCallback aborted)
+		{
+			lock (bgLoadMutex) {
+				loading = true;
+
+				// 3. In background, load the first pass of stuff
+				model.Reset(newOrigin);
+
+				if (PlaneChangesEnabled) {
+
+					// Ejection burns are relatively cheap to calculate and needed for the display to look good
+					RecalculateEjections();
+
+					if (partialLoaded != null) {
+						partialLoaded();
+						// Let's only ever call it once.
+						partialLoaded = null;
+					}
+
+					// 5. Load everything else
+					RecalculatePlaneChanges();
+
+					if (fullyLoaded != null) {
+						fullyLoaded();
+					}
+
+				} else {
+
+					// Ejection burns are all we need
+					RecalculateEjections();
+
+					if (fullyLoaded != null) {
+						fullyLoaded();
+					}
+
+				}
+
+				lastUpdateTime = Planetarium.GetUniversalTime();
+				loading = false;
+			}
 		}
 
 		/// <summary>
-		/// Main driver for calculations.
-		/// Always runs in a background thread!
+		/// Check whether we need plane changes to display the view.
 		/// </summary>
-		/// <param name="sender">Standard parameter from BackgroundWorker</param>
-		/// <param name="e">Params from main thread, e.Argument is a BackgroundParameters object with our actual info in it</param>
-		private void Load(object sender, DoWorkEventArgs e)
-		{
-			BackgroundParameters bp = e.Argument as BackgroundParameters;
-			if (bp != null) {
-				lock (bgLoadMutex) {
-					loading = true;
-
-					// 3. In background, load the first pass of stuff
-					model.Reset(bp.origin);
-
-					if (PlaneChangesEnabled) {
-
-						// Ejection burns are relatively cheap to calculate and needed for the display to look good
-						RecalculateEjections();
-
-						// 4. Call partialLoaded() (window can open, view can sort)
-						if (bp.partialLoaded != null) {
-							bp.partialLoaded();
-						}
-
-						// 5. Load everything else
-						RecalculatePlaneChanges();
-
-						// 6. Call fullyLoaded() (sort again)
-						if (bp.fullyLoaded != null) {
-							bp.fullyLoaded();
-						}
-
-					} else {
-
-						// Ejection burns are all we need
-						RecalculateEjections();
-
-						// 6. Call fullyLoaded() (sort again)
-						if (bp.fullyLoaded != null) {
-							bp.fullyLoaded();
-						}
-
-					}
-
-					lastUpdateTime = Planetarium.GetUniversalTime();
-					loading = false;
-				}
-			} else {
-				if (bp.aborted != null) {
-					bp.aborted();
-				}
+		private bool PlaneChangesEnabled {
+			get {
+				return Settings.Instance.GeneratePlaneChangeBurns
+						&& Settings.Instance.AddPlaneChangeDeltaV;
 			}
 		}
+
+		private System.Timers.Timer timer { get; set; }
 
 		/// <summary>
 		/// Check once per second if any of the transfers are out of date.
@@ -200,9 +191,19 @@ namespace Astrogator {
 		/// </summary>
 		private void StartBurnTimePolling()
 		{
-			System.Timers.Timer t = new System.Timers.Timer() { Interval = 1000 };
-			t.Elapsed += BurnTimePoll;
-			t.Start();
+			timer = new System.Timers.Timer() { Interval = 1000 };
+			timer.Elapsed += BurnTimePoll;
+			timer.Start();
+		}
+
+		private void StopBurnTimePolling()
+		{
+			if (timer != null) {
+				DbgFmt("Shutting off timer");
+				timer.Stop();
+				timer.Dispose();
+				timer = null;
+			}
 		}
 
 		private void BurnTimePoll(object source, System.Timers.ElapsedEventArgs e)
@@ -240,13 +241,6 @@ namespace Astrogator {
 				} catch (Exception ex) {
 					DbgExc("Problem with load of ejection burn", ex);
 				}
-			}
-		}
-
-		private bool PlaneChangesEnabled {
-			get {
-				return Settings.Instance.GeneratePlaneChangeBurns
-						&& Settings.Instance.AddPlaneChangeDeltaV;
 			}
 		}
 

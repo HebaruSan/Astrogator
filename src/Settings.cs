@@ -78,12 +78,32 @@ namespace Astrogator {
 			return false;
 		}
 
+		private bool PositionOnScreen(Vector2 pos)
+		{
+			return pos.x > -1 && pos.x < 1 && pos.y > -1 && pos.y < 1;
+		}
+
 		/// <value>
 		/// Screen position of the main window.
 		/// </value>
 		public Vector2 MainWindowPosition {
-			get { return GetValue(MainWindowPositionKey, new Vector2(0.75f, 0.75f));}
-			set { SetValue(MainWindowPositionKey, value); }
+			get {
+				Vector2 dflt = new Vector2(0.75f, 0.75f);
+				Vector2 pos = GetValue(MainWindowPositionKey, dflt);
+				if (PositionOnScreen(pos)) {
+					return pos;
+				} else {
+					DbgFmt("Attempt to load invalid window position: {0}", pos.ToString());
+					return dflt;
+				}
+			}
+			set {
+				if (PositionOnScreen(value)) {
+					SetValue(MainWindowPositionKey, value);
+				} else {
+					DbgFmt("Attempt to save invalid window position: {0}", value.ToString());
+				}
+			}
 		}
 
 		/// <value>
