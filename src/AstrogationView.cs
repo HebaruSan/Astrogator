@@ -135,35 +135,6 @@ namespace Astrogator {
 			resetCallback();
 		}
 
-		private List<TransferModel> SortTransfers(AstrogationModel m, SortEnum how, bool descend)
-		{
-			List<TransferModel> transfers = new List<TransferModel>(m.transfers);
-			switch (how) {
-				case SortEnum.Name:
-					transfers.Sort((a, b) =>
-						a?.destination?.GetName().CompareTo(b?.destination?.GetName()) ?? 0);
-					break;
-				case SortEnum.Position:
-					// Use the natural/default ordering in the model
-					break;
-				case SortEnum.Time:
-					transfers.Sort((a, b) =>
-						a?.ejectionBurn?.atTime.CompareTo(b?.ejectionBurn?.atTime) ?? 0);
-					break;
-				case SortEnum.DeltaV:
-					transfers.Sort((a, b) =>
-						a?.ejectionBurn?.totalDeltaV.CompareTo(b?.ejectionBurn?.totalDeltaV) ?? 0);
-					break;
-				default:
-					DbgFmt("Bad sort argument: {0}", how.ToString());
-					break;
-			}
-			if (descend) {
-				transfers.Reverse();
-			}
-			return transfers;
-		}
-
 		private void createRows()
 		{
 			List<TransferModel> transfers = SortTransfers(
@@ -255,7 +226,7 @@ namespace Astrogator {
 					mainWindowAnchorMax,
 					new MultiOptionDialog(
 						subTitle,
-						DisplayName,
+						DisplayName + " " + versionString,
 						skinToUse,
 						geometry,
 						this

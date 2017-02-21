@@ -86,6 +86,7 @@ namespace Astrogator {
 		private string                      menu              { get; set; }
 		private int?                        activeButton      { get; set; }
 		private int                         rowsPerPage       { get; set; }
+		private List<TransferModel>         transfers         { get; set; }
 
 		private void addHeaders(StringBuilder sb)
 		{
@@ -260,9 +261,10 @@ namespace Astrogator {
 		/// </returns>
 		public string ShowMenu(int columns, int rows)
 		{
-			if ((Refresh() || cursorMoved) && model.transfers.Count == timeToWait.Count) {
+			if ((Refresh() || cursorMoved) && transfers.Count == timeToWait.Count) {
+
 				StringBuilder sb = new StringBuilder();
-				sb.Append(centerString(" " + AstrogationView.DisplayName + " ", columns, '-'));
+				sb.Append(centerString(" " + AstrogationView.DisplayName + " " + versionString + " ", columns, '-'));
 				sb.Append(Environment.NewLine);
 				sb.Append("[#a0a0a0ff]");
 				sb.Append(centerString(String.Format("Transfers from {0}", TheName(model.origin)), columns));
@@ -274,18 +276,18 @@ namespace Astrogator {
 
 				// Wrap the cursor around the edges now because it only tells us dimensions here.
 				while (cursorTransfer < 0) {
-					cursorTransfer += model.transfers.Count;
+					cursorTransfer += transfers.Count;
 				}
-				while (cursorTransfer >= model.transfers.Count) {
-					cursorTransfer -= model.transfers.Count;
+				while (cursorTransfer >= transfers.Count) {
+					cursorTransfer -= transfers.Count;
 				}
 
 				rowsPerPage = rows - 4;
 				int screenPage = cursorTransfer / rowsPerPage;
 				for (int t = screenPage * rowsPerPage, r = 0;
-						t < model.transfers.Count && r < rowsPerPage;
+						t < transfers.Count && r < rowsPerPage;
 						++t, ++r) {
-					addRow(sb, model.transfers[t], timeToWait[t], (cursorTransfer == t));
+					addRow(sb, transfers[t], timeToWait[t], (cursorTransfer == t));
 				}
 				menu = sb.ToString();
 				cursorMoved = false;
@@ -332,11 +334,11 @@ namespace Astrogator {
 				++cursorTransfer;
 				cursorMoved = true;
 			} else if (activeButton == buttonEnter) {
-				model.transfers[cursorTransfer].CreateManeuvers();
+				transfers[cursorTransfer].CreateManeuvers();
 			} else if (activeButton == buttonEsc) {
 				ClearManeuverNodes();
 			} else if (activeButton == buttonHome) {
-				model.transfers[cursorTransfer].WarpToBurn();
+				transfers[cursorTransfer].WarpToBurn();
 			} else if (activeButton == buttonLeft) {
 				cursorTransfer -= rowsPerPage;
 				if (cursorTransfer < 0) {
@@ -345,8 +347,8 @@ namespace Astrogator {
 				cursorMoved = true;
 			} else if (activeButton == buttonRight) {
 				cursorTransfer += rowsPerPage;
-				if (cursorTransfer >= model.transfers.Count) {
-					cursorTransfer = model.transfers.Count - 1;
+				if (cursorTransfer >= transfers.Count) {
+					cursorTransfer = transfers.Count - 1;
 				}
 				cursorMoved = true;
 			}
@@ -367,11 +369,18 @@ namespace Astrogator {
 		{
 			double now = Math.Floor(Planetarium.GetUniversalTime());
 			if (lastUniversalTime != now) {
-				timeToWait = new List<DateTimeParts>();
-				for (int i = 0; i < model.transfers.Count; ++i) {
 
-					if (model.transfers[i].ejectionBurn != null) {
-						timeToWait.Add(new DateTimeParts(model.transfers[i].ejectionBurn.atTime - Planetarium.GetUniversalTime()));
+				transfers = SortTransfers(
+					model,
+					Settings.Instance.TransferSort,
+					Settings.Instance.DescendingSort
+				);
+
+				timeToWait = new List<DateTimeParts>();
+				for (int i = 0; i < transfers.Count; ++i) {
+
+					if (transfers[i].ejectionBurn != null) {
+						timeToWait.Add(new DateTimeParts(transfers[i].ejectionBurn.atTime - Planetarium.GetUniversalTime()));
 					} else {
 						timeToWait.Add(null);
 					}

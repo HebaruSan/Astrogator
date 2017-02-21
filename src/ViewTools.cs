@@ -1,5 +1,7 @@
 using System;
 using System.Linq;
+using System.Reflection;
+using System.Collections.Generic;
 using UnityEngine;
 using KSP.UI.TooltipTypes;
 
@@ -25,6 +27,44 @@ namespace Astrogator {
 		/// Size of button icons to use in our table.
 		/// </value>
 		public const int buttonIconWidth = 16;
+
+		private static Version modVersion = typeof(Astrogator).Assembly.GetName().Version;
+
+		/// <summary>
+		/// A string representing the version number of the mod.
+		/// </summary>
+		public static string versionString = string.Format(
+			"v{0}.{1}.{2}", modVersion.Major, modVersion.Minor, modVersion.Build
+		);
+
+		public static List<TransferModel> SortTransfers(AstrogationModel m, SortEnum how, bool descend)
+		{
+			List<TransferModel> transfers = new List<TransferModel>(m.transfers);
+			switch (how) {
+				case SortEnum.Name:
+					transfers.Sort((a, b) =>
+						a?.destination?.GetName().CompareTo(b?.destination?.GetName()) ?? 0);
+					break;
+				case SortEnum.Position:
+					// Use the natural/default ordering in the model
+					break;
+				case SortEnum.Time:
+					transfers.Sort((a, b) =>
+						a?.ejectionBurn?.atTime.CompareTo(b?.ejectionBurn?.atTime) ?? 0);
+					break;
+				case SortEnum.DeltaV:
+					transfers.Sort((a, b) =>
+						a?.ejectionBurn?.totalDeltaV.CompareTo(b?.ejectionBurn?.totalDeltaV) ?? 0);
+					break;
+				default:
+					DbgFmt("Bad sort argument: {0}", how.ToString());
+					break;
+			}
+			if (descend) {
+				transfers.Reverse();
+			}
+			return transfers;
+		}
 
 		/// <returns>
 		/// The full relative path from the main KSP folder to a given resource from this mod.

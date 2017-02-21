@@ -13,7 +13,6 @@
 ## More transfer types
 
 - [ ] Launch to orbit
-- [ ] Rendezvous with asteroids near Pe of their future encounter/escape trajectories
 
 ## Fixes
 
@@ -37,6 +36,10 @@
   - Event handlers
 - [ ] Implement [TaxiService's method of updating the UI without close/reopen](http://forum.kerbalspaceprogram.com/index.php?/topic/149324-popupdialog-and-the-dialoggui-classes/&do=findComment&comment=2950891)
 - [ ] Unit tests
+
+## Deferred pending stock changes
+
+- [ ] Rendezvous with asteroids near Pe of their future encounter/escape trajectories
 
 ## Documentation
 
