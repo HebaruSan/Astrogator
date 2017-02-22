@@ -8,7 +8,9 @@ using KSP.UI.TooltipTypes;
 namespace Astrogator {
 
 	using static DebugTools;
+	using static KerbalTools;
 	using static ViewTools;
+	using static Language;
 
 	/// Anything UI-related that needs to be used from multiple places.
 	public static class ViewTools {
@@ -37,6 +39,15 @@ namespace Astrogator {
 			"v{0}.{1}.{2}", modVersion.Major, modVersion.Minor, modVersion.Build
 		);
 
+		/// <summary>
+		/// Return a list of a model's transfers sorted according to settings
+		/// </summary>
+		/// <param name="m">Model from which to get transfers</param>
+		/// <param name="how">Method for sorting</param>
+		/// <param name="descend">True for descending sort, false for ascending</param>
+		/// <returns>
+		/// Sorted list
+		/// </returns>
 		public static List<TransferModel> SortTransfers(AstrogationModel m, SortEnum how, bool descend)
 		{
 			List<TransferModel> transfers = new List<TransferModel>(m.transfers);
@@ -64,22 +75,6 @@ namespace Astrogator {
 				transfers.Reverse();
 			}
 			return transfers;
-		}
-
-		/// <returns>
-		/// The full relative path from the main KSP folder to a given resource from this mod.
-		/// </returns>
-		/// <param name="filename">Name of file located in our plugin folder</param>
-		/// <param name="GameDataRelative">True if the KSP/GameData portion of the path is assumed, false if we need to provide the full path</param>
-		public static string FilePath(string filename, bool GameDataRelative = true)
-		{
-			if (GameDataRelative) {
-				return string.Format("{0}/{1}", Astrogator.Name, filename);
-			} else {
-				return string.Format("{0}/{1}",
-					System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location),
-					filename);
-			}
 		}
 
 		/// <summary>
@@ -624,7 +619,7 @@ namespace Astrogator {
 		/// </value>
 		public static ColumnDefinition[] Columns = new ColumnDefinition[] {
 			new ColumnDefinition() {
-				header	= "Transfer",
+				header	= transferColumnHeader,
 				width	= 60,
 				headerColSpan	= 1,
 				headerStyle	= leftHdrStyle,
@@ -633,7 +628,7 @@ namespace Astrogator {
 				sortKey	= SortEnum.Position,
 				monospaceWidth	= 6
 			}, new ColumnDefinition() {
-				header	= "Time Till Burn",
+				header	= timeColumnHeader,
 				width	= 30,
 				headerColSpan	= 5,
 				headerStyle	= midHdrStyle,
@@ -674,7 +669,7 @@ namespace Astrogator {
 				content	= ContentEnum.SecondsTillBurn,
 				monospaceWidth	= 3,
 			}, new ColumnDefinition() {
-				header	= "Δv",
+				header	= deltaVColumnHeader,
 				width	= 60,
 				headerColSpan	= 1,
 				headerStyle	= rightHdrStyle,

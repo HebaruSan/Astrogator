@@ -8,6 +8,7 @@ namespace Astrogator {
 	using static PhysicsTools;
 	using static KerbalTools;
 	using static ViewTools;
+	using static Language;
 
 	// We speak American in this house, young lady!
 	using MonoBehavior = UnityEngine.MonoBehaviour;
@@ -43,11 +44,6 @@ namespace Astrogator {
 		/// (Yes, they are the same at the moment. Don't worry about that.)
 		/// </summary>
 		public const string Name = "Astrogator";
-
-		/// <summary>
-		/// Text to be shown in the tooltip to explain what this mod does.
-		/// </summary>
-		public const string Description = "Summary of transfer windows of reachable bodies";
 
 		/// <summary>
 		/// This is called at creation
@@ -155,8 +151,8 @@ namespace Astrogator {
 
 			if (tooltip == null) {
 				tooltip = TooltipView.AppLauncherTooltip(
-					AstrogationView.DisplayName,
-					Description,
+					mainTitle,
+					mainTooltip,
 					launcher);
 			}
 			tooltip.Show();

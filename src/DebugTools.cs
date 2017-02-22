@@ -4,6 +4,8 @@ using KSP;
 
 namespace Astrogator {
 
+	using static Language;
+
 	/// Tools to help with debugging.
 	/// They'd be module-level global variables if C# allowed that.
 	public static class DebugTools {
@@ -24,7 +26,7 @@ namespace Astrogator {
 			lock (debugMutex) {
 				Debug.Log(string.Format(
 					"[{0} {1:000.000}] {2}",
-					AstrogationView.DisplayName,
+					mainTitle,
 					Time.realtimeSinceStartup,
 					formattedMessage
 				));

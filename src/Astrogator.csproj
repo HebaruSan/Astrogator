@@ -73,6 +73,7 @@
     <Compile Include="DebugTools.cs" />
     <Compile Include="Settings.cs" />
     <Compile Include="SettingsView.cs" />
+    <Compile Include="Language.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

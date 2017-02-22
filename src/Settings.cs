@@ -4,6 +4,7 @@ using UnityEngine;
 namespace Astrogator {
 
 	using static DebugTools;
+	using static KerbalTools;
 	using static ViewTools;
 
 	/// <summary>

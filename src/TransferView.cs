@@ -7,6 +7,7 @@ namespace Astrogator {
 	using static PhysicsTools;
 	using static KerbalTools;
 	using static ViewTools;
+	using static Language;
 
 	/// A class that displays a given transfer's info.
 	/// Corresponds to one row of the main window.
@@ -86,12 +87,12 @@ namespace Astrogator {
 
 					case ContentEnum.CreateManeuverNodeButton:
 						AddChild(iconButton(maneuverIcon,
-							col.contentStyle, "Create maneuver", model.CreateManeuvers));
+							col.contentStyle, maneuverButtonTooltip, model.CreateManeuvers));
 						break;
 
 					case ContentEnum.WarpToBurnButton:
 						AddChild(iconButton(warpIcon,
-							col.contentStyle, "Warp to window", model.WarpToBurn));
+							col.contentStyle, warpButtonTooltip, model.WarpToBurn));
 						break;
 
 				}
@@ -133,7 +134,7 @@ namespace Astrogator {
 			if (showLoadingText) {
 				return LoadingText;
 			} else {
-				return TimePieceString("{0}y", timeToWait.years, timeToWait.needYears);
+				return TimePieceString(yearsValue, timeToWait.years, timeToWait.needYears);
 			}
 		}
 
@@ -146,7 +147,7 @@ namespace Astrogator {
 			if (showLoadingText) {
 				return LoadingText;
 			} else {
-				return TimePieceString("{0}d", timeToWait.days, timeToWait.needDays);
+				return TimePieceString(daysValue, timeToWait.days, timeToWait.needDays);
 			}
 		}
 
@@ -159,7 +160,7 @@ namespace Astrogator {
 			if (showLoadingText) {
 				return LoadingText;
 			} else {
-				return TimePieceString("{0}h", timeToWait.hours, timeToWait.needHours);
+				return TimePieceString(hoursValue, timeToWait.hours, timeToWait.needHours);
 			}
 		}
 
@@ -172,7 +173,7 @@ namespace Astrogator {
 			if (showLoadingText) {
 				return LoadingText;
 			} else {
-				return TimePieceString("{0}m", timeToWait.minutes, timeToWait.needMinutes);
+				return TimePieceString(minutesValue, timeToWait.minutes, timeToWait.needMinutes);
 			}
 		}
 
@@ -185,7 +186,7 @@ namespace Astrogator {
 			if (showLoadingText) {
 				return LoadingText;
 			} else {
-				return TimePieceString("{0}s", timeToWait.seconds, true);
+				return TimePieceString(secondsValue, timeToWait.seconds, true);
 			}
 		}
 

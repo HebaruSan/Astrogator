@@ -8,6 +8,7 @@ namespace Astrogator {
 	using static KerbalTools;
 	using static ViewTools;
 	using static PhysicsTools;
+	using static Language;
 
 	/// <summary>
 	/// A DialogGUI* object that displays our app's data.
@@ -41,7 +42,7 @@ namespace Astrogator {
 				0, wrenchPadding,
 				TextAnchor.UpperRight,
 				new DialogGUILabel(getMessage, notificationStyle, true, true),
-				iconButton(settingsIcon, settingsStyle, "Settings", toggleSettingsVisible)
+				iconButton(settingsIcon, settingsStyle, settingsButtonTooltip, toggleSettingsVisible)
 			));
 			if (Settings.Instance.ShowSettings) {
 				AddChild(new SettingsView(resetCallback));
@@ -77,12 +78,6 @@ namespace Astrogator {
 		}
 
 		/// <summary>
-		/// The user-facing name for this mod.
-		/// Use Astrogator.Name for filenames, internal representations, CKAN, etc.
-		/// </summary>
-		public const string DisplayName = "Astrogator";
-
-		/// <summary>
 		/// UI object representing the top row of the table
 		/// </summary>
 		private DialogGUIHorizontalLayout ColumnHeaders { get; set; }
@@ -111,7 +106,7 @@ namespace Astrogator {
 						if (col.header != "") {
 							ColumnHeaders.AddChild(headerButton(
 								col.header + columnSortIndicator(col),
-								col.headerStyle, "Sort", width, rowHeight, () => {
+								col.headerStyle, columnHeaderTooltip, width, rowHeight, () => {
 									SortClicked(col.sortKey);
 								}
 							));
@@ -161,30 +156,30 @@ namespace Astrogator {
 					if (model.hyperbolicOrbit) {
 						if (model.inbound) {
 							return string.Format(
-								"{0} is on an escape trajectory. Capture to see more transfers.",
+								inboundHyperbolicWarning,
 								TheName(model.origin)
 							);
 						} else {
 							return string.Format(
-								"{0} is on an escape trajectory. Capture to see transfers.",
+								outboundHyperbolicError,
 								TheName(model.origin)
 							);
 						}
 					} else if (model.notOrbiting) {
 						return string.Format(
-							"{0} is landed. Launch to orbit to see transfers.",
+							landedError,
 							TheName(model.origin)
 						);
 					} else if (model.badInclination) {
 						return string.Format(
-							"Inclination is {0:0.0}°, accuracy too low past {1:0.}°",
+							highInclinationError,
 							AngleFromEquatorial(model.origin.GetOrbit().inclination * Mathf.Deg2Rad) * Mathf.Rad2Deg,
 							AstrogationModel.maxInclination * Mathf.Rad2Deg
 						);
 					} else if (model.transfers.Count == 0) {
-						return "No transfers available";
+						return noTransfersError;
 					} else {
-						return string.Format("Transfers from {0}", TheName(model.origin));
+						return string.Format(normalSubtitle, TheName(model.origin));
 					}
 				} else {
 					return "Internal error: Model not found";
@@ -198,7 +193,7 @@ namespace Astrogator {
 					&& Settings.Instance.TranslationAdjust
 					&& FlightGlobals.ActiveVessel != null
 					&& !FlightGlobals.ActiveVessel.ActionGroups[KSPActionGroup.RCS]) {
-				return "Use translation controls to adjust nodes";
+				return translationControlsNotification;
 			} else {
 				return "";
 			}
@@ -226,7 +221,7 @@ namespace Astrogator {
 					mainWindowAnchorMax,
 					new MultiOptionDialog(
 						subTitle,
-						DisplayName + " " + versionString,
+						mainTitle + " " + versionString,
 						skinToUse,
 						geometry,
 						this

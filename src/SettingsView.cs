@@ -5,6 +5,7 @@ namespace Astrogator {
 
 	using static DebugTools;
 	using static ViewTools;
+	using static Language;
 
 	/// <summary>
 	/// A GUI object allowing the user to edit the settings.
@@ -28,26 +29,26 @@ namespace Astrogator {
 			try {
 
 				AddChild(headerButton(
-					"Click for online manual",
-					linkStyle, "The meaning of each setting is explained in the README.md file", RowWidth, rowHeight,
+					manualLink,
+					linkStyle, manualLinkTooltip, RowWidth, rowHeight,
 					() => { Application.OpenURL(docsURL); }
 				));
 
 				AddChild(LabelWithStyleAndSize(
-					"Settings:",
+					settingsSectionHeader,
 					midHdrStyle,
 					mainWindowMinWidth, rowHeight
 				));
 
 				AddChild(new DialogGUIToggle(
 					() => Settings.Instance.GeneratePlaneChangeBurns,
-					"Generate plane change burns",
+					planeChangeBurnsSetting,
 					(bool b) => { Settings.Instance.GeneratePlaneChangeBurns = b; }
 				));
 
 				AddChild(new DialogGUIToggle(
 					() => Settings.Instance.AddPlaneChangeDeltaV,
-					"Add plane change burns to Δv column",
+					addChangeBurnsSetting,
 					(bool b) => {
 						Settings.Instance.AddPlaneChangeDeltaV = b;
 						// Only need to reload if we don't already have the plane change values
@@ -59,73 +60,73 @@ namespace Astrogator {
 
 				AddChild(new DialogGUIToggle(
 					() => Settings.Instance.DeleteExistingManeuvers,
-					"Auto-delete user-created maneuver nodes",
+					autoDeleteNodesSetting,
 					(bool b) => { Settings.Instance.DeleteExistingManeuvers = b; }
 				));
 
 				AddChild(new DialogGUIToggle(
 					() => Settings.Instance.ShowTrackedAsteroids,
-					"Calculate transfers to tracked asteroids",
+					asteroidsSetting,
 					(bool b) => { Settings.Instance.ShowTrackedAsteroids = b; resetCallback(true); }
 				));
 
 				AddChild(LabelWithStyleAndSize(
-					"Maneuver creation:",
+					maneuverCreationHeader,
 					midHdrStyle,
 					mainWindowMinWidth, rowHeight
 				));
 
 				AddChild(new DialogGUIToggle(
 					() => Settings.Instance.AutoTargetDestination,
-					"Automatically target destination",
+					autoTargetDestSetting,
 					(bool b) => { Settings.Instance.AutoTargetDestination = b; }
 				));
 
 				AddChild(new DialogGUIToggle(
 					() => Settings.Instance.AutoFocusDestination,
-					"Automatically focus destination",
+					autoFocusDestSetting,
 					(bool b) => { Settings.Instance.AutoFocusDestination = b; }
 				));
 
 				AddChild(new DialogGUIToggle(
 					() => Settings.Instance.AutoEditEjectionNode,
-					"Automatically edit ejection node",
+					autoEditEjecSetting,
 					(bool b) => { Settings.Instance.AutoEditEjectionNode = b; }
 				));
 
 				AddChild(new DialogGUIToggle(
 					() => Settings.Instance.AutoEditPlaneChangeNode,
-					"Automatically edit plane change node",
+					autoEditPlaneChgSetting,
 					(bool b) => { Settings.Instance.AutoEditPlaneChangeNode = b; }
 				));
 
 				AddChild(new DialogGUIToggle(
 					() => Settings.Instance.AutoSetSAS,
-					"Automatically set SAS to maneuver mode",
+					autoSetSASSetting,
 					(bool b) => { Settings.Instance.AutoSetSAS = b; }
 				));
 
 				AddChild(new DialogGUIToggle(
 					() => Settings.Instance.TranslationAdjust,
-					"Adjust nodes with translation controls when RCS is off",
+					adjustNodesSetting,
 					(bool b) => { Settings.Instance.TranslationAdjust = b; }
 				));
 
 				AddChild(LabelWithStyleAndSize(
-					"Units:",
+					unitsHeader,
 					midHdrStyle,
 					mainWindowMinWidth, rowHeight
 				));
 
 				AddChild(new DialogGUIToggle(
 					() => Settings.Instance.DisplayUnits == DisplayUnitsEnum.Metric,
-					"Système International d'Unités (Metric)",
+					metricSetting,
 					(bool b) => { if (b) Settings.Instance.DisplayUnits = DisplayUnitsEnum.Metric; }
 				));
 
 				AddChild(new DialogGUIToggle(
 					() => Settings.Instance.DisplayUnits == DisplayUnitsEnum.UnitedStatesCustomary,
-					"United States Customary (Imperial)",
+					imperialSetting,
 					(bool b) => { if (b) Settings.Instance.DisplayUnits = DisplayUnitsEnum.UnitedStatesCustomary; }
 				));
 

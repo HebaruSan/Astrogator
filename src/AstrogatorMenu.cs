@@ -9,6 +9,7 @@ namespace Astrogator {
 	using static DebugTools;
 	using static KerbalTools;
 	using static ViewTools;
+	using static Language;
 
 	/// <summary>
 	/// https://github.com/Mihara/RasterPropMonitor/wiki/Page-handlers
@@ -264,10 +265,10 @@ namespace Astrogator {
 			if ((Refresh() || cursorMoved) && transfers.Count == timeToWait.Count) {
 
 				StringBuilder sb = new StringBuilder();
-				sb.Append(centerString(" " + AstrogationView.DisplayName + " " + versionString + " ", columns, '-'));
+				sb.Append(centerString(" " + mainTitle + " " + versionString + " ", columns, '-'));
 				sb.Append(Environment.NewLine);
 				sb.Append("[#a0a0a0ff]");
-				sb.Append(centerString(String.Format("Transfers from {0}", TheName(model.origin)), columns));
+				sb.Append(centerString(String.Format(normalSubtitle, TheName(model.origin)), columns));
 				sb.Append(Environment.NewLine);
 				sb.Append(Environment.NewLine);
 
