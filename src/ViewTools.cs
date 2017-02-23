@@ -37,6 +37,13 @@ namespace Astrogator {
 			"v{0}.{1}.{2}", modVersion.Major, modVersion.Minor, modVersion.Build
 		);
 
+		/// <summary>
+		/// Sort the transfers from a model.
+		/// </summary>
+		/// <returns>List of sorted transfers</returns>
+		/// <param name="m">Model from which to sort transfers</param>
+		/// <param name="how">Sort method</param>
+		/// <param name="descend">True for descending sort, false for ascending</param>
 		public static List<TransferModel> SortTransfers(AstrogationModel m, SortEnum how, bool descend)
 		{
 			List<TransferModel> transfers = new List<TransferModel>(m.transfers);

@@ -17,10 +17,14 @@ DLLDOCS=$(SOURCEDIR)/bin/Release/Astrogator.xml
 DLLSYMBOLS=$(DEBUGDLL).mdb
 LICENSE=LICENSE
 VERSION=Astrogator.version
+TAGS=tags
 
 TARGETS=$(DEBUGDLL) $(RELEASEDLL) $(RELEASEZIP)
 
-all: $(TARGETS)
+all: $(TAGS) $(TARGETS)
+
+$(TAGS): $(SOURCE)
+	ctags -f $@ $^
 
 $(DLLSYMBOLS): $(DEBUGDLL)
 
@@ -49,5 +53,5 @@ $(GAMELINK):
 
 clean:
 	cd $(SOURCEDIR) && xbuild /t:Clean
-	rm -f $(TARGETS)
+	rm -f $(TARGETS) $(TAGS)
 	rm -rf $(SOURCEDIR)/bin $(SOURCEDIR)/obj $(DISTDIR)

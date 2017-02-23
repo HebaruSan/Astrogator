@@ -496,7 +496,7 @@ namespace Astrogator {
 
 				DbgFmt("Tracking station changed target to {0}", target);
 				loader.TryStartLoad(
-					(ITargetable)target.vessel ?? (ITargetable)target.celestialBody,
+					(ITargetable)target.vessel ?? (ITargetable)target.celestialBody ?? (ITargetable)FlightGlobals.ActiveVessel ?? (ITargetable)FlightGlobals.getMainBody(),
 					null, ResetViewBackground, null
 				);
 			}
