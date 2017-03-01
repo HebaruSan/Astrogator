@@ -58,67 +58,361 @@ namespace Astrogator {
 		/// </summary>
 		public BurnModel     planeChangeBurn     { get; private set; }
 
-		/// <summary>
-		/// True if the craft is sitting on a surface (solid or liquid) rather than on an orbit.
-		/// </summary>
-		public bool Landed {
-			get {
-				Vessel vessel = origin.GetVessel();
-				return vessel != null
-					&& (vessel.situation == Vessel.Situations.PRELAUNCH
-						|| vessel.situation == Vessel.Situations.LANDED
-						|| vessel.situation == Vessel.Situations.SPLASHED);
+		private BurnModel PlotCaptureBurn(Orbit currentOrbit)
+		{
+			double now = Planetarium.GetUniversalTime();
+			if (currentOrbit.TrueAnomalyAtUT(now) < 0) {
+				DbgFmt("Generating capture burn");
+
+				double burnTime = currentOrbit.GetUTforTrueAnomaly(0, now),
+					currentPeSpeed = currentOrbit.getOrbitalVelocityAtTrueAnomaly(0).magnitude;
+				double periapsis = RadiusAtTime(currentOrbit, burnTime);
+				double capturedPeSpeed = SpeedAtPeriapsis(
+					currentOrbit.referenceBody, periapsis, periapsis);
+				return new BurnModel(burnTime, capturedPeSpeed - currentPeSpeed);
+
+			} else {
+				DbgFmt("Too late for a decent capture burn");
+				return null;
 			}
 		}
 
-		private BurnModel GenerateEjectionBurn(Orbit currentOrbit)
+		private BurnModel PlotTransferBurn(Orbit currentOrbit)
 		{
-			DbgFmt("Looking for a route from {0} to {1}, via {2}", TheName(origin), TheName(destination), TheName(currentOrbit.referenceBody));
+			// Normal prograde orbits
+			double now = Planetarium.GetUniversalTime();
+			double optimalPhaseAngle = clamp(Math.PI * (
+				1 - Math.Pow(
+					(currentOrbit.semiMajorAxis + transferDestination.GetOrbit().semiMajorAxis)
+						/ (2 * transferDestination.GetOrbit().semiMajorAxis),
+					1.5)
+			));
+			double currentPhaseAngle = clamp(
+				  AbsolutePhaseAngle(transferDestination.GetOrbit(), now)
+				- AbsolutePhaseAngle(currentOrbit, now));
+			double angleToMakeUp = currentPhaseAngle - optimalPhaseAngle;
+			double phaseAnglePerSecond =
+				  (Tau / transferDestination.GetOrbit().period)
+				- (Tau / currentOrbit.period);
+			// This whole section borrowed from Kerbal Alarm Clock; thanks, TriggerAu!
+			if (angleToMakeUp > 0 && phaseAnglePerSecond > 0)
+				angleToMakeUp -= Tau;
+			if (angleToMakeUp < 0 && phaseAnglePerSecond < 0)
+				angleToMakeUp += Tau;
+
+			if (phaseAnglePerSecond == 0) {
+				// Can't launch to surface-stationary target because
+				// we'll never reach a good relative phase angle for it.
+				// Ideally we'd check <Epsilon here, but that risks breaking
+				// normal transfers to asteroids, since they have very low
+				// relative angular velocities.
+				return null;
+			}
+
+			double timeTillBurn = Math.Abs(angleToMakeUp / phaseAnglePerSecond);
+			double ejectionBurnTime = now + timeTillBurn;
+			double arrivalTime = ejectionBurnTime + 0.5 * OrbitalPeriod(
+				transferDestination.GetOrbit().referenceBody,
+				transferDestination.GetOrbit().semiMajorAxis,
+				currentOrbit.semiMajorAxis
+			);
+
+			if (currentOrbit.semiMajorAxis < transferDestination.GetOrbit().semiMajorAxis) {
+				return new BurnModel(
+					ejectionBurnTime,
+					BurnToNewAp(
+						currentOrbit,
+						ejectionBurnTime,
+						RadiusAtTime(transferDestination.GetOrbit(), arrivalTime)
+							- 0.25 * SphereOfInfluence(transferDestination)
+					)
+				);
+			} else {
+				return new BurnModel(
+					ejectionBurnTime,
+					BurnToNewPe(
+						currentOrbit,
+						ejectionBurnTime,
+						RadiusAtTime(transferDestination.GetOrbit(), arrivalTime)
+							+ 0.25 * SphereOfInfluence(transferDestination)
+					)
+				);
+			}
+		}
+
+		private BurnModel PlotRetrogradeTransferBurn(Orbit currentOrbit)
+		{
+			// Special logic needed for retrograde orbits
+			double now = Planetarium.GetUniversalTime();
+			// The phase angle is the opposite part of the unit circle
+			double optimalPhaseAngle = Tau - clamp(Math.PI * (
+				1 - Math.Pow(
+					(currentOrbit.semiMajorAxis + transferDestination.GetOrbit().semiMajorAxis)
+						/ (2 * transferDestination.GetOrbit().semiMajorAxis),
+					1.5)
+			));
+			double currentPhaseAngle = Tau - clamp(
+				  AbsolutePhaseAngle(transferDestination.GetOrbit(), now)
+				- AbsolutePhaseAngle(currentOrbit, now));
+			// Angle to make up is always positive
+			double angleToMakeUp = clamp(currentPhaseAngle - optimalPhaseAngle);
+			// The phase angle always decreases by the sum of the angular velocities
+			double phaseAnglePerSecond =
+				  (Tau / transferDestination.GetOrbit().period)
+				+ (Tau / currentOrbit.period);
+
+			if (phaseAnglePerSecond == 0) {
+				// Can't launch to surface-stationary target because
+				// we'll never reach a good relative phase angle for it.
+				// Ideally we'd check <Epsilon here, but that risks breaking
+				// normal transfers to asteroids, since they have very low
+				// relative angular velocities.
+				return null;
+			}
+
+			double timeTillBurn = Math.Abs(angleToMakeUp / phaseAnglePerSecond);
+			double ejectionBurnTime = now + timeTillBurn;
+			double arrivalTime = ejectionBurnTime + 0.5 * OrbitalPeriod(
+				transferDestination.GetOrbit().referenceBody,
+				transferDestination.GetOrbit().semiMajorAxis,
+				currentOrbit.semiMajorAxis
+			);
+
+			if (currentOrbit.semiMajorAxis < transferDestination.GetOrbit().semiMajorAxis) {
+				return new BurnModel(
+					ejectionBurnTime,
+					BurnToNewAp(
+						currentOrbit,
+						ejectionBurnTime,
+						RadiusAtTime(transferDestination.GetOrbit(), arrivalTime)
+							- 0.25 * SphereOfInfluence(transferDestination)
+					)
+				);
+			} else {
+				return new BurnModel(
+					ejectionBurnTime,
+					BurnToNewPe(
+						currentOrbit,
+						ejectionBurnTime,
+						RadiusAtTime(transferDestination.GetOrbit(), arrivalTime)
+							+ 0.25 * SphereOfInfluence(transferDestination)
+					)
+				);
+			}
+		}
+
+		private BurnModel PlotLaunchToTransfer()
+		{
+			// Launch to transfer, basically the same as normal
+			// except we use the planet's rotation instead of starting orbit.
+			// Assumes a gravity turn directly into Hohmann transfer.
+
+			// Give us 30deg extra to compensate for launch delays
+			const double LAUNCH_FUDGE_FACTOR = Tau / 12;
 
 			double now = Planetarium.GetUniversalTime();
-			if (currentOrbit == null) {
-				DbgFmt("Skipping transfer from null starting orbit.");
-				// Sanity check just in case something unexpected happens.
-				return null;
+			bool haveVessel = (origin.GetVessel() != null);
+			CelestialBody body = origin as CelestialBody ?? origin.GetOrbit().referenceBody;
+			bool atHome = (body == FlightGlobals.GetHomeBody());
+			bool haveLongitude = haveVessel || atHome;
+			double targetRadius = GoodLowOrbitRadius(body);
 
-			} else if (destination == null) {
-				DbgFmt("Skipping transfer to null destination.");
-				// Sanity check just in case something unexpected happens.
-				return null;
+			if (transferDestination == null) {
+				FindIntermediateDestination(body, null);
+				if (transferDestination == null) {
+					DbgFmt("Failed to find transfer destination");
+					return null;
+				}
+			}
 
-			} else if (destination.GetOrbit().eccentricity > 1) {
-				DbgFmt("{0} is on an escape trajectory; bailing", TheName(destination));
+			if (haveLongitude) {
+				double optimalPhaseAngle = clamp(-LAUNCH_FUDGE_FACTOR + Math.PI * (
+					1 - Math.Pow(
+						(targetRadius + transferDestination.GetOrbit().semiMajorAxis)
+							/ (2 * transferDestination.GetOrbit().semiMajorAxis),
+						1.5)
+				));
 
-				return null;
+				double startingLongitude =
+					haveVessel ? origin.GetVessel().longitude
+					: atHome ? SpaceCenter.Instance.Longitude
+					: 0;
 
-			} else if (Landed && currentOrbit == origin.GetOrbit()) {
-				// TODO - Include space center scene here
+				double currentPhaseAngle = clamp(
+					  AbsolutePhaseAngle(transferDestination.GetOrbit(), now)
+					- AbsolutePhaseAngle(body, now, startingLongitude));
 
-				CelestialBody body = origin.GetOrbit().referenceBody;
+				double angleToMakeUp = currentPhaseAngle - optimalPhaseAngle;
 
-				if (!body.rotates) {
-					// A non-rotating body means we never get any closer to the
-					// point where we want to escape. No calculation possible.
-					// (This also lets us sidestep a divide by zero risk.)
+				double phaseAnglePerSecond =
+					  (Tau / transferDestination.GetOrbit().period)
+					- (body.rotates ? (Tau / body.rotationPeriod) : 0);
+
+				if (angleToMakeUp > 0 && phaseAnglePerSecond > 0)
+					angleToMakeUp -= Tau;
+				if (angleToMakeUp < 0 && phaseAnglePerSecond < 0)
+					angleToMakeUp += Tau;
+
+				if (phaseAnglePerSecond == 0) {
+					// Can't launch to surface-stationary target because
+					// we'll never reach a good relative phase angle for it.
+					// Ideally we'd check <Epsilon here, but that risks breaking
+					// normal transfers to asteroids, since they have very low
+					// relative angular velocities.
 					return null;
 				}
 
-				// This will give us a burn with the right delta V from low orbit.
-				// The time will be now plus the time it takes to get from the absolute
-				// reference direction to the burn at the orbital speed of fakeOrbit.
-				double targetRadius = GoodLowOrbitRadius(body);
-				Orbit fakeOrbit = new Orbit(0, 0, targetRadius, 0, 0, 0, 0, body);
-				BurnModel ejection = GenerateEjectionBurn(fakeOrbit);
+				double timeTillBurn = Math.Abs(angleToMakeUp / phaseAnglePerSecond);
+				double ejectionBurnTime = now + timeTillBurn;
+				double arrivalTime = ejectionBurnTime + 0.5 * OrbitalPeriod(
+					transferDestination.GetOrbit().referenceBody,
+					transferDestination.GetOrbit().semiMajorAxis,
+					targetRadius
+				);
+
+				return new BurnModel(
+					ejectionBurnTime,
+					DeltaVToOrbit(body)
+					+ BurnToNewAp(
+						body,
+						RadiusAtTime(transferDestination.GetOrbit(), arrivalTime)
+							- 0.25 * SphereOfInfluence(transferDestination),
+						targetRadius
+					)
+				);
+			} else {
+				// If we're at a body with no launch pad, we can't time the maneuver
+				return new BurnModel(
+					null,
+					DeltaVToOrbit(body)
+					+ BurnToNewAp(
+						body,
+						transferDestination.GetOrbit().semiMajorAxis
+							- 0.25 * SphereOfInfluence(transferDestination),
+						targetRadius
+					)
+				);
+			}
+		}
+
+		private BurnModel PlotReturnToParentBurn(Orbit currentOrbit)
+		{
+			double now = Planetarium.GetUniversalTime();
+			DbgFmt("Returning null time");
+			return new BurnModel(null, BurnToNewPe(
+				currentOrbit,
+				now,
+				GoodLowOrbitRadius(currentOrbit.referenceBody)
+			));
+		}
+
+		private BurnModel PlotEjectionBurn(Orbit currentOrbit, bool fakeOrbit = false)
+		{
+			double now = Planetarium.GetUniversalTime();
+			BurnModel outerBurn = GenerateEjectionBurnFromOrbit(ParentOrbit(currentOrbit));
+			if (outerBurn != null) {
+				DbgFmt("Got route from {0}, calculating ejection", TheName(currentOrbit.referenceBody));
+
+				double angleOffset = outerBurn.prograde < 0
+					? 0
+					: -Math.PI;
+
+				// The angle, position, and time are interdependent.
+				// So we seed them with parameters from the outer burn, then
+				// cross-seed them with each other this many times.
+				// Cross your fingers and hope this converges to the right answer.
+				const int iterations = 6;
+
+				if (fakeOrbit && outerBurn.atTime == null) {
+					// We have absolutely no basis for a time, so don't fake it.
+					return new BurnModel(
+						null,
+						BurnToEscape(
+							currentOrbit.referenceBody,
+							currentOrbit.ApR,
+							outerBurn.totalDeltaV
+						)
+					);
+				} else {
+					// Either the current orbit is real, or the outer burn constrains us,
+					// so we can use those times.
+					double burnTime = outerBurn.atTime ?? now;
+
+					try {
+						for (int i = 0; i < iterations; ++i) {
+							double ejectionAngle = EjectionAngle(
+								currentOrbit.referenceBody,
+								RadiusAtTime(currentOrbit, burnTime),
+								outerBurn.totalDeltaV);
+							burnTime = TimeAtAngleFromMidnight(
+								currentOrbit.referenceBody.orbit,
+								currentOrbit,
+								burnTime,
+								ejectionAngle + angleOffset);
+						}
+					} catch (Exception ex) {
+						DbgExc("Problem with ejection calc", ex);
+					}
+
+					return new BurnModel(
+						burnTime,
+						BurnToEscape(
+							currentOrbit.referenceBody,
+							currentOrbit,
+							outerBurn.totalDeltaV,
+							burnTime
+						)
+					);
+				}
+
+			} else {
+				DbgFmt("No outer burn found");
+				return null;
+			}
+		}
+
+		private BurnModel PlotLaunchToEjection()
+		{
+			DbgFmt("Launching to ejection");
+
+			double now = Planetarium.GetUniversalTime();
+			bool haveVessel = (origin.GetVessel() != null);
+			CelestialBody body = origin as CelestialBody ?? origin.GetOrbit().referenceBody;
+			double targetRadius = GoodLowOrbitRadius(body);
+			bool atHome = (body == FlightGlobals.GetHomeBody());
+			bool haveLongitude = haveVessel || atHome;
+
+			if (!body.rotates) {
+				// A non-rotating body means we never get any closer to the
+				// point where we want to escape. No calculation possible.
+				// (This also lets us sidestep a divide by zero risk.)
+				return null;
+			}
+
+			// This will give us a burn with the right delta V from low orbit.
+			// The time will be now plus the time it takes to get from the absolute
+			// reference direction to the burn at the orbital speed of fakeOrbit.
+			Orbit fakeOrbit = new Orbit(0, 0, targetRadius, 0, 0, 0, 0, body);
+			// This variable prevents infinite recursion between a body and fake orbits around it.
+			BurnModel ejection = GenerateEjectionBurnFromOrbit(fakeOrbit, true);
+			DbgFmt("Ejection time null: {0}", (ejection.atTime == null));
+
+			if (haveLongitude && ejection.atTime != null) {
+				DbgFmt("Using real longitude and ejection time");
+				double startingLongitude =
+					haveVessel ? origin.GetVessel().longitude
+					: atHome ? SpaceCenter.Instance.Longitude
+					: 0;
 
 				// Now we figure out where the vessel (or KSC) will be at the time of that burn.
 				double currentPhaseAngle = AbsolutePhaseAngle(
 					body,
-					ejection.atTime,
-					origin.GetVessel()?.longitude ?? SpaceCenter.Instance.Longitude
+					ejection.atTime ?? now,
+					startingLongitude
 				);
 
 				// This will tell us approximately where our ship should be to launch
-				double targetAbsolutePhaseAngle = AbsolutePhaseAngle(fakeOrbit, ejection.atTime);
+				double targetAbsolutePhaseAngle = AbsolutePhaseAngle(fakeOrbit, ejection.atTime ?? now);
 
 				// This tells us how fast the body rotates.
 				// Note that we already have our divide-by-zero guard above.
@@ -126,207 +420,133 @@ namespace Astrogator {
 
 				// Now we adjust the original burn time to account for the planet rotating
 				// into position for us.
-				// TODO - The Mun may have moved a significant distance during the offset!
-				//        Adjust somehow.
-				double burnTime = ejection.atTime + clamp(targetAbsolutePhaseAngle - currentPhaseAngle) / phaseAnglePerSecond;
-
-				// Number of seconds to adjust burn time to account for launch
-				const double LAUNCH_OFFSET = 0;
+				double burnTime = (ejection.atTime ?? now) + clamp(targetAbsolutePhaseAngle - currentPhaseAngle) / phaseAnglePerSecond;
 
 				// Finally, generate the real burn if it seems OK.
-				if (burnTime + LAUNCH_OFFSET < now) {
+				if (burnTime < now) {
 					return null;
 				} else {
 					return new BurnModel(
-						burnTime + LAUNCH_OFFSET,
-						ejection.prograde + DeltaVToOrbit(body, origin)
+						burnTime,
+						ejection.prograde + DeltaVToOrbit(body)
 					);
 				}
+			} else {
+				DbgFmt("Longitude or ejection time missing, using outer burn time");
+				// If we're at a body with no launch pad, we can't time the maneuver,
+				// so just use what we got from the outer burn.
+				return new BurnModel(
+					ejection.atTime,
+					ejection.prograde + DeltaVToOrbit(body)
+				);
+			}
 
-			} else if (currentOrbit.eccentricity > 1.0) {
+		}
 
-				if (currentOrbit.TrueAnomalyAtUT(now) < 0) {
-					DbgFmt("Generating capture burn");
+		private BurnModel FindIntermediateDestination(CelestialBody currentRefBody, Orbit currentOrbit)
+		{
+			// These need to be reset before the below loop to avoid messing things up
+			transferParent = null;
+			transferDestination = null;
 
-					double burnTime = currentOrbit.GetUTforTrueAnomaly(0, now),
-						currentPeSpeed = currentOrbit.getOrbitalVelocityAtTrueAnomaly(0).magnitude;
-					double periapsis = RadiusAtTime(currentOrbit, burnTime);
-					double capturedPeSpeed = SpeedAtPeriapsis(
-						currentOrbit.referenceBody, periapsis, periapsis);
-					return new BurnModel(burnTime, capturedPeSpeed - currentPeSpeed);
+			// If you want to go somewhere deep inside another SOI, we will
+			// just aim at whatever ancestor we can see.
+			// So Kerbin -> Laythe would be the same as Kerbin -> Jool.
+			for (ITargetable b = StartBody(destination), prevBody = null;
+					b != null;
+					prevBody = b, b = ParentBody(b)) {
 
-				} else {
-					DbgFmt("Too late for a decent capture burn");
+				if (currentRefBody == b as CelestialBody) {
+					// Note which body is boss of the patch where we transfer
+
+					if (prevBody == null) {
+						// Return to LKO burn from Mun/Minmus
+						DbgFmt("Found intermediate recursive origin {0} in destination ancestors; calculating return burn", TheName(currentRefBody));
+
+						return PlotReturnToParentBurn(currentOrbit);
+
+					} else {
+
+						transferParent = b as CelestialBody;
+						transferDestination = prevBody;
+						DbgFmt("Found transfer patch, parent: {0}, destination: {1}",
+							TheName(transferParent), TheName(transferDestination));
+						break;
+					}
 				}
-				return null;
+			}
+			DbgFmt("No intermediate destination found");
+			return null;
+		}
 
+		private BurnModel GenerateEjectionBurnFromOrbit(Orbit currentOrbit, bool fakeOrbit = false)
+		{
+			DbgFmt("Looking for a route from {0} to {1}, via {2}", TheName(origin), TheName(destination), TheName(currentOrbit.referenceBody));
+
+			if (currentOrbit == null) {
+				DbgFmt("Skipping transfer from null starting orbit.");
+				// Sanity check just in case something unexpected happens.
+				return null;
+			} else if (destination == null) {
+				DbgFmt("Skipping transfer to null destination.");
+				// Sanity check just in case something unexpected happens.
+				return null;
+			} else if (destination.GetOrbit().eccentricity > 1) {
+				DbgFmt("{0} is on an escape trajectory; bailing", TheName(destination));
+				return null;
+			} else if (currentOrbit.eccentricity > 1.0) {
+				return PlotCaptureBurn(currentOrbit);
 			} else {
 
-				// These need to be reset before the below loop to avoid messing things up
-				transferParent = null;
-				transferDestination = null;
-
-				// If you want to go somewhere deep inside another SOI, we will
-				// just aim at whatever ancestor we can see.
-				// So Kerbin -> Laythe would be the same as Kerbin -> Jool.
-				for (ITargetable b = StartBody(destination), prevBody = null;
-						b != null;
-						prevBody = b, b = ParentBody(b)) {
-
-					if (currentOrbit.referenceBody == b as CelestialBody) {
-						// Note which body is boss of the patch where we transfer
-
-						if (prevBody == null) {
-							// Return to LKO burn from Mun/Minmus
-							DbgFmt("Found intermediate recursive origin {0} in destination ancestors; calculating return burn", TheName(currentOrbit.referenceBody));
-
-							return new BurnModel(now, BurnToNewPe(
-								currentOrbit,
-								now,
-								GoodLowOrbitRadius(currentOrbit.referenceBody)
-							));
-
-						} else {
-
-							transferParent = b as CelestialBody;
-							transferDestination = prevBody;
-							DbgFmt("Found transfer patch, parent: {0}, destination: {1}",
-								TheName(transferParent), TheName(transferDestination));
-							break;
-						}
-					}
+				BurnModel b = FindIntermediateDestination(currentOrbit.referenceBody, currentOrbit);
+				if (b != null) {
+					// If that function generated a burn, that means this destination
+					// is a "return to parent" scenario.
+					// Otherwise we have to continue calculating.
+					DbgFmt("Got return to parent burn");
+					return b;
 				}
 
+				// The above function sets this if we're in the transfer patch.
 				if (transferDestination != null) {
-					// Our normal recursive base case - just a normal transfer
+					// Base case - calculate a simple Hohmann transfer
 
-					// How many radians the phase angle increases or decreases by each second
-					double phaseAnglePerSecond, angleToMakeUp;
 					retrogradeTransfer = (currentOrbit.GetRelativeInclination(transferDestination.GetOrbit()) > 90f);
-
 					if (!retrogradeTransfer) {
-
-						// Normal prograde orbits
-						double optimalPhaseAngle = clamp(Math.PI * (
-							1 - Math.Pow(
-								(currentOrbit.semiMajorAxis + transferDestination.GetOrbit().semiMajorAxis)
-									/ (2 * transferDestination.GetOrbit().semiMajorAxis),
-								1.5)
-						));
-						double currentPhaseAngle = clamp(
-							  AbsolutePhaseAngle(transferDestination.GetOrbit(), now)
-							- AbsolutePhaseAngle(currentOrbit, now));
-						angleToMakeUp = currentPhaseAngle - optimalPhaseAngle;
-						phaseAnglePerSecond =
-							  (Tau / transferDestination.GetOrbit().period)
-							- (Tau / currentOrbit.period);
-						// This whole section borrowed from Kerbal Alarm Clock; thanks, TriggerAu!
-						if (angleToMakeUp > 0 && phaseAnglePerSecond > 0)
-							angleToMakeUp -= Tau;
-						if (angleToMakeUp < 0 && phaseAnglePerSecond < 0)
-							angleToMakeUp += Tau;
-
+						return PlotTransferBurn(currentOrbit);
 					} else {
-
-						// Special logic needed for retrograde orbits
-						// The phase angle is the opposite part of the unit circle
-						double optimalPhaseAngle = Tau - clamp(Math.PI * (
-							1 - Math.Pow(
-								(currentOrbit.semiMajorAxis + transferDestination.GetOrbit().semiMajorAxis)
-									/ (2 * transferDestination.GetOrbit().semiMajorAxis),
-								1.5)
-						));
-						// The phase angle always decreases by the sum of the angular velocities
-						double currentPhaseAngle = Tau - clamp(
-							  AbsolutePhaseAngle(transferDestination.GetOrbit(), now)
-							- AbsolutePhaseAngle(currentOrbit, now));
-						// Angle to make up is always positive
-						angleToMakeUp = clamp(currentPhaseAngle - optimalPhaseAngle);
-						phaseAnglePerSecond =
-							  (Tau / transferDestination.GetOrbit().period)
-							+ (Tau / currentOrbit.period);
-
-					}
-
-					double timeTillBurn = Math.Abs(angleToMakeUp / phaseAnglePerSecond);
-					double ejectionBurnTime = now + timeTillBurn;
-					double arrivalTime = ejectionBurnTime + 0.5 * OrbitalPeriod(
-						transferDestination.GetOrbit().referenceBody,
-						transferDestination.GetOrbit().semiMajorAxis,
-						currentOrbit.semiMajorAxis
-					);
-
-					if (currentOrbit.semiMajorAxis < transferDestination.GetOrbit().semiMajorAxis) {
-						return new BurnModel(
-							ejectionBurnTime,
-							BurnToNewAp(
-								currentOrbit,
-								ejectionBurnTime,
-								RadiusAtTime(transferDestination.GetOrbit(), arrivalTime)
-									- 0.25 * SphereOfInfluence(transferDestination)
-							)
-						);
-					} else {
-						return new BurnModel(
-							ejectionBurnTime,
-							BurnToNewPe(
-								currentOrbit,
-								ejectionBurnTime,
-								RadiusAtTime(transferDestination.GetOrbit(), arrivalTime)
-									+ 0.25 * SphereOfInfluence(transferDestination)
-							)
-						);
+						return PlotRetrogradeTransferBurn(currentOrbit);
 					}
 
 				} else {
 					// Recursive case - get an orbit from the parent body and adjust it for ejection from here
-
 					DbgFmt("Direct route to {0} not found, recursing through parent {1}", TheName(destination), TheName(currentOrbit.referenceBody));
-					BurnModel outerBurn = GenerateEjectionBurn(ParentOrbit(currentOrbit));
-					if (outerBurn != null) {
-						DbgFmt("Got route from {0}, calculating ejection", TheName(currentOrbit.referenceBody));
 
-						double angleOffset = outerBurn.prograde < 0
-							? 0
-							: -Math.PI;
-
-						// The angle, position, and time are interdependent.
-						// So we seed them with parameters from the outer burn, then
-						// cross-seed them with each other this many times.
-						// Cross your fingers and hope this converges to the right answer.
-						const int iterations = 6;
-
-						double burnTime = outerBurn.atTime;
-
-						try {
-							for (int i = 0; i < iterations; ++i) {
-								double ejectionAngle = EjectionAngle(
-									currentOrbit.referenceBody,
-									RadiusAtTime(currentOrbit, burnTime),
-									outerBurn.totalDeltaV);
-								burnTime = TimeAtAngleFromMidnight(
-									currentOrbit.referenceBody.orbit,
-									currentOrbit,
-									burnTime,
-									ejectionAngle + angleOffset);
-							}
-						} catch (Exception ex) {
-							DbgExc("Problem with ejection calc", ex);
-						}
-
-						return new BurnModel(
-							burnTime,
-							BurnToEscape(
-								currentOrbit.referenceBody,
-								currentOrbit,
-								outerBurn.totalDeltaV,
-								burnTime)
-						);
-					} else {
-						DbgFmt("No outer burn found");
-						return null;
-					}
+					return PlotEjectionBurn(currentOrbit, fakeOrbit);
 				}
+			}
+		}
+
+		private BurnModel GenerateEjectionBurn(Orbit currentOrbit)
+		{
+			// Are we:
+			// 1. With a vessel, on a solid surface; or
+			// 2. Without a vessel, at a body with a solid surface
+			if (Landed(origin) || solidBodyWithoutVessel(origin)) {
+
+				// Are we:
+				// 3. Aiming at a target in the same SOI
+				if (SameSOITransfer(origin, destination)) {
+					return PlotLaunchToTransfer();
+
+				} else {
+					// We are aiming at a target in a different SOI
+					return PlotLaunchToEjection();
+				}
+
+			} else {
+				// We are an orbiting vessel
+				return GenerateEjectionBurnFromOrbit(currentOrbit);
 			}
 		}
 
@@ -404,7 +624,7 @@ namespace Astrogator {
 
 								// Find the AN or DN
 								bool ascendingNode;
-								double planeTime = TimeOfPlaneChange(o, transferDestination.GetOrbit(), ejectionBurn.atTime, out ascendingNode);
+								double planeTime = TimeOfPlaneChange(o, transferDestination.GetOrbit(), ejectionBurn.atTime ?? 0, out ascendingNode);
 
 								DbgFmt("Pinpointed plane change for {0}", transferParent.GetName());
 
@@ -565,14 +785,16 @@ namespace Astrogator {
 				DbgFmt("Warp button clicked while already in warp, cancelling warp");
 				TimeWarp.fetch?.CancelAutoWarp();
 				TimeWarp.SetRate(0, false);
+			} else if (ejectionBurn.atTime == null) {
+				DbgFmt("Can't warp to null time");
 			} else {
 				DbgFmt("Attempting to warp to burn from {0} to {1}", Planetarium.GetUniversalTime(), ejectionBurn.atTime);
-				if (Planetarium.GetUniversalTime() < ejectionBurn.atTime - BURN_PADDING ) {
+				if (Planetarium.GetUniversalTime() < (ejectionBurn.atTime ?? 0) - BURN_PADDING ) {
 					DbgFmt("Warping to burn minus offset");
-					TimeWarp.fetch.WarpTo(ejectionBurn.atTime - BURN_PADDING);
-				} else if (Planetarium.GetUniversalTime() < ejectionBurn.atTime) {
+					TimeWarp.fetch.WarpTo((ejectionBurn.atTime ?? 0) - BURN_PADDING);
+				} else if (Planetarium.GetUniversalTime() < (ejectionBurn.atTime ?? 0)) {
 					DbgFmt("Already within offset; warping to burn");
-					TimeWarp.fetch.WarpTo(ejectionBurn.atTime);
+					TimeWarp.fetch.WarpTo(ejectionBurn.atTime ?? 0);
 				} else {
 					DbgFmt("Can't warp to the past!");
 				}

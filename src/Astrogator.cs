@@ -285,7 +285,7 @@ namespace Astrogator {
 					if (n.attachedGizmo != null) {
 						n.attachedGizmo.DeltaV = n.DeltaV;
 						try {
-							n.OnGizmoUpdated(n.DeltaV, burn.atTime);
+							n.OnGizmoUpdated(n.DeltaV, burn.atTime ?? 0);
 						} catch (Exception ex) {
 							DbgExc("Problem updating gizmo", ex);
 						}
@@ -449,6 +449,7 @@ namespace Astrogator {
 		private bool OrbitChanged()
 		{
 			return VesselMode
+				&& !model.notOrbiting
 				&& (prevOrbit == null
 					|| !prevOrbit.Equals(FlightGlobals.ActiveVessel.orbit));
 		}

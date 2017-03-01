@@ -100,24 +100,29 @@ namespace Astrogator {
 			for (int i = 0; i < Columns.Length; ++i) {
 				ColumnDefinition col = Columns[i];
 				// Skip columns that require an active vessel if we don't have one
-				if (!col.vesselSpecific || model.origin.GetVessel() != null) {
-					float width = 0;
-					for (int span = 0; span < col.headerColSpan; ++span) {
-						width += Columns[i + span].width;
-					}
-					if (width > 0) {
-						// Add in the spacing gaps that got left out from colspanning
-						width += (col.headerColSpan - 1) * spacing;
-						if (col.header != "") {
-							ColumnHeaders.AddChild(headerButton(
-								col.header + columnSortIndicator(col),
-								col.headerStyle, "Sort", width, rowHeight, () => {
-									SortClicked(col.sortKey);
-								}
-							));
-						} else {
-							ColumnHeaders.AddChild(LabelWithStyleAndSize(col.header, col.headerStyle, width, rowHeight));
-						}
+				if (col.vesselSpecific && FlightGlobals.ActiveVessel == null) {
+					continue;
+				}
+				if (col.requiresPatchedConics
+						&& (!patchedConicsUnlocked() || model.notOrbiting)) {
+					continue;
+				}
+				float width = 0;
+				for (int span = 0; span < col.headerColSpan; ++span) {
+					width += Columns[i + span].width;
+				}
+				if (width > 0) {
+					// Add in the spacing gaps that got left out from colspanning
+					width += (col.headerColSpan - 1) * spacing;
+					if (col.header != "") {
+						ColumnHeaders.AddChild(headerButton(
+							col.header + columnSortIndicator(col),
+							col.headerStyle, "Sort", width, rowHeight, () => {
+								SortClicked(col.sortKey);
+							}
+						));
+					} else {
+						ColumnHeaders.AddChild(new DialogGUISpace(width));
 					}
 				}
 			}
@@ -148,7 +153,7 @@ namespace Astrogator {
 					break;
 				case SortEnum.Time:
 					transfers.Sort((a, b) =>
-						a?.ejectionBurn?.atTime.CompareTo(b?.ejectionBurn?.atTime) ?? 0);
+						a?.ejectionBurn?.atTime?.CompareTo(b?.ejectionBurn?.atTime ?? 0) ?? 0);
 					break;
 				case SortEnum.DeltaV:
 					transfers.Sort((a, b) =>
@@ -207,6 +212,16 @@ namespace Astrogator {
 						);
 					} else if (model.transfers.Count == 0) {
 						return "No transfers available";
+					} else if (Landed(model.origin) || solidBodyWithoutVessel(model.origin)) {
+						CelestialBody b = model.origin as CelestialBody;
+						if (b == null) {
+							b = model.origin.GetOrbit().referenceBody;
+						}
+						return string.Format(
+							"Transfers from {0}\n(Launch ~{1})",
+							TheName(model.origin),
+							FormatSpeed(DeltaVToOrbit(b), Settings.Instance.DisplayUnits)
+						);
 					} else {
 						return string.Format("Transfers from {0}", TheName(model.origin));
 					}

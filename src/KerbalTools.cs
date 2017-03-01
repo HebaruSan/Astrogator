@@ -19,6 +19,64 @@ namespace Astrogator {
 		}
 
 		/// <summary>
+		/// True if the craft is sitting on a surface (solid or liquid) rather than on an orbit.
+		/// </summary>
+		public static bool Landed(ITargetable t)
+		{
+			Vessel vessel = t.GetVessel();
+			return vessel != null
+				&& (vessel.situation == Vessel.Situations.PRELAUNCH
+					|| vessel.situation == Vessel.Situations.LANDED
+					|| vessel.situation == Vessel.Situations.SPLASHED);
+		}
+
+		/// <summary>
+		/// Check whether the target is a body with a solid surface
+		/// </summary>
+		/// <param name="t">Target to check</param>
+		/// <returns>
+		/// True if body with solid surface, false if non-body or no solid surface
+		/// </returns>
+		public static bool solidBodyWithoutVessel(ITargetable t)
+		{
+			CelestialBody b = t as CelestialBody;
+			return b?.hasSolidSurface ?? false;
+		}
+
+		/// <summary>
+		/// Check whether a burn from one target to another constitutes a same-SOI transfer
+		/// </summary>
+		/// <param name="start">The body from which we start</param>
+		/// <param name="end">The body where we end up</param>
+		/// <returns>
+		/// True if same SOI transfer, false if an ejection angle is involved
+		/// </returns>
+		public static bool SameSOITransfer(ITargetable start, ITargetable end)
+		{
+			CelestialBody b1 = start as CelestialBody;
+			if (b1 != null) {
+				// 1. start is body,   end is body:   end's referenceBody must be start
+				// 2. start is body,   end is vessel: N/A - bodies can't have targets
+				return (b1 == end.GetOrbit().referenceBody);
+			} else {
+				// 3. start is vessel, end is vessel: Orbits must have same referenceBody
+				// 4. start is vessel, end is body:   Orbits must have same referenceBody
+				// This needs to treat solar orbit -> Laythe as same SOI!
+				return AncestorsInclude(end.GetOrbit().referenceBody, start.GetOrbit().referenceBody);
+			}
+		}
+
+		public static bool AncestorsInclude(CelestialBody child, CelestialBody ancestor)
+		{
+			for (CelestialBody b = child; b != null; b = ParentBody(b)) {
+				if (b == ancestor) {
+					return true;
+				}
+			}
+			return false;
+		}
+
+		/// <summary>
 		/// Check whether a vessel is a tracked asteroid.
 		/// Derived from CustomAsteroids and RasterPropMonitor.
 		/// </summary>
