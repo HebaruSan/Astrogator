@@ -41,9 +41,16 @@ namespace Astrogator {
 					continue;
 				}
 
-				// Skip columns that require maneuver nodes if they're not unlocked
+				// Skip columns that require maneuver nodes if they're not available
 				if (col.requiresPatchedConics
-						&& (!patchedConicsUnlocked() || model.Landed)) {
+						&& (!patchedConicsUnlocked() || Landed(model.origin))) {
+					continue;
+				}
+
+				// Add a blank space if this column requires a time but this
+				// row doesn't have one, because other rows might.
+				if (col.requiresTime && model.ejectionBurn?.atTime == null) {
+					AddChild(new DialogGUISpace(col.width));
 					continue;
 				}
 
@@ -109,7 +116,11 @@ namespace Astrogator {
 			double now = Math.Floor(Planetarium.GetUniversalTime());
 
 			if (lastUniversalTime != now && model.ejectionBurn != null) {
-				timeToWait = new DateTimeParts(model.ejectionBurn.atTime - Planetarium.GetUniversalTime());
+				if (model.ejectionBurn.atTime != null) {
+					timeToWait = new DateTimeParts((model.ejectionBurn.atTime ?? 0) - Planetarium.GetUniversalTime());
+				} else {
+					timeToWait = null;
+				}
 				lastUniversalTime = now;
 				return true;
 			}
@@ -120,7 +131,9 @@ namespace Astrogator {
 
 		private bool showLoadingText {
 			get {
-				return timeToWait == null || model.ejectionBurn.atTime < Planetarium.GetUniversalTime();
+				return timeToWait == null
+					|| model.ejectionBurn.atTime == null
+					|| model.ejectionBurn.atTime < Planetarium.GetUniversalTime();
 			}
 		}
 

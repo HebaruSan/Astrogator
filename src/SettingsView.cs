@@ -120,13 +120,13 @@ namespace Astrogator {
 				AddChild(new DialogGUIToggle(
 					() => Settings.Instance.DisplayUnits == DisplayUnitsEnum.Metric,
 					"Système International d'Unités (Metric)",
-					(bool b) => { if (b) Settings.Instance.DisplayUnits = DisplayUnitsEnum.Metric; }
+					(bool b) => { if (b) Settings.Instance.DisplayUnits = DisplayUnitsEnum.Metric; resetCallback(false); }
 				));
 
 				AddChild(new DialogGUIToggle(
 					() => Settings.Instance.DisplayUnits == DisplayUnitsEnum.UnitedStatesCustomary,
 					"United States Customary (Imperial)",
-					(bool b) => { if (b) Settings.Instance.DisplayUnits = DisplayUnitsEnum.UnitedStatesCustomary; }
+					(bool b) => { if (b) Settings.Instance.DisplayUnits = DisplayUnitsEnum.UnitedStatesCustomary; resetCallback(false); }
 				));
 
 			} catch (Exception ex) {

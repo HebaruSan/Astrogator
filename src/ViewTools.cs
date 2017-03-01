@@ -57,7 +57,7 @@ namespace Astrogator {
 					break;
 				case SortEnum.Time:
 					transfers.Sort((a, b) =>
-						a?.ejectionBurn?.atTime.CompareTo(b?.ejectionBurn?.atTime) ?? 0);
+						a?.ejectionBurn?.atTime?.CompareTo(b?.ejectionBurn?.atTime ?? 0) ?? 0);
 					break;
 				case SortEnum.DeltaV:
 					transfers.Sort((a, b) =>
@@ -624,6 +624,11 @@ namespace Astrogator {
 			/// How wide the column is when rendering in a fixed-width font text screen.
 			/// </summary>
 			public int monospaceWidth { get; set; }
+
+			/// <summary>
+			/// True if this column should be hidden if a transfer doesn't have a definite time
+			/// </summary>
+			public bool requiresTime { get; set; }
 		}
 
 		/// <value>
@@ -698,6 +703,7 @@ namespace Astrogator {
 				content	= ContentEnum.CreateManeuverNodeButton,
 				vesselSpecific	= true,
 				requiresPatchedConics	= true,
+				requiresTime	= true,
 				monospaceWidth	= 0,
 			}, new ColumnDefinition() {
 				header	= "",
@@ -706,7 +712,8 @@ namespace Astrogator {
 				headerStyle	= rightHdrStyle,
 				contentStyle	= warpStyle,
 				content	= ContentEnum.WarpToBurnButton,
-				monospaceWidth = 0
+				monospaceWidth = 0,
+				requiresTime	= true,
 			},
 		};
 

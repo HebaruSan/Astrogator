@@ -62,18 +62,72 @@ namespace Astrogator {
 		/// Estimate the delta V needed for the given vessel to get to orbit around the given body.
 		/// </summary>
 		/// <param name="body">Body to launch from</param>
-		/// <param name="vessel">Vessel to launch</param>
 		/// <returns>
 		/// Delta V it would take to launch from vessel's current position to a comfortable orbit.
 		/// </returns>
-		public static double DeltaVToOrbit(CelestialBody body, ITargetable vessel)
+		public static double DeltaVToOrbit(CelestialBody body)
 		{
-			double targetRadius = GoodLowOrbitRadius(body);
+			// http://forum.kerbalspaceprogram.com/index.php?/topic/144538-delta-v-calculations-accuracy/&do=findComment&comment=2692269
+			// Gravity loss: Integral<time>(ignition time, burnout time, parent.GeeASL * Math.Sin(pitch))
+			//   pitch = PI at t=0, PI/2 by 10 km, and 0 by the end
+			// Drag loss: Integral<time>(ignition time, burnout time, drag force * mass)
+			//   mass = wetMass - t * fuelMass / totalLaunchTime
+			//   drag force = 0 in space, more lower, proportional to speed
 
+			// I can't solve integrals on the fly, so we'll just add linear correction factors.
+			// Oddly, our uncorrected values overshoot for bodies without atmospheres, so subtract
+			// a correction factor based on surface gravity.
+			double gravCorrection = -200 * body.GeeASL;
+
+			// Now add another linear correction factor based on atmospheric pressure at sea level.
+			// This brings Kerbin's launch dV very close to correct, and everything else but Duna
+			// to within 20%. Duna is a 30% undershoot.
+			double atmoCorrection = body.atmosphere ? 12 * body.atmospherePressureSeaLevel : 0;
+
+			double targetRadius = GoodLowOrbitRadius(body);
 			return SpeedAtPeriapsis(body, targetRadius, body.Radius)
-				- vessel.GetOrbit().orbitalSpeed
+				- EquatorialRotationSpeed(body)
 				+ SpeedAtPeriapsis(body, targetRadius, targetRadius)
-				- SpeedAtApoapsis(body, targetRadius, body.Radius);
+				- SpeedAtApoapsis(body, targetRadius, body.Radius)
+				+ gravCorrection + atmoCorrection;
+		}
+
+		/// <summary>
+		/// Calculate how much speed an object on the surface at the equator
+		/// receives from the rotation of the body.
+		/// </summary>
+		/// <param name="body">The rotating body</param>
+		/// <returns>
+		/// Speed in m/s
+		/// </returns>
+		public static double EquatorialRotationSpeed(CelestialBody body)
+		{
+			if (!body.rotates || body.rotationPeriod == 0) {
+				return 0;
+			} else {
+				return 2 * Math.PI * body.Radius / body.rotationPeriod;
+			}
+		}
+
+		/// <summary>
+		/// Calculate the offset from the hidden "reference direction"
+		/// of the given longitude on body b at the given time.
+		/// </summary>
+		/// <param name="b">The body whose surface we're concerned about</param>
+		/// <param name="time">UT at which to calculate the angle</param>
+		/// <param name="longitude">Longitude of the point on the surface we care about</param>
+		/// <returns>
+		/// Angle in radians. Can be compared to AbsolutePhaseAngle for an orbit.
+		/// </returns>
+		public static double AbsolutePhaseAngle(CelestialBody b, double time, double longitude)
+		{
+			if (!b.rotates || b.rotationPeriod == 0) {
+				// If a body doesn't rotate, then dividing by its rotation period may raise an exception.
+				return Mathf.Deg2Rad * (b.initialRotation + longitude);
+			} else {
+				return Mathf.Deg2Rad * (b.initialRotation + longitude)
+					+ (Tau / b.rotationPeriod) * time;
+			}
 		}
 
 		/// <summary>
@@ -215,6 +269,21 @@ namespace Astrogator {
 		}
 
 		/// <summary>
+		/// Delta V needed to escape a body at a given speed from a circular orbit
+		/// </summary>
+		/// <param name="parent">Body from which to escape</param>
+		/// <param name="periapsis">Radius of starting orbit</param>
+		/// <param name="speedAtInfinity">Desired velocity at SOI exit</param>
+		/// <returns>
+		/// Speed change in m/s needed
+		/// </returns>
+		public static double BurnToEscape(CelestialBody parent, double periapsis, double speedAtInfinity)
+		{
+			double preBurnSpeed = SpeedAtPeriapsis(parent, periapsis, periapsis);
+			return SpeedToExitSOI(parent, periapsis, speedAtInfinity) - preBurnSpeed;
+		}
+
+		/// <summary>
 		/// Calculate the absolute time when a satellite will be a given angle away from
 		/// its local midnight position.
 		/// </summary>
@@ -343,6 +412,22 @@ namespace Astrogator {
 				preBurnSpeed = preBurnVelocity.magnitude;
 			double postBurnSpeed = SpeedAtPeriapsis(fromOrbit.referenceBody, newApoapsis, preBurnRadius);
 
+			return postBurnSpeed - preBurnSpeed;
+		}
+
+		/// <summary>
+		/// Delta V needed to go from a circular orbit to one with a given higher apoapsis
+		/// </summary>
+		/// <param name="b">Body we're orbiting</param>
+		/// <param name="newApoapsis">Apoapsis to which to raise</param>
+		/// <param name="preBurnRadius">Radius of circular orbit prior to burn</param>
+		/// <returns>
+		/// Speed change in m/s needed
+		/// </returns>
+		public static double BurnToNewAp(CelestialBody b, double newApoapsis, double preBurnRadius)
+		{
+			double preBurnSpeed = SpeedAtPeriapsis(b, preBurnRadius, preBurnRadius);
+			double postBurnSpeed = SpeedAtPeriapsis(b, newApoapsis, preBurnRadius);
 			return postBurnSpeed - preBurnSpeed;
 		}
 
