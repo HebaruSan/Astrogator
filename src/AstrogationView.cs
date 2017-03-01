@@ -195,12 +195,12 @@ namespace Astrogator {
 					if (model.hyperbolicOrbit) {
 						if (model.inbound) {
 							return string.Format(
-								"{0} is on an escape trajectory. Capture to see more transfers.",
+								"{0} is on an escape trajectory.\nCapture to see more transfers.",
 								TheName(model.origin)
 							);
 						} else {
 							return string.Format(
-								"{0} is on an escape trajectory. Capture to see transfers.",
+								"{0} is on an escape trajectory.\nCapture to see transfers.",
 								TheName(model.origin)
 							);
 						}
