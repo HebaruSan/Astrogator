@@ -43,7 +43,7 @@ namespace Astrogator {
 
 				// Skip columns that require maneuver nodes if they're not available
 				if (col.requiresPatchedConics
-						&& (!patchedConicsUnlocked() || Landed(model.origin))) {
+						&& (!patchedConicsUnlocked() || model.origin == null || Landed(model.origin))) {
 					continue;
 				}
 

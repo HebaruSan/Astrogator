@@ -448,6 +448,7 @@ namespace Astrogator {
 		private bool OrbitChanged()
 		{
 			return VesselMode
+				&& model.origin != null
 				&& !model.notOrbiting
 				&& (prevOrbit == null
 					|| !prevOrbit.Equals(FlightGlobals.ActiveVessel.orbit));

@@ -104,7 +104,7 @@ namespace Astrogator {
 					continue;
 				}
 				if (col.requiresPatchedConics
-						&& (!patchedConicsUnlocked() || model.notOrbiting)) {
+						&& (!patchedConicsUnlocked() || model.origin == null || model.notOrbiting)) {
 					continue;
 				}
 				float width = 0;
@@ -184,6 +184,7 @@ namespace Astrogator {
 		private bool ErrorCondition {
 			get {
 				return model == null
+					|| model.origin == null
 					|| model.transfers.Count == 0
 					|| model.ErrorCondition;
 			}
@@ -192,7 +193,9 @@ namespace Astrogator {
 		private string subTitle {
 			get {
 				if (model != null) {
-					if (model.hyperbolicOrbit) {
+					if (model.origin == null) {
+						return "Model's origin is null";
+					} else if (model.hyperbolicOrbit) {
 						if (model.inbound) {
 							return string.Format(
 								"{0} is on an escape trajectory.\nCapture to see more transfers.",

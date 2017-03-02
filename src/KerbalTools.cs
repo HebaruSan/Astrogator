@@ -23,7 +23,7 @@ namespace Astrogator {
 		/// </summary>
 		public static bool Landed(ITargetable t)
 		{
-			Vessel vessel = t.GetVessel();
+			Vessel vessel = t?.GetVessel();
 			return vessel != null
 				&& (vessel.situation == Vessel.Situations.PRELAUNCH
 					|| vessel.situation == Vessel.Situations.LANDED

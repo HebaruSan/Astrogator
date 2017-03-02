@@ -42,6 +42,7 @@ I assume opening the `csproj` file in Visual Studio would work, but I haven't tr
 5. Commit and push to Github
 6. Create a new release on Github
 7. `make clean && make`
-8. Attach zip file to Github release
-9. Publish the release
-10. Watch CKAN for updates
+8. Take screenshots
+9. Attach zip file to Github release
+10. Publish the release
+11. Watch CKAN for updates
