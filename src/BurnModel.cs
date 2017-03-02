@@ -16,7 +16,7 @@ namespace Astrogator {
 		/// <param name="pro">Prograde component</param>
 		/// <param name="nor">Normal component</param>
 		/// <param name="rad">Radial component</param>
-		public BurnModel(double t, double pro, double nor = 0, double rad = 0)
+		public BurnModel(double? t, double pro, double nor = 0, double rad = 0)
 		{
 			atTime = t;
 			prograde = pro;
@@ -32,8 +32,9 @@ namespace Astrogator {
 
 		/// <summary>
 		/// The UT of the burn.
+		/// If null, then the burn can happen anytime (as when launching from an indeterminate position).
 		/// </summary>
-		public double atTime      { get; private set; }
+		public double? atTime     { get; private set; }
 
 		/// <summary>
 		/// Prograde burn component in m/s.
@@ -62,8 +63,8 @@ namespace Astrogator {
 		{
 			DbgFmt("Activating maneuver");
 			node = null;
-			if (FlightGlobals.ActiveVessel?.patchedConicSolver != null) {
-				node = FlightGlobals.ActiveVessel.patchedConicSolver.AddManeuverNode(atTime);
+			if (FlightGlobals.ActiveVessel?.patchedConicSolver != null && atTime != null) {
+				node = FlightGlobals.ActiveVessel.patchedConicSolver.AddManeuverNode(atTime ?? 0);
 			}
 			if (node != null) {
 				DbgFmt("Maneuver activated");

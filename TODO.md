@@ -10,20 +10,16 @@
   - Only rule out a range once the entire thing is overdue
 - [ ] i18n / l10n (once SQUAD releases their version of it)
 
-## More transfer types
-
-- [ ] Launch to orbit
-
 ## Fixes
 
+- [ ] Test vessel destruction: deorbit, deletion
 - [ ] Crash on probe loss of radio contact
 - [ ] Keys stop working when nested encounter established
 - [ ] Freeze on set orbit cheat
 
 ## Code style
 
-- [ ] onVesselGoOffRails / onVesselGoOnRails for the OnOrbitChanged checks
-- [ ] Split CalculateEjectionBurn into transfer versus ejection functions
+- [ ] `onVesselGoOffRails` / `onVesselGoOnRails` for the `OnOrbitChanged` checks
 - [ ] Generalize retrograde orbit special cases
 - [ ] Split ViewTools: Truly generic stuff versus this project's stuff
 - [ ] Split MathTools off from PhysicsTools

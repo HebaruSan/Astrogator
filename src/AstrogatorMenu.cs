@@ -380,8 +380,8 @@ namespace Astrogator {
 				timeToWait = new List<DateTimeParts>();
 				for (int i = 0; i < transfers.Count; ++i) {
 
-					if (transfers[i].ejectionBurn != null) {
-						timeToWait.Add(new DateTimeParts(transfers[i].ejectionBurn.atTime - Planetarium.GetUniversalTime()));
+					if (transfers[i].ejectionBurn != null && transfers[i].ejectionBurn.atTime != null) {
+						timeToWait.Add(new DateTimeParts((transfers[i].ejectionBurn.atTime ?? 0) - Planetarium.GetUniversalTime()));
 					} else {
 						timeToWait.Add(null);
 					}

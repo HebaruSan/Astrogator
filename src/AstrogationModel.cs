@@ -54,7 +54,7 @@ namespace Astrogator {
 		/// True if there's a reason we can't calculate transfers, false if everything is OK.
 		/// </summary>
 		public bool ErrorCondition {
-			get { return badInclination || notOrbiting || (hyperbolicOrbit && !inbound); }
+			get { return badInclination || (hyperbolicOrbit && !inbound); }
 		}
 
 		/// <summary>
@@ -99,15 +99,7 @@ namespace Astrogator {
 		/// <summary>
 		/// True if the craft is sitting on a surface (solid or liquid) rather than on an orbit.
 		/// </summary>
-		public bool notOrbiting {
-			get {
-				Vessel vessel = origin.GetVessel();
-				return vessel != null
-					&& (vessel.situation == Vessel.Situations.PRELAUNCH
-						|| vessel.situation == Vessel.Situations.LANDED
-						|| vessel.situation == Vessel.Situations.SPLASHED);
-			}
-		}
+		public bool notOrbiting { get { return Landed(origin); } }
 
 		/// <summary>
 		/// Re-initialize a model object for the given origin objects.
@@ -156,8 +148,13 @@ namespace Astrogator {
 				// Normal orbit, load up everything
 				bool foundTarget = false;
 
-				CelestialBody first = start.GetOrbit()?.referenceBody,
-					targetBody = FlightGlobals.fetch.VesselTarget as CelestialBody;
+				CelestialBody targetBody = FlightGlobals.fetch.VesselTarget as CelestialBody,
+					first = start as CelestialBody;
+				// If the starting point is a vessel or has no solid surface, then we can't
+				// launch from it.
+				if (first == null || !first.hasSolidSurface) {
+					first = start.GetOrbit()?.referenceBody;
+				}
 
 				for (CelestialBody b = first, toSkip = start as CelestialBody;
 						b != null;
@@ -219,8 +216,6 @@ namespace Astrogator {
 						}
 					}
 
-					DbgFmt("Exhausted transfers around {0}", b.theName);
-
 					if (toSkip == targetBody && targetBody != null) {
 						DbgFmt("Found target as ancestor");
 						foundTarget = true;
@@ -234,8 +229,6 @@ namespace Astrogator {
 					transfers.Insert(0, new TransferModel(origin, FlightGlobals.fetch.VesselTarget));
 				}
 			}
-
-			DbgFmt("Shipping completed transfers");
 		}
 
 		/// <summary>

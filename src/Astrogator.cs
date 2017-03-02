@@ -282,7 +282,7 @@ namespace Astrogator {
 					if (n.attachedGizmo != null) {
 						n.attachedGizmo.DeltaV = n.DeltaV;
 						try {
-							n.OnGizmoUpdated(n.DeltaV, burn.atTime);
+							n.OnGizmoUpdated(n.DeltaV, burn.atTime ?? 0);
 						} catch (Exception ex) {
 							DbgExc("Problem updating gizmo", ex);
 						}
@@ -444,6 +444,8 @@ namespace Astrogator {
 		private bool OrbitChanged()
 		{
 			return VesselMode
+				&& model.origin != null
+				&& !model.notOrbiting
 				&& (prevOrbit == null
 					|| !prevOrbit.Equals(FlightGlobals.ActiveVessel.orbit));
 		}
@@ -492,7 +494,7 @@ namespace Astrogator {
 
 				DbgFmt("Tracking station changed target to {0}", target);
 				loader.TryStartLoad(
-					(ITargetable)target.vessel ?? (ITargetable)target.celestialBody,
+					(ITargetable)target.vessel ?? (ITargetable)target.celestialBody ?? (ITargetable)FlightGlobals.ActiveVessel ?? (ITargetable)FlightGlobals.getMainBody(),
 					null, ResetViewBackground, null
 				);
 			}

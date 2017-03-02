@@ -95,24 +95,29 @@ namespace Astrogator {
 			for (int i = 0; i < Columns.Length; ++i) {
 				ColumnDefinition col = Columns[i];
 				// Skip columns that require an active vessel if we don't have one
-				if (!col.vesselSpecific || model.origin.GetVessel() != null) {
-					float width = 0;
-					for (int span = 0; span < col.headerColSpan; ++span) {
-						width += Columns[i + span].width;
-					}
-					if (width > 0) {
-						// Add in the spacing gaps that got left out from colspanning
-						width += (col.headerColSpan - 1) * spacing;
-						if (col.header != "") {
-							ColumnHeaders.AddChild(headerButton(
-								col.header + columnSortIndicator(col),
-								col.headerStyle, columnHeaderTooltip, width, rowHeight, () => {
-									SortClicked(col.sortKey);
-								}
-							));
-						} else {
-							ColumnHeaders.AddChild(LabelWithStyleAndSize(col.header, col.headerStyle, width, rowHeight));
-						}
+				if (col.vesselSpecific && FlightGlobals.ActiveVessel == null) {
+					continue;
+				}
+				if (col.requiresPatchedConics
+						&& (!patchedConicsUnlocked() || model.origin == null || model.notOrbiting)) {
+					continue;
+				}
+				float width = 0;
+				for (int span = 0; span < col.headerColSpan; ++span) {
+					width += Columns[i + span].width;
+				}
+				if (width > 0) {
+					// Add in the spacing gaps that got left out from colspanning
+					width += (col.headerColSpan - 1) * spacing;
+					if (col.header != "") {
+						ColumnHeaders.AddChild(headerButton(
+							col.header + columnSortIndicator(col),
+							col.headerStyle, columnHeaderTooltip, width, rowHeight, () => {
+								SortClicked(col.sortKey);
+							}
+						));
+					} else {
+						ColumnHeaders.AddChild(new DialogGUISpace(width));
 					}
 				}
 			}
@@ -130,6 +135,35 @@ namespace Astrogator {
 			resetCallback();
 		}
 
+		private List<TransferModel> SortTransfers(AstrogationModel m, SortEnum how, bool descend)
+		{
+			List<TransferModel> transfers = new List<TransferModel>(m.transfers);
+			switch (how) {
+				case SortEnum.Name:
+					transfers.Sort((a, b) =>
+						a?.destination?.GetName().CompareTo(b?.destination?.GetName()) ?? 0);
+					break;
+				case SortEnum.Position:
+					// Use the natural/default ordering in the model
+					break;
+				case SortEnum.Time:
+					transfers.Sort((a, b) =>
+						a?.ejectionBurn?.atTime?.CompareTo(b?.ejectionBurn?.atTime ?? 0) ?? 0);
+					break;
+				case SortEnum.DeltaV:
+					transfers.Sort((a, b) =>
+						a?.ejectionBurn?.totalDeltaV.CompareTo(b?.ejectionBurn?.totalDeltaV) ?? 0);
+					break;
+				default:
+					DbgFmt("Bad sort argument: {0}", how.ToString());
+					break;
+			}
+			if (descend) {
+				transfers.Reverse();
+			}
+			return transfers;
+		}
+
 		private void createRows()
 		{
 			List<TransferModel> transfers = SortTransfers(
@@ -145,6 +179,7 @@ namespace Astrogator {
 		private bool ErrorCondition {
 			get {
 				return model == null
+					|| model.origin == null
 					|| model.transfers.Count == 0
 					|| model.ErrorCondition;
 			}
@@ -153,7 +188,9 @@ namespace Astrogator {
 		private string subTitle {
 			get {
 				if (model != null) {
-					if (model.hyperbolicOrbit) {
+					if (model.origin == null) {
+						return "Model's origin is null";
+					} else if (model.hyperbolicOrbit) {
 						if (model.inbound) {
 							return string.Format(
 								inboundHyperbolicWarning,
@@ -165,11 +202,6 @@ namespace Astrogator {
 								TheName(model.origin)
 							);
 						}
-					} else if (model.notOrbiting) {
-						return string.Format(
-							landedError,
-							TheName(model.origin)
-						);
 					} else if (model.badInclination) {
 						return string.Format(
 							highInclinationError,
@@ -178,6 +210,16 @@ namespace Astrogator {
 						);
 					} else if (model.transfers.Count == 0) {
 						return noTransfersError;
+					} else if (Landed(model.origin) || solidBodyWithoutVessel(model.origin)) {
+						CelestialBody b = model.origin as CelestialBody;
+						if (b == null) {
+							b = model.origin.GetOrbit().referenceBody;
+						}
+						return string.Format(
+							"Transfers from {0}\n(Launch ~{1})",
+							TheName(model.origin),
+							FormatSpeed(DeltaVToOrbit(b), Settings.Instance.DisplayUnits)
+						);
 					} else {
 						return string.Format(normalSubtitle, TheName(model.origin));
 					}

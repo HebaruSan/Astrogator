@@ -214,6 +214,7 @@ namespace Astrogator {
 					double now = Planetarium.GetUniversalTime();
 					for (int i = 0; i < model.transfers.Count; ++i) {
 						if (model.transfers[i].ejectionBurn != null
+								&& model.transfers[i].ejectionBurn.atTime != null
 								&& model.transfers[i].ejectionBurn.atTime < now) {
 
 							DbgFmt("Recalculating expired burn");
