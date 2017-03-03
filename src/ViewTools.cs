@@ -36,7 +36,7 @@ namespace Astrogator {
 		/// A string representing the version number of the mod.
 		/// </summary>
 		public static string versionString = string.Format(
-			"v{0}.{1}.{2}", modVersion.Major, modVersion.Minor, modVersion.Build
+			versionFormat, modVersion.Major, modVersion.Minor, modVersion.Build
 		);
 
 		/// <summary>
@@ -882,10 +882,10 @@ namespace Astrogator {
 			const double METERS_PER_SECOND_PER_MILES_PER_HOUR = 0.44704;
 			switch (units) {
 				case DisplayUnitsEnum.UnitedStatesCustomary:
-					return string.Format("{0:0} mph", speed / METERS_PER_SECOND_PER_MILES_PER_HOUR);
+					return string.Format(speedUSCustomary, speed / METERS_PER_SECOND_PER_MILES_PER_HOUR);
 				default:
 				case DisplayUnitsEnum.Metric:
-					return string.Format("{0:0} m/s", speed);
+					return string.Format(speedMetric, speed);
 			}
 		}
 	}

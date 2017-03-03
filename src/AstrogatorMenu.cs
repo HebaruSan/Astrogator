@@ -177,7 +177,7 @@ namespace Astrogator {
 						} else {
 							sb.AppendFormat(
 								colContentFormat(col),
-								TimePieceString("{0}y", dt.years, dt.needYears)
+								TimePieceString(yearsValue, dt.years, dt.needYears)
 							);
 						}
 						break;
@@ -188,7 +188,7 @@ namespace Astrogator {
 						} else {
 							sb.AppendFormat(
 								colContentFormat(col),
-								TimePieceString("{0}d", dt.days, dt.needDays)
+								TimePieceString(daysValue, dt.days, dt.needDays)
 							);
 						}
 						break;
@@ -199,7 +199,7 @@ namespace Astrogator {
 						} else {
 							sb.AppendFormat(
 								colContentFormat(col),
-								TimePieceString("{0}h", dt.hours, dt.needHours)
+								TimePieceString(hoursValue, dt.hours, dt.needHours)
 							);
 						}
 						break;
@@ -210,7 +210,7 @@ namespace Astrogator {
 						} else {
 							sb.AppendFormat(
 								colContentFormat(col),
-								TimePieceString("{0}m", dt.minutes, dt.needMinutes)
+								TimePieceString(minutesValue, dt.minutes, dt.needMinutes)
 							);
 						}
 						break;
@@ -221,7 +221,7 @@ namespace Astrogator {
 						} else {
 							sb.AppendFormat(
 								colContentFormat(col),
-								TimePieceString("{0}s", dt.seconds, true)
+								TimePieceString(secondsValue, dt.seconds, true)
 							);
 						}
 						break;

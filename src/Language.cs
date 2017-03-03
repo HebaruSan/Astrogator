@@ -39,13 +39,15 @@ namespace Astrogator {
 				for (int i = 0; i < translations.Length; ++i) {
 					DbgFmt("Checking resource {0}", i);
 					string key = translations[i].GetValue("name");
-					string val = translations[i].GetValue("string").Replace("<<", "{").Replace(">>","}");
+					string val = translations[i].GetValue("string").Replace("<<", "{").Replace(">>", "}").Replace("\\n", "\n");
 					DbgFmt("Token {0} = {1}", key, val);
 					switch (key) {
 
 						case "mainTitle": mainTitle = val; break;
+						case "versionFormat": versionFormat = val; break;
 						case "mainTooltip": mainTooltip = val; break;
 
+						case "launchSubtitle": launchSubtitle = val; break;
 						case "normalSubtitle": normalSubtitle = val; break;
 						case "inboundHyperbolicWarning": inboundHyperbolicWarning = val; break;
 						case "outboundHyperbolicError": outboundHyperbolicError = val; break;
@@ -91,6 +93,9 @@ namespace Astrogator {
 						case "metricSetting": metricSetting = val; break;
 						case "imperialSetting": imperialSetting = val; break;
 
+						case "speedMetric": speedMetric = val; break;
+						case "speedUSCustomary": speedUSCustomary = val; break;
+
 					}
 				}
 			} else {
@@ -99,8 +104,10 @@ namespace Astrogator {
 		}
 
 		public static string mainTitle                       { get; private set; }
+		public static string versionFormat                   { get; private set; }
 		public static string mainTooltip                     { get; private set; }
 
+		public static string launchSubtitle                  { get; private set; }
 		public static string normalSubtitle                  { get; private set; }
 		public static string inboundHyperbolicWarning        { get; private set; }
 		public static string outboundHyperbolicError         { get; private set; }
@@ -145,6 +152,9 @@ namespace Astrogator {
 		public static string unitsHeader                     { get; private set; }
 		public static string metricSetting                   { get; private set; }
 		public static string imperialSetting                 { get; private set; }
+
+		public static string speedMetric                     { get; private set; }
+		public static string speedUSCustomary                { get; private set; }
 
 	}
 

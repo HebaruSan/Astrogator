@@ -8,7 +8,6 @@
   - At the "leaf nodes", choose the center of a range as the burn time
   - Pick the soonest range when showing times or making maneuvers
   - Only rule out a range once the entire thing is overdue
-- [ ] i18n / l10n (once SQUAD releases their version of it)
 
 ## Fixes
 

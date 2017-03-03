@@ -216,7 +216,7 @@ namespace Astrogator {
 							b = model.origin.GetOrbit().referenceBody;
 						}
 						return string.Format(
-							"Transfers from {0}\n(Launch ~{1})",
+							launchSubtitle,
 							TheName(model.origin),
 							FormatSpeed(DeltaVToOrbit(b), Settings.Instance.DisplayUnits)
 						);
