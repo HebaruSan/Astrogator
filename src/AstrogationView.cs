@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
+using TMPro;
 
 namespace Astrogator {
 
@@ -294,8 +296,91 @@ namespace Astrogator {
 					skinToUse,
 					false
 				);
+
+				//Add the close button after the PopupDialog has been created
+				AddCloseButton(ViewTools.windowStyle);
 			}
 			return dialog;
+		}
+
+		/// <summary>
+		/// Adds a close button to the main window in the top-right corner
+		/// </summary>
+		/// <param name="textStyle">The text style for the button's X text;
+		/// replace this with a style similar to that used for the settings button if
+		/// you want to use an icon instead</param>
+		private void AddCloseButton(UIStyle textStyle /*, UIStyle buttonStyle */)
+		{
+			if (dialog != null)
+			{
+				//This creates a new button object using the prefab from KSP's UISkinManager
+				//The same prefab is used for the PopupDialog system buttons
+				GameObject go = GameObject.Instantiate<GameObject>(UISkinManager.GetPrefab("UIButtonPrefab"));
+
+				//This sets the button's parent to be the dialog window itself
+				go.transform.SetParent(dialog.transform, false);
+
+				//This activates the button object
+				go.SetActive(true);
+
+				//We need to add a layout element and set it to be ignored
+				//Otherwise the button will end up on the bottom of the window
+				LayoutElement layout = go.AddComponent<LayoutElement>();
+
+				layout.ignoreLayout = true;
+
+				//This is how we position the button
+				//The anchors and pivot make the button positioned relative to the top-right corner
+				//The anchored position sets the position with values in pixels
+				RectTransform rect = go.GetComponent<RectTransform>();
+
+				rect.anchorMax = new Vector2(1, 1);
+				rect.anchorMin = new Vector2(1, 1);
+				rect.pivot = new Vector2(1, 1);
+				rect.anchoredPosition = new Vector2(-8, -8);
+				rect.sizeDelta = new Vector2(16, 16);
+
+				Button button = go.GetComponent<Button>();
+
+				/* Use this section if you want to use an icon for the button
+					It takes the button, sets its image component to the normal sprite
+					and sets the different states to their respective sprites
+				Image img = go.GetComponent<Image>();
+
+				img.sprite = buttonStyle.normal.background;
+
+				SpriteState buttonSpriteSwap = new SpriteState()
+				{
+					highlightedSprite = buttonStyle.highlight.background,
+					pressedSprite = buttonStyle.active.background,
+					disabledSprite = buttonStyle.disabled.background
+				};
+
+				button.spriteState = buttonSpriteSwap;
+				button.transition = Selectable.Transition.SpriteSwap;
+				*/
+
+				//Remove this if you want to use an icon for the button
+				//Clip here ->
+				TextMeshProUGUI text = go.GetChild("Text").GetComponent<TextMeshProUGUI>();
+
+				text.text = "X";
+				text.font = UISkinManager.TMPFont;
+				text.fontSize = textStyle.fontSize;
+				text.color = textStyle.normal.textColor;
+				text.fontStyle = FontStyles.Bold;
+				text.alignment = TextAlignmentOptions.Center;
+				// -> to here
+
+				button.onClick.AddListener(delegate
+				{
+					Dismiss();
+
+					//This resets the App launcher button state, so it doesn't look like it's still open
+					if (Astrogator.Instance != null && Astrogator.Instance.launcher != null)
+						Astrogator.Instance.launcher.SetFalse(false);
+				});
+			}
 		}
 
 		/// <summary>
