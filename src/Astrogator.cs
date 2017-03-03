@@ -222,7 +222,7 @@ namespace Astrogator {
 
 			Settings.Instance.MainWindowVisible = true;
 			if (view == null) {
-				view = new AstrogationView(model, ResetView);
+				view = new AstrogationView(model, ResetView, () => { launcher.SetFalse(true); });
 				DbgFmt("View mated to booster");
 			}
 			view.Show();

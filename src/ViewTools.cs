@@ -464,6 +464,7 @@ namespace Astrogator {
 			font	= UISkinManager.defaultSkin.font,
 			label	= subTitleStyle,
 			toggle	= UISkinManager.defaultSkin.toggle,
+			button	= UISkinManager.defaultSkin.button,
 		};
 
 		/// <value>
@@ -489,6 +490,7 @@ namespace Astrogator {
 			font	= UISkinManager.defaultSkin.font,
 			label	= subTitleErrorStyle,
 			toggle	= UISkinManager.defaultSkin.toggle,
+			button	= UISkinManager.defaultSkin.button,
 		};
 
 		/// <summary>

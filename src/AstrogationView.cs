@@ -20,7 +20,7 @@ namespace Astrogator {
 		/// </summary>
 		/// <param name="m">Model object for which to make a view</param>
 		/// <param name="reset">Function to call when the view needs to be re-initiated</param>
-		public AstrogationView(AstrogationModel m, ResetCallback reset)
+		public AstrogationView(AstrogationModel m, ResetCallback reset, Callback close)
 			: base(
 				mainWindowMinWidth,
 				mainWindowMinHeight,
@@ -31,6 +31,14 @@ namespace Astrogator {
 		{
 			model = m;
 			resetCallback = reset;
+
+			AddChild(new DialogGUIHorizontalLayout(
+				RowWidth, 10,
+				0, wrenchPadding,
+				TextAnchor.UpperRight,
+				new DialogGUIFlexibleSpace(),
+				CloseX(close)
+			));
 
 			if (!ErrorCondition) {
 				createHeaders();
@@ -50,6 +58,15 @@ namespace Astrogator {
 
 		private AstrogationModel model  { get; set; }
 		private PopupDialog      dialog { get; set; }
+
+		private DialogGUIButton CloseX(Callback cb)
+		{
+			DialogGUIButton b = new DialogGUIButton("Close", cb, false) {
+				tooltipText = "Close this window"
+			};
+			DbgFmt("Close X GameObject is null: {0}", (b.uiItem == null));
+			return b;
+		}
 
 		/// <summary>
 		/// Type of function pointer used to request a re-creation of the UI.
