@@ -3,6 +3,9 @@ using System.Linq;
 using System.Reflection;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
+using UnityEngine.Events;
+using TMPro;
 using KSP.UI.TooltipTypes;
 
 namespace Astrogator {
@@ -413,6 +416,42 @@ namespace Astrogator {
 			highlight	= warpHoverStyleState,
 			active	= warpHoverStyleState,
 			disabled	= warpStyleState,
+		};
+
+		/// <summary>
+		/// Icon for close X button when not hovered.
+		/// </summary>
+		public static Sprite closeIcon = GetSprite(FilePath("close"));
+
+		/// <summary>
+		/// Icon for close X button when not hovered.
+		/// </summary>
+		public static UIStyleState closeStyleState = new UIStyleState() {
+			background	= closeIcon,
+			textColor	= Color.black
+		};
+
+		/// <summary>
+		/// Icon for close X button when hovered.
+		/// </summary>
+		public static Sprite closeHoverIcon = GetSprite(FilePath("closeHover"));
+
+		/// <summary>
+		/// Icon for close X button when hovered.
+		/// </summary>
+		public static UIStyleState closeHoverStyleState = new UIStyleState() {
+			background	= closeHoverIcon,
+			textColor	= Color.black
+		};
+
+		/// <summary>
+		/// Style for close X button.
+		/// </summary>
+		public static UIStyle closeStyle = new UIStyle() {
+			normal	= closeStyleState,
+			highlight	= closeHoverStyleState,
+			active	= closeHoverStyleState,
+			disabled	= closeStyleState,
 		};
 
 		/// <value>
@@ -863,6 +902,66 @@ namespace Astrogator {
 				guiStyle    = style,
 				tooltipText = tooltip
 			};
+		}
+
+		/// <summary>
+		/// Add a button outside of the normal DialogGUI* flow layout,
+		/// with positioning relative to edges of a parent element.
+		/// By DMagic, with modifications.
+		/// </summary>
+		/// <param name="parentTransform">Transform of UI object within which to place this button</param>
+		/// <param name="innerHorizOffset">Horizontal position; if positive, number of pixels between left edge of window and left edge of button, if negative, then vice versa on right side</param>
+		/// <param name="innerVertOffset">Vertical position; if positive, number of pixels between bottom edge of window and bottom edge of button, if negative, then vice versa on top side</param>
+		/// <param name="style">Style object containing the sprites for the button</param>
+		/// <param name="onClick">Function to call when the user clicks the button</param>
+		public static void AddFloatingButton(Transform parentTransform, float innerHorizOffset, float innerVertOffset, UIStyle style, UnityAction onClick)
+		{
+			// This creates a new button object using the prefab from KSP's UISkinManager.
+			// The same prefab is used for the PopupDialog system buttons.
+			// Anything we set on this object will be reflected in the button we create.
+			GameObject btnGameObj = GameObject.Instantiate<GameObject>(UISkinManager.GetPrefab("UIButtonPrefab"));
+
+			// Set the button's parent transform.
+			btnGameObj.transform.SetParent(parentTransform, false);
+
+			// Add a layout element and set it to be ignored.
+			// Otherwise the button will end up on the bottom of the window.
+			btnGameObj.AddComponent<LayoutElement>().ignoreLayout = true;
+
+			// This is how we position the button.
+			// The anchors and pivot make the button positioned relative to the top-right corner.
+			// The anchored position sets the position with values in pixels.
+			RectTransform rect = btnGameObj.GetComponent<RectTransform>();
+			rect.anchoredPosition = new Vector2(innerHorizOffset, innerVertOffset);
+			rect.sizeDelta        = new Vector2(buttonIconWidth, buttonIconWidth);
+			rect.anchorMin = rect.anchorMax = rect.pivot = new Vector2(
+				rect.anchoredPosition.x < 0 ? 1 : 0,
+				rect.anchoredPosition.y < 0 ? 1 : 0
+			);
+
+			// Set the button's image component to the normal sprite.
+			// Since this object comes from the button's GameObject,
+			// changing it affects the button directly!
+			Image btnImg  = btnGameObj.GetComponent<Image>();
+			btnImg.sprite = style.normal.background;
+
+			// Now set the different states to their respective sprites.
+			Button button      = btnGameObj.GetComponent<Button>();
+			button.transition  = Selectable.Transition.SpriteSwap;
+			button.spriteState = new SpriteState() {
+				highlightedSprite = style.highlight.background,
+				pressedSprite     = style.active.background,
+				disabledSprite    = style.disabled.background
+			};
+
+			// The text will be "Button" if we don't clear it.
+			btnGameObj.GetChild("Text").GetComponent<TextMeshProUGUI>().text = "";
+
+			// Set the code to call when clicked.
+			button.onClick.AddListener(onClick);
+
+			// Activate the button object, making it visible.
+			btnGameObj.SetActive(true);
 		}
 
 		/// <summary>

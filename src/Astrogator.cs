@@ -34,11 +34,6 @@ namespace Astrogator {
 			loader = new AstrogationLoadBehaviorette(model, ResetViewBackground);
 		}
 
-		/// <summary>
-		/// A static instance property to access this script from elsewhere
-		/// </summary>
-		public static Astrogator Instance { get; private set; }
-
 		private bool VesselMode { get; set; }
 
 		/// <summary>
@@ -59,8 +54,6 @@ namespace Astrogator {
 		/// </summary>
 		public void Start()
 		{
-			Instance = this;
-
 			// This event fires when KSP is ready for mods to add toolbar buttons
 			GameEvents.onGUIApplicationLauncherReady.Add(AddLauncher);
 
@@ -117,7 +110,7 @@ namespace Astrogator {
 
 		#region App launcher
 
-		public ApplicationLauncherButton launcher { get; private set; }
+		private ApplicationLauncherButton launcher { get; set; }
 
 		private void AddLauncher()
 		{

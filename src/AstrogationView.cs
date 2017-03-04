@@ -1,8 +1,7 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.UI;
-using TMPro;
+using UnityEngine.Events;
 
 namespace Astrogator {
 
@@ -22,7 +21,8 @@ namespace Astrogator {
 		/// </summary>
 		/// <param name="m">Model object for which to make a view</param>
 		/// <param name="reset">Function to call when the view needs to be re-initiated</param>
-		public AstrogationView(AstrogationModel m, ResetCallback reset, Callback close)
+		/// <param name="close">Function to call when the user clicks a close button</param>
+		public AstrogationView(AstrogationModel m, ResetCallback reset, UnityAction close)
 			: base(
 				mainWindowMinWidth,
 				mainWindowMinHeight,
@@ -33,14 +33,7 @@ namespace Astrogator {
 		{
 			model = m;
 			resetCallback = reset;
-
-			AddChild(new DialogGUIHorizontalLayout(
-				RowWidth, 10,
-				0, wrenchPadding,
-				TextAnchor.UpperRight,
-				new DialogGUIFlexibleSpace(),
-				CloseX(close)
-			));
+			closeCallback = close;
 
 			if (!ErrorCondition) {
 				createHeaders();
@@ -61,15 +54,6 @@ namespace Astrogator {
 		private AstrogationModel model  { get; set; }
 		private PopupDialog      dialog { get; set; }
 
-		private DialogGUIButton CloseX(Callback cb)
-		{
-			DialogGUIButton b = new DialogGUIButton("Close", cb, false) {
-				tooltipText = "Close this window"
-			};
-			DbgFmt("Close X GameObject is null: {0}", (b.uiItem == null));
-			return b;
-		}
-
 		/// <summary>
 		/// Type of function pointer used to request a re-creation of the UI.
 		/// This is needed because the DialogGUI* functions don't allow us to
@@ -78,6 +62,7 @@ namespace Astrogator {
 		public delegate void ResetCallback(bool resetModel = false);
 
 		private ResetCallback resetCallback { get; set; }
+		private UnityAction   closeCallback { get; set; }
 
 		private static Rect geometry {
 			get {
@@ -297,90 +282,15 @@ namespace Astrogator {
 					false
 				);
 
-				//Add the close button after the PopupDialog has been created
-				AddCloseButton(ViewTools.windowStyle);
+				// Add the close button in the upper right corner after the PopupDialog has been created.
+				AddFloatingButton(
+					dialog.transform,
+					-mainWindowPadding.right - mainWindowSpacing, -mainWindowPadding.top,
+					closeStyle,
+					closeCallback
+				);
 			}
 			return dialog;
-		}
-
-		/// <summary>
-		/// Adds a close button to the main window in the top-right corner
-		/// </summary>
-		/// <param name="textStyle">The text style for the button's X text;
-		/// replace this with a style similar to that used for the settings button if
-		/// you want to use an icon instead</param>
-		private void AddCloseButton(UIStyle textStyle /*, UIStyle buttonStyle */)
-		{
-			if (dialog != null)
-			{
-				//This creates a new button object using the prefab from KSP's UISkinManager
-				//The same prefab is used for the PopupDialog system buttons
-				GameObject go = GameObject.Instantiate<GameObject>(UISkinManager.GetPrefab("UIButtonPrefab"));
-
-				//This sets the button's parent to be the dialog window itself
-				go.transform.SetParent(dialog.transform, false);
-
-				//This activates the button object
-				go.SetActive(true);
-
-				//We need to add a layout element and set it to be ignored
-				//Otherwise the button will end up on the bottom of the window
-				LayoutElement layout = go.AddComponent<LayoutElement>();
-
-				layout.ignoreLayout = true;
-
-				//This is how we position the button
-				//The anchors and pivot make the button positioned relative to the top-right corner
-				//The anchored position sets the position with values in pixels
-				RectTransform rect = go.GetComponent<RectTransform>();
-
-				rect.anchorMax = new Vector2(1, 1);
-				rect.anchorMin = new Vector2(1, 1);
-				rect.pivot = new Vector2(1, 1);
-				rect.anchoredPosition = new Vector2(-8, -8);
-				rect.sizeDelta = new Vector2(16, 16);
-
-				Button button = go.GetComponent<Button>();
-
-				/* Use this section if you want to use an icon for the button
-					It takes the button, sets its image component to the normal sprite
-					and sets the different states to their respective sprites
-				Image img = go.GetComponent<Image>();
-
-				img.sprite = buttonStyle.normal.background;
-
-				SpriteState buttonSpriteSwap = new SpriteState()
-				{
-					highlightedSprite = buttonStyle.highlight.background,
-					pressedSprite = buttonStyle.active.background,
-					disabledSprite = buttonStyle.disabled.background
-				};
-
-				button.spriteState = buttonSpriteSwap;
-				button.transition = Selectable.Transition.SpriteSwap;
-				*/
-
-				//Remove this if you want to use an icon for the button
-				//Clip here ->
-				TextMeshProUGUI text = go.GetChild("Text").GetComponent<TextMeshProUGUI>();
-
-				text.text = "X";
-				text.font = UISkinManager.TMPFont;
-				text.fontSize = textStyle.fontSize;
-				text.color = textStyle.normal.textColor;
-				text.fontStyle = FontStyles.Bold;
-				text.alignment = TextAlignmentOptions.Center;
-				// -> to here
-
-				button.onClick.AddListener(delegate
-				{
-					Dismiss();
-
-					//This resets the App launcher button state, so it doesn't look like it's still open
-					if (Astrogator.Instance != null && Astrogator.Instance.launcher != null)
-						Astrogator.Instance.launcher.SetFalse(false);
-				});
-			}
 		}
 
 		/// <summary>
