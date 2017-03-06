@@ -346,6 +346,43 @@ namespace Astrogator {
 			alignment	 = TextAnchor.UpperRight,
 		};
 
+		/// <summary>
+		/// Icon for the normal state of the back button.
+		/// </summary>
+		public static Sprite backIcon = GetSprite(FilePath("back"));
+
+		/// <summary>
+		/// Icon for the normal state of the back button.
+		/// </summary>
+		public static UIStyleState backStyleState = new UIStyleState() {
+			background	= backIcon,
+			textColor	= Color.black
+		};
+
+		/// <summary>
+		/// Icon for the hovered state of the back button.
+		/// </summary>
+		public static Sprite backHoverIcon = GetSprite(FilePath("backHover"));
+
+		/// <summary>
+		/// Icon for the hovered state of the back button.
+		/// </summary>
+		public static UIStyleState backHoverStyleState = new UIStyleState() {
+			background	= backHoverIcon,
+			textColor	= Color.black
+		};
+
+		/// <value>
+		/// Normal/highlight icons for the back button.
+		/// </value>
+		public static UIStyle backStyle = new UIStyle() {
+			normal	= backStyleState,
+			highlight	= backHoverStyleState,
+			active	= backHoverStyleState,
+			disabled	= backStyleState,
+			alignment	 = TextAnchor.UpperRight,
+		};
+
 		/// <value>
 		/// Icon for normal state of maneuver node creation button.
 		/// </value>
@@ -794,6 +831,11 @@ namespace Astrogator {
 		/// Space around the edges of the settings pane
 		/// </summary>
 		public static RectOffset settingsPadding = new RectOffset(0, 0, 0, 0);
+
+		/// <summary>
+		/// Pixels between elements of the settings
+		/// </summary>
+		public const int settingsSpacing = 2;
 
 		/// <summary>
 		/// Window-relative coordinate of the spot that stays fixed in place when the size changes.
