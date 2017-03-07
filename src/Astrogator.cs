@@ -242,6 +242,10 @@ namespace Astrogator {
 			if (userInitiated) {
 				// If we close the window because we're exiting, don't set the setting.
 				Settings.Instance.MainWindowVisible = false;
+
+				// Now that the transfers and the settings are separate,
+				// it doesn't make sense to still show the settings if they click the X.
+				Settings.Instance.ShowSettings = false;
 			}
 		}
 
