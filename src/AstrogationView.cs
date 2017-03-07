@@ -35,19 +35,17 @@ namespace Astrogator {
 			resetCallback = reset;
 			closeCallback = close;
 
-			if (!ErrorCondition) {
-				createHeaders();
-				createRows();
-			}
-			AddChild(new DialogGUIHorizontalLayout(
-				RowWidth, 10,
-				0, wrenchPadding,
-				TextAnchor.UpperRight,
-				new DialogGUILabel(getMessage, notificationStyle, true, true),
-				iconButton(settingsIcon, settingsStyle, "Settings", toggleSettingsVisible)
-			));
 			if (Settings.Instance.ShowSettings) {
 				AddChild(new SettingsView(resetCallback));
+			} else if (!ErrorCondition) {
+				createHeaders();
+				createRows();
+				AddChild(new DialogGUIHorizontalLayout(
+					RowWidth, 10,
+					0, wrenchPadding,
+					TextAnchor.UpperRight,
+					new DialogGUILabel(getMessage, notificationStyle, true, true)
+				));
 			}
 		}
 
@@ -260,6 +258,16 @@ namespace Astrogator {
 			}
 		}
 
+		private UIStyle settingsToggleStyle {
+			get {
+				if (Settings.Instance.ShowSettings) {
+					return backStyle;
+				} else {
+					return settingsStyle;
+				}
+			}
+		}
+
 		/// <summary>
 		/// Launch a PopupDialog containing the view.
 		/// Use Dismiss() to get rid of it.
@@ -288,6 +296,16 @@ namespace Astrogator {
 					-mainWindowPadding.right - mainWindowSpacing, -mainWindowPadding.top,
 					closeStyle,
 					closeCallback
+				);
+
+				// Add the settings button next to the close button.
+				// If the settings are visible it's a back '<' icon, otherwise a wrench+screwdriver.
+				AddFloatingButton(
+					dialog.transform,
+					-mainWindowPadding.right - 3 * mainWindowSpacing - buttonIconWidth,
+					-mainWindowPadding.top,
+					settingsToggleStyle,
+					toggleSettingsVisible
 				);
 			}
 			return dialog;

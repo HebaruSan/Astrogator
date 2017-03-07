@@ -8,6 +8,8 @@
   - At the "leaf nodes", choose the center of a range as the burn time
   - Pick the soonest range when showing times or making maneuvers
   - Only rule out a range once the entire thing is overdue
+- [ ] Merge the correction burn into the ejection burn
+- [ ] Re-do launch approximation to increase accuracy
 - [ ] i18n / l10n (once SQUAD releases their version of it)
 
 ## Fixes
@@ -36,8 +38,3 @@
 ## Deferred pending stock changes
 
 - [ ] Rendezvous with asteroids near Pe of their future encounter/escape trajectories
-
-## Documentation
-
-- [ ] New main screenshot
-- [ ] New settings screenshot
