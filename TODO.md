@@ -38,8 +38,3 @@
 ## Deferred pending stock changes
 
 - [ ] Rendezvous with asteroids near Pe of their future encounter/escape trajectories
-
-## Documentation
-
-- [ ] New main screenshot
-- [ ] New settings screenshot
