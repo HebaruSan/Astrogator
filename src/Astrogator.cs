@@ -30,7 +30,7 @@ namespace Astrogator {
 		public Astrogator()
 			: base()
 		{
-			model = new AstrogationModel();
+			model  = new AstrogationModel();
 			loader = new AstrogationLoadBehaviorette(model, ResetViewBackground);
 		}
 
@@ -85,6 +85,15 @@ namespace Astrogator {
 
 			// Save the persistent attributes to our settings file
 			Settings.Instance.Save();
+
+			if (loader != null) {
+				// Tell the loader we don't need data anymore;
+				// prevents new threads from starting
+				loader.OnDisplayClosed();
+
+				// Clean up the timer and thread
+				loader.Dispose();
+			}
 
 			// The "dead" copy of our object will re-add itself if we don't unsubscribe to this!
 			GameEvents.onGUIApplicationLauncherReady.Remove(AddLauncher);
