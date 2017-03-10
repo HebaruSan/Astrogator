@@ -84,12 +84,12 @@ See [INSTALL.md](INSTALL.md).
 ## References
 
 ### Plug-in authoring
+- https://kerbalspaceprogram.com/api/index.html
 - http://forum.kerbalspaceprogram.com/index.php?/topic/153765-getting-started-the-basics-of-writing-a-plug-in/
 - http://forum.kerbalspaceprogram.com/index.php?/topic/151354-unity-ui-creation-tutorial/
 - http://forum.kerbalspaceprogram.com/index.php?/topic/149324-popupdialog-and-the-dialoggui-classes/
 - http://forum.kerbalspaceprogram.com/index.php?/topic/78231-application-launcher-and-mods/
 - http://forum.kerbalspaceprogram.com/index.php?/topic/154006-solved-texture-issues/&do=findComment&comment=2904233
-- https://kerbalspaceprogram.com/api/index.html
 
 ### Physics and math
 - https://en.wikipedia.org/wiki/Hohmann_transfer_orbit
@@ -99,6 +99,8 @@ See [INSTALL.md](INSTALL.md).
 - https://d2r5da613aq50s.cloudfront.net/wp-content/uploads/411616.image0.jpg
 - https://en.wikipedia.org/wiki/Orbital_inclination_change#Calculation
 - https://en.wikipedia.org/wiki/Hyperbolic_trajectory#Hyperbolic_excess_velocity
+- http://www.dtic.mil/dtic/tr/fulltext/u2/a200383.pdf
+- http://forum.kerbalspaceprogram.com/index.php?/topic/122779-changing-orbital-angle-without-changing-apoapsis/
 
 ### Performance
 - http://www.somasim.com/blog/2015/04/csharp-memory-and-performance-tips-for-unity/

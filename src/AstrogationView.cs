@@ -31,7 +31,7 @@ namespace Astrogator {
 				TextAnchor.UpperCenter
 			)
 		{
-			model = m;
+			model         = m;
 			resetCallback = reset;
 			closeCallback = close;
 

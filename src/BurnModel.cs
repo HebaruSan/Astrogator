@@ -18,10 +18,10 @@ namespace Astrogator {
 		/// <param name="rad">Radial component</param>
 		public BurnModel(double? t, double pro, double nor = 0, double rad = 0)
 		{
-			atTime = t;
-			prograde = pro;
-			normal = nor;
-			radial = rad;
+			atTime      = t;
+			prograde    = pro;
+			normal      = nor;
+			radial      = rad;
 			totalDeltaV = Math.Sqrt(prograde * prograde + normal * normal + radial * radial);
 		}
 

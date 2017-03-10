@@ -14,11 +14,11 @@ namespace Astrogator {
 		/// <param name="o">Orbit from which to copy orbital parameters</param>
 		public OrbitModel(Orbit o)
 		{
-			SemiMajorAxis = o.semiMajorAxis;
-			Eccentricity = o.eccentricity;
-			Inclination = o.inclination;
+			SemiMajorAxis            = o.semiMajorAxis;
+			Eccentricity             = o.eccentricity;
+			Inclination              = o.inclination;
 			LongitudeOfAscendingNode = o.LAN;
-			ArgumentOfPeriapsis = o.argumentOfPeriapsis;
+			ArgumentOfPeriapsis      = o.argumentOfPeriapsis;
 		}
 
 		private double SemiMajorAxis            { get; set; }
