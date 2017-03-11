@@ -7,7 +7,7 @@ ICONS=$(wildcard $(ASSETDIR)/*.png)
 CONFIGS=$(wildcard $(ASSETDIR)/*.cfg)
 README=README.md
 GAMELINK=$(SOURCEDIR)/KSP_x64_Data
-DEFAULTGAMEDIR="$(HOME)/.local/share/Steam/SteamApps/common/Kerbal Space Program"
+DEFAULTGAMEDIR=$(HOME)/.local/share/Steam/SteamApps/common/Kerbal Space Program
 
 DEBUGDLL=$(SOURCEDIR)/bin/Debug/Astrogator.dll
 RELEASEDLL=$(SOURCEDIR)/bin/Release/Astrogator.dll
@@ -43,9 +43,9 @@ $(RELEASEZIP): $(DEBUGDLL) $(ICONS) $(README) $(DLLDOCS) $(DLLSYMBOLS) $(LICENSE
 
 $(GAMELINK):
 	if [ -x "$(DEFAULTGAMEDIR)" ]; \
-	then; \
+	then \
 		ln -s "$(DEFAULTGAMEDIR)"/KSP_x64_Data $(GAMELINK); \
-	else; \
+	else \
 		echo "$(GAMELINK) not found."; \
 		echo 'This must be a symlink to Kerbal Space Program/KSP_x64_Data.'; \
 		exit 2; \
