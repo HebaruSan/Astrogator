@@ -264,6 +264,7 @@ namespace Astrogator {
 					new MultiOptionDialog(
 						subTitle,
 						mainTitle + " " + versionString,
+						"",
 						skinToUse,
 						geometry,
 						this

@@ -473,7 +473,7 @@ namespace Astrogator {
 		private void SOIChanged(CelestialBody newBody)
 		{
 			if (model != null && view != null) {
-				DbgFmt("Entered {0}'s sphere of influence", newBody.theName);
+				DbgFmt("Entered {0}'s sphere of influence", TheName(newBody));
 				// The old list no longer applies because reachable bodies depend on current SOI
 				loader.TryStartLoad(
 					model.origin ?? (ITargetable)FlightGlobals.ActiveVessel ?? (ITargetable)FlightGlobals.getMainBody(),

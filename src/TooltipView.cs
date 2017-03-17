@@ -13,6 +13,7 @@ namespace Astrogator {
 			: base(
 				description,
 				" " + title + " ",
+				"",
 				AstrogatorSkin,
 				where)
 		{ }
