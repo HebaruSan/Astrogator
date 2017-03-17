@@ -30,7 +30,7 @@ namespace Astrogator {
 	///
 	/// Burns can expire if their burn time elapses into the past, so we need to check them once per second.
 	/// </summary>
-	public class AstrogationLoadBehaviorette {
+	public class AstrogationLoadBehaviorette : IDisposable {
 
 		/// <summary>
 		/// Construct a loader object for the given model
@@ -41,38 +41,54 @@ namespace Astrogator {
 		{
 			model = m;
 			unrequestedLoadNotification = unReqNotif;
-
-			// Watch for expiring burns
-			StartBurnTimePolling();
 		}
 
 		/// <summary>
-		/// Destructor; destroy the timer
+		/// Shut down and clean up any stuff that might cause problems if it runs
+		/// while the rest of the game is shutting down.
 		/// </summary>
-		~AstrogationLoadBehaviorette()
+		public void Dispose()
 		{
+			// Release reference to UI update callback in case it keeps the plugin active
+			unrequestedLoadNotification = null;
+
+			// Destroy the timer
 			StopBurnTimePolling();
+
+			// Make sure our calculation thread exits before the main thread cleans up
+			StopCalculatorThread();
 		}
 
 		private const double     minSecondsBetweenLoads = 5;
 		private AstrogationModel model                       { get; set; }
 		private LoadDoneCallback unrequestedLoadNotification { get; set; }
 		private int              numOpenDisplays             { get; set; } = 0;
-		private bool              loading                    { get; set; }
-		private double            lastUpdateTime             { get; set; }
-		private readonly object   bgLoadMutex = new object();
+		private bool             loading                     { get; set; }
+		private double           lastUpdateTime              { get; set; }
+		private Thread           calculator                  { get; set; }
+		private readonly object  bgLoadMutex = new object();
 
 		/// <summary>
 		/// Tell the loader that we are currently displaying the data.
 		/// If it thinks we aren't, it won't calculate anything.
 		/// </summary>
-		public void OnDisplayOpened() { ++numOpenDisplays; }
+		public void OnDisplayOpened()
+		{
+			if (++numOpenDisplays == 1) {
+				StartBurnTimePolling();
+			}
+		}
 
 		/// <summary>
 		/// Tell the loader that we're closing a display.
 		/// If it thinks they're all gone, it won't calculate anything.
 		/// </summary>
-		public void OnDisplayClosed() { --numOpenDisplays; }
+		public void OnDisplayClosed()
+		{
+			if (--numOpenDisplays == 0) {
+				StopBurnTimePolling();
+			}
+		}
 
 		private bool AllowStart(ITargetable newOrigin) {
 			return model != null
@@ -84,6 +100,17 @@ namespace Astrogator {
 					// and the minimum refresh interval has elapsed since the last one.
 					|| (!loading && lastUpdateTime + minSecondsBetweenLoads < Planetarium.GetUniversalTime())
 				);
+		}
+
+		private void StopCalculatorThread()
+		{
+			if (calculator != null && calculator.IsAlive) {
+				DbgFmt("Waiting for calculator thread");
+				calculator.Join();
+				calculator = null;
+			} else {
+				DbgFmt("Calculator thread not running");
+			}
 		}
 
 		/// <summary>
@@ -116,9 +143,19 @@ namespace Astrogator {
 						aborted();
 					}
 					return false;
+				} else if (calculator != null && calculator.IsAlive) {
+					if (aborted != null) {
+						aborted();
+					}
+					return false;
 				} else {
 					// 2. Start background job
-					new Thread(() => ThreadStart(newOrigin, partialLoaded, fullyLoaded, aborted)).Start();
+					calculator = new Thread(
+						() => ThreadStart(newOrigin, partialLoaded, fullyLoaded, aborted)
+					) {
+						Name = "Astrogator transfer calculator"
+					};
+					calculator.Start();
 					return true;
 				}
 			} else {
@@ -203,6 +240,8 @@ namespace Astrogator {
 				timer.Stop();
 				timer.Dispose();
 				timer = null;
+			} else {
+				DbgFmt("Timer not running");
 			}
 		}
 

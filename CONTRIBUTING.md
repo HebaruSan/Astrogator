@@ -24,7 +24,7 @@ Please follow these guidelines for submitting ideas for features.
 - A mock-up screenshot is extremely helpful, both in making your suggestion clear, and in selling it as a good idea
 - If you know of a mod that does something similar, provide a link; a reference implementation can be very helpful if your feature ends up getting worked on
 
-Even if your suggestion is valid, specific, and clear, I may still decide at my sole discretion that it's not the direction I want to take this mod and close it anyway. Please understand that this likely has more to do with my vision for Astrogator than with your idea. However, if you feel motivated enough, the license (GPLv3) permits you to create and distribute your own forked version with whatever changes you like. If you decide to do this, please contact me to work out ways reduce confusion among users.
+Even if your suggestion is valid, specific, and clear, I may still decide at my sole discretion that it's not the direction I want to take this mod and close it anyway. Please understand that this likely has more to do with my vision for Astrogator than with your idea. However, if you feel motivated enough, the license (GPLv3) permits you to create and distribute your own forked version with whatever changes you like. If you decide to do this, please read the section on [forking](#Forks).
 
 ## [Pull requests](https://github.com/HebaruSan/Astrogator/pulls)
 
@@ -44,3 +44,21 @@ Any proposed code changes are welcome, but will have to meet my personal coding 
 - Whenever possible, break complex physics calculations down to clear steps that a non-physics major can understand
 - If a value is the same every time, it should be `const` or `static`, especially if it has to be loaded from a file
 - No classes just for the sake of classes; if you're not storing instance-level data, don't make me create an object (we have several static classes in the `*Tools.cs` files that should be able to accommodate new code)
+
+## Forks
+
+Astrogator's license (GLPv3) permits modification of source code and redistribution. The following requests are for the sake of courtesy and not legally mandated.
+
+My wishes vary depending on whether I'm still actively working on Astrogator. To determine whether I'm still active, I request a grace period of at least two calendar months from the time of last activity. When in doubt, ask on the forum thread (but please read at least a few of the previous pages of posts to see if there has already been such a discussion).
+
+### If I'm still active
+
+If I have posted on the KSP forums recently, released a new version of Astrogator recently, or otherwise made my presence known, my preferences are to keep any derivative works easily distinguishable from my version. This is especially the case if you wish to take it in a different direction than I do; your new concept should be free to grow into its own unique mod.
+
+Please contact me to work out ways reduce confusion among users. I'll probably request that you release under a different but similar name, a favorite being "Cosmogator" due to the fun Cold War connotations.
+
+### If I am no longer active
+
+If I have vanished or stopped developing or supporting Astrogator, my preferences are to avoid "X Continued" naming schemes and to have the option to pick up where you left off if I do come back, especially if your changes are only for the sake of compatibility with new versions of KSP. This implies continuity in naming.
+
+Please do **not** change the name. Cooperate with any others who are interested in updating to avoid redundant efforts, then continue releasing new versions of Astrogator from your fork according to [Semantic Versioning](http://semver.org).

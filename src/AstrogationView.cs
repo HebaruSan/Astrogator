@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Events;
 
 namespace Astrogator {
 
@@ -21,7 +22,8 @@ namespace Astrogator {
 		/// </summary>
 		/// <param name="m">Model object for which to make a view</param>
 		/// <param name="reset">Function to call when the view needs to be re-initiated</param>
-		public AstrogationView(AstrogationModel m, ResetCallback reset)
+		/// <param name="close">Function to call when the user clicks a close button</param>
+		public AstrogationView(AstrogationModel m, ResetCallback reset, UnityAction close)
 			: base(
 				mainWindowMinWidth,
 				mainWindowMinHeight,
@@ -30,8 +32,9 @@ namespace Astrogator {
 				TextAnchor.UpperCenter
 			)
 		{
-			model = m;
+			model         = m;
 			resetCallback = reset;
+			closeCallback = close;
 
 			if (!ErrorCondition) {
 				createHeaders();
@@ -46,6 +49,15 @@ namespace Astrogator {
 			));
 			if (Settings.Instance.ShowSettings) {
 				AddChild(new SettingsView(resetCallback));
+			} else if (!ErrorCondition) {
+				createHeaders();
+				createRows();
+				AddChild(new DialogGUIHorizontalLayout(
+					RowWidth, 10,
+					0, wrenchPadding,
+					TextAnchor.UpperRight,
+					new DialogGUILabel(getMessage, notificationStyle, true, true)
+				));
 			}
 		}
 
@@ -60,6 +72,7 @@ namespace Astrogator {
 		public delegate void ResetCallback(bool resetModel = false);
 
 		private ResetCallback resetCallback { get; set; }
+		private UnityAction   closeCallback { get; set; }
 
 		private static Rect geometry {
 			get {
@@ -251,6 +264,16 @@ namespace Astrogator {
 			}
 		}
 
+		private UIStyle settingsToggleStyle {
+			get {
+				if (Settings.Instance.ShowSettings) {
+					return backStyle;
+				} else {
+					return settingsStyle;
+				}
+			}
+		}
+
 		/// <summary>
 		/// Launch a PopupDialog containing the view.
 		/// Use Dismiss() to get rid of it.
@@ -272,6 +295,24 @@ namespace Astrogator {
 					false,
 					skinToUse,
 					false
+				);
+
+				// Add the close button in the upper right corner after the PopupDialog has been created.
+				AddFloatingButton(
+					dialog.transform,
+					-mainWindowPadding.right - mainWindowSpacing, -mainWindowPadding.top,
+					closeStyle,
+					closeCallback
+				);
+
+				// Add the settings button next to the close button.
+				// If the settings are visible it's a back '<' icon, otherwise a wrench+screwdriver.
+				AddFloatingButton(
+					dialog.transform,
+					-mainWindowPadding.right - 3 * mainWindowSpacing - buttonIconWidth,
+					-mainWindowPadding.top,
+					settingsToggleStyle,
+					toggleSettingsVisible
 				);
 			}
 			return dialog;

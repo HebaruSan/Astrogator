@@ -20,7 +20,7 @@ namespace Astrogator {
 		public SettingsView(AstrogationView.ResetCallback reset)
 			: base(
 				mainWindowMinWidth, 10,
-				mainWindowSpacing,  settingsPadding,
+				settingsSpacing,    settingsPadding,
 				TextAnchor.UpperLeft
 			)
 		{

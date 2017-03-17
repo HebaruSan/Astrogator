@@ -17,7 +17,7 @@ namespace Astrogator {
 		/// <param name="org">Body or vessel to start at</param>
 		public AstrogationModel(ITargetable org)
 		{
-			origin = org;
+			origin    = org;
 			transfers = new List<TransferModel>();
 
 			if (!ErrorCondition) {
