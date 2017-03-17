@@ -10,8 +10,6 @@ namespace Astrogator {
 
 		static Language()
 		{
-			DbgFmt("Current language: {0}", Localization.instance.CurrentLanguage);
-			DbgFmt("My locale: {0}", MyLocale);
 			if (GameDatabase.Instance.ExistsConfigNode(MyLocaleURL)) {
 				DbgFmt("Loading current locale");
 				LoadLanguage(MyLocaleURL);
@@ -21,10 +19,10 @@ namespace Astrogator {
 			}
 		}
 
-		private const string DefaultLocale = "en_US";
-		private static string MyLocale =  CultureInfo.CurrentCulture.TwoLetterISOLanguageName + "_" + System.Globalization.RegionInfo.CurrentRegion.TwoLetterISORegionName;
+		private const string  DefaultLocale    = "en-us";
+		private static string MyLocale         = Localization.instance.CurrentLanguage;
 		private static string DefaultLocaleURL = LanguageURL(DefaultLocale);
-		private static string MyLocaleURL = LanguageURL(MyLocale);
+		private static string MyLocaleURL      = LanguageURL(MyLocale);
 
 		private static string LanguageURL(string locale)
 		{

@@ -36,17 +36,6 @@ namespace Astrogator {
 			resetCallback = reset;
 			closeCallback = close;
 
-			if (!ErrorCondition) {
-				createHeaders();
-				createRows();
-			}
-			AddChild(new DialogGUIHorizontalLayout(
-				RowWidth, 10,
-				0, wrenchPadding,
-				TextAnchor.UpperRight,
-				new DialogGUILabel(getMessage, notificationStyle, true, true),
-				iconButton(settingsIcon, settingsStyle, settingsButtonTooltip, toggleSettingsVisible)
-			));
 			if (Settings.Instance.ShowSettings) {
 				AddChild(new SettingsView(resetCallback));
 			} else if (!ErrorCondition) {
@@ -98,8 +87,8 @@ namespace Astrogator {
 		private string columnSortIndicator(ColumnDefinition col)
 		{
 			return col.sortKey != Settings.Instance.TransferSort ? ""
-				: Settings.Instance.DescendingSort ? " ▼"
-				: " ▲";
+					: Settings.Instance.DescendingSort ? " (desc)"
+					: " (asc)";
 		}
 
 		private void createHeaders()
