@@ -85,8 +85,8 @@ namespace Astrogator {
 		private string columnSortIndicator(ColumnDefinition col)
 		{
 			return col.sortKey != Settings.Instance.TransferSort ? ""
-				: Settings.Instance.DescendingSort ? " ↓"
-				: " ↑";
+				: Settings.Instance.DescendingSort ? " ▼"
+				: " ▲";
 		}
 
 		private void createHeaders()
@@ -262,9 +262,9 @@ namespace Astrogator {
 					mainWindowAnchorMin,
 					mainWindowAnchorMax,
 					new MultiOptionDialog(
+						mainTitle,
 						subTitle,
 						mainTitle + " " + versionString,
-						"",
 						skinToUse,
 						geometry,
 						this

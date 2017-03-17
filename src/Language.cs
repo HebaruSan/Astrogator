@@ -1,4 +1,5 @@
 using System.Globalization;
+using KSP.Localization;
 
 namespace Astrogator {
 
@@ -9,6 +10,8 @@ namespace Astrogator {
 
 		static Language()
 		{
+			DbgFmt("Current language: {0}", Localization.instance.CurrentLanguage);
+			DbgFmt("My locale: {0}", MyLocale);
 			if (GameDatabase.Instance.ExistsConfigNode(MyLocaleURL)) {
 				DbgFmt("Loading current locale");
 				LoadLanguage(MyLocaleURL);
@@ -37,9 +40,8 @@ namespace Astrogator {
 				ConfigNode[] translations = langCfg.GetNodes("TRANSLATION");
 				DbgFmt("Got translations");
 				for (int i = 0; i < translations.Length; ++i) {
-					DbgFmt("Checking resource {0}", i);
 					string key = translations[i].GetValue("name");
-					string val = translations[i].GetValue("string").Replace("<<", "{").Replace(">>", "}").Replace("\\n", "\n");
+					string val = translations[i].GetValue("string").Replace("<<", "{").Replace(">>", "}"); //.Replace("\\n", "\n");
 					DbgFmt("Token {0} = {1}", key, val);
 					switch (key) {
 
