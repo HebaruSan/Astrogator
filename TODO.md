@@ -14,7 +14,6 @@
 ## Localization clean-up
 
 - [ ] ["the Mun"](http://bugs.kerbalspaceprogram.com/issues/14314)
-- [ ] [Ascending/descending sort markers](http://bugs.kerbalspaceprogram.com/issues/14317)
 - [ ] Times not showing up in Chinese and Japanese
 
 ## Fixes

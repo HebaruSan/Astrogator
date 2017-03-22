@@ -87,8 +87,8 @@ namespace Astrogator {
 		private string columnSortIndicator(ColumnDefinition col)
 		{
 			return col.sortKey != Settings.Instance.TransferSort ? ""
-					: Settings.Instance.DescendingSort ? " (desc)"
-					: " (asc)";
+					: Settings.Instance.DescendingSort ? " v"
+					: " ^";
 		}
 
 		private void createHeaders()

@@ -91,6 +91,9 @@ See [INSTALL.md](INSTALL.md).
 - http://forum.kerbalspaceprogram.com/index.php?/topic/78231-application-launcher-and-mods/
 - http://forum.kerbalspaceprogram.com/index.php?/topic/154006-solved-texture-issues/&do=findComment&comment=2904233
 
+### Localization
+- http://forum.kerbalspaceprogram.com/index.php?/topic/158018-addon-localization-home/
+
 ### Physics and math
 - https://en.wikipedia.org/wiki/Hohmann_transfer_orbit
 - https://en.wikipedia.org/wiki/Orbital_speed#Precise_orbital_speed
