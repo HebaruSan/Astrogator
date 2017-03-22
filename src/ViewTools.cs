@@ -7,13 +7,13 @@ using UnityEngine.UI;
 using UnityEngine.Events;
 using TMPro;
 using KSP.UI.TooltipTypes;
+using KSP.Localization;
 
 namespace Astrogator {
 
 	using static DebugTools;
 	using static KerbalTools;
 	using static ViewTools;
-	using static Language;
 
 	/// Anything UI-related that needs to be used from multiple places.
 	public static class ViewTools {
@@ -38,8 +38,8 @@ namespace Astrogator {
 		/// <summary>
 		/// A string representing the version number of the mod.
 		/// </summary>
-		public static string versionString = string.Format(
-			versionFormat, modVersion.Major, modVersion.Minor, modVersion.Build
+		public static string versionString = Localization.Format(
+			"astrogator_versionFormat", modVersion.Major, modVersion.Minor, modVersion.Build
 		);
 
 		/// <summary>
@@ -702,7 +702,7 @@ namespace Astrogator {
 		/// </value>
 		public static ColumnDefinition[] Columns = new ColumnDefinition[] {
 			new ColumnDefinition() {
-				header	= transferColumnHeader,
+				header	= Localization.Format("astrogator_transferColumnHeader"),
 				width	= 60,
 				headerColSpan	= 1,
 				headerStyle	= leftHdrStyle,
@@ -711,7 +711,7 @@ namespace Astrogator {
 				sortKey	= SortEnum.Position,
 				monospaceWidth	= 6
 			}, new ColumnDefinition() {
-				header	= timeColumnHeader,
+				header	= Localization.Format("astrogator_timeColumnHeader"),
 				width	= 30,
 				headerColSpan	= 5,
 				headerStyle	= midHdrStyle,
@@ -752,7 +752,7 @@ namespace Astrogator {
 				content	= ContentEnum.SecondsTillBurn,
 				monospaceWidth	= 3,
 			}, new ColumnDefinition() {
-				header	= deltaVColumnHeader,
+				header	= Localization.Format("astrogator_deltaVColumnHeader"),
 				width	= 60,
 				headerColSpan	= 1,
 				headerStyle	= rightHdrStyle,
@@ -894,7 +894,7 @@ namespace Astrogator {
 			if (!forceShow && val == 0) {
 				return nullString;
 			} else {
-				return string.Format(fmt, val);
+				return Localization.Format(fmt, val);
 			}
 		}
 
@@ -1025,10 +1025,10 @@ namespace Astrogator {
 			const double METERS_PER_SECOND_PER_MILES_PER_HOUR = 0.44704;
 			switch (units) {
 				case DisplayUnitsEnum.UnitedStatesCustomary:
-					return string.Format(speedUSCustomary, speed / METERS_PER_SECOND_PER_MILES_PER_HOUR);
+					return Localization.Format("astrogator_speedUSCustomary", (speed / METERS_PER_SECOND_PER_MILES_PER_HOUR).ToString("0"));
 				default:
 				case DisplayUnitsEnum.Metric:
-					return string.Format(speedMetric, speed);
+					return Localization.Format("astrogator_speedMetric", speed.ToString("0"));
 			}
 		}
 	}

@@ -3,13 +3,13 @@ using System.Text;
 using System.Globalization;
 using System.Collections.Generic;
 using UnityEngine;
+using KSP.Localization;
 
 namespace Astrogator {
 
 	using static DebugTools;
 	using static KerbalTools;
 	using static ViewTools;
-	using static Language;
 
 	/// <summary>
 	/// https://github.com/Mihara/RasterPropMonitor/wiki/Page-handlers
@@ -177,7 +177,7 @@ namespace Astrogator {
 						} else {
 							sb.AppendFormat(
 								colContentFormat(col),
-								TimePieceString(yearsValue, dt.years, dt.needYears)
+								TimePieceString(Localization.Format("astrogator_yearsValue"), dt.years, dt.needYears)
 							);
 						}
 						break;
@@ -188,7 +188,7 @@ namespace Astrogator {
 						} else {
 							sb.AppendFormat(
 								colContentFormat(col),
-								TimePieceString(daysValue, dt.days, dt.needDays)
+								TimePieceString(Localization.Format("astrogator_daysValue"), dt.days, dt.needDays)
 							);
 						}
 						break;
@@ -199,7 +199,7 @@ namespace Astrogator {
 						} else {
 							sb.AppendFormat(
 								colContentFormat(col),
-								TimePieceString(hoursValue, dt.hours, dt.needHours)
+								TimePieceString(Localization.Format("astrogator_hoursValue"), dt.hours, dt.needHours)
 							);
 						}
 						break;
@@ -210,7 +210,7 @@ namespace Astrogator {
 						} else {
 							sb.AppendFormat(
 								colContentFormat(col),
-								TimePieceString(minutesValue, dt.minutes, dt.needMinutes)
+								TimePieceString(Localization.Format("astrogator_minutesValue"), dt.minutes, dt.needMinutes)
 							);
 						}
 						break;
@@ -221,7 +221,7 @@ namespace Astrogator {
 						} else {
 							sb.AppendFormat(
 								colContentFormat(col),
-								TimePieceString(secondsValue, dt.seconds, true)
+								TimePieceString(Localization.Format("astrogator_secondsValue"), dt.seconds, true)
 							);
 						}
 						break;
@@ -265,10 +265,10 @@ namespace Astrogator {
 			if ((Refresh() || cursorMoved) && transfers.Count == timeToWait.Count) {
 
 				StringBuilder sb = new StringBuilder();
-				sb.Append(centerString(" " + mainTitle + " " + versionString + " ", columns, '-'));
+				sb.Append(centerString(" " + Localization.Format("astrogator_mainTitle") + " " + versionString + " ", columns, '-'));
 				sb.Append(Environment.NewLine);
 				sb.Append("[#a0a0a0ff]");
-				sb.Append(centerString(String.Format(normalSubtitle, TheName(model.origin)), columns));
+				sb.Append(centerString(Localization.Format("astrogator_normalSubtitle", TheName(model.origin)), columns));
 				sb.Append(Environment.NewLine);
 				sb.Append(Environment.NewLine);
 

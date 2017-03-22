@@ -11,6 +11,11 @@
 - [ ] Merge the correction burn into the ejection burn
 - [ ] Re-do launch approximation to increase accuracy
 
+## Localization clean-up
+
+- [ ] ["the Mun"](http://bugs.kerbalspaceprogram.com/issues/14314)
+- [ ] [Ascending/descending sort markers](http://bugs.kerbalspaceprogram.com/issues/14317)
+
 ## Fixes
 
 - [ ] Test vessel destruction: deorbit, deletion

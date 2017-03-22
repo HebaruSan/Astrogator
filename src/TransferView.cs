@@ -1,5 +1,6 @@
 using System;
 using System.Globalization;
+using KSP.Localization;
 
 namespace Astrogator {
 
@@ -7,7 +8,6 @@ namespace Astrogator {
 	using static PhysicsTools;
 	using static KerbalTools;
 	using static ViewTools;
-	using static Language;
 
 	/// A class that displays a given transfer's info.
 	/// Corresponds to one row of the main window.
@@ -58,7 +58,7 @@ namespace Astrogator {
 				switch (col.content) {
 
 					case ContentEnum.PlanetName:
-						AddChild(LabelWithStyleAndSize(CultureInfo.InstalledUICulture.TextInfo.ToTitleCase(TheName(model.destination)),
+						AddChild(LabelWithStyleAndSize(Localization.Format("<<CA:1>>", TheName(model.destination)),
 							col.contentStyle, col.width, rowHeight));
 						break;
 
@@ -94,12 +94,12 @@ namespace Astrogator {
 
 					case ContentEnum.CreateManeuverNodeButton:
 						AddChild(iconButton(maneuverIcon,
-							col.contentStyle, maneuverButtonTooltip, model.CreateManeuvers));
+							col.contentStyle, Localization.Format("astrogator_maneuverButtonTooltip"), model.CreateManeuvers));
 						break;
 
 					case ContentEnum.WarpToBurnButton:
 						AddChild(iconButton(warpIcon,
-							col.contentStyle, warpButtonTooltip, model.WarpToBurn));
+							col.contentStyle, Localization.Format("astrogator_warpButtonTooltip"), model.WarpToBurn));
 						break;
 
 				}
@@ -147,7 +147,7 @@ namespace Astrogator {
 			if (showLoadingText) {
 				return LoadingText;
 			} else {
-				return TimePieceString(yearsValue, timeToWait.years, timeToWait.needYears);
+				return TimePieceString(Localization.Format("astrogator_yearsValue"), timeToWait.years, timeToWait.needYears);
 			}
 		}
 
@@ -160,7 +160,7 @@ namespace Astrogator {
 			if (showLoadingText) {
 				return LoadingText;
 			} else {
-				return TimePieceString(daysValue, timeToWait.days, timeToWait.needDays);
+				return TimePieceString(Localization.Format("astrogator_daysValue"), timeToWait.days, timeToWait.needDays);
 			}
 		}
 
@@ -173,7 +173,7 @@ namespace Astrogator {
 			if (showLoadingText) {
 				return LoadingText;
 			} else {
-				return TimePieceString(hoursValue, timeToWait.hours, timeToWait.needHours);
+				return TimePieceString(Localization.Format("astrogator_hoursValue"), timeToWait.hours, timeToWait.needHours);
 			}
 		}
 
@@ -186,7 +186,7 @@ namespace Astrogator {
 			if (showLoadingText) {
 				return LoadingText;
 			} else {
-				return TimePieceString(minutesValue, timeToWait.minutes, timeToWait.needMinutes);
+				return TimePieceString(Localization.Format("astrogator_minutesValue"), timeToWait.minutes, timeToWait.needMinutes);
 			}
 		}
 
@@ -199,7 +199,7 @@ namespace Astrogator {
 			if (showLoadingText) {
 				return LoadingText;
 			} else {
-				return TimePieceString(secondsValue, timeToWait.seconds, true);
+				return TimePieceString(Localization.Format("astrogator_secondsValue"), timeToWait.seconds, true);
 			}
 		}
 

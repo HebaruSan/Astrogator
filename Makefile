@@ -1,7 +1,7 @@
 .PHONY: all clean
 
 SOURCEDIR=src
-SOURCE=$(wildcard $(SOURCEDIR)/*.cs)
+SOURCE=$(wildcard $(SOURCEDIR)/*.cs) $(wildcard $(SOURCEDIR)/*.csproj)
 ASSETDIR=assets
 ICONS=$(wildcard $(ASSETDIR)/*.png)
 CONFIGS=$(wildcard $(ASSETDIR)/*.cfg)

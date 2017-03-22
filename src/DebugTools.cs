@@ -1,10 +1,9 @@
 using System;
 using UnityEngine;
 using KSP;
+using KSP.Localization;
 
 namespace Astrogator {
-
-	using static Language;
 
 	/// Tools to help with debugging.
 	/// They'd be module-level global variables if C# allowed that.
@@ -26,7 +25,7 @@ namespace Astrogator {
 			lock (debugMutex) {
 				Debug.Log(string.Format(
 					"[{0} {1:000.000}] {2}",
-					mainTitle,
+					Localization.Format("astrogator_mainTitle"),
 					Time.realtimeSinceStartup,
 					formattedMessage
 				));

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using KSP.UI.Screens;
+using KSP.Localization;
 
 namespace Astrogator {
 
@@ -8,7 +9,6 @@ namespace Astrogator {
 	using static PhysicsTools;
 	using static KerbalTools;
 	using static ViewTools;
-	using static Language;
 
 	// We speak American in this house, young lady!
 	using MonoBehavior = UnityEngine.MonoBehaviour;
@@ -160,8 +160,8 @@ namespace Astrogator {
 
 			if (tooltip == null) {
 				tooltip = TooltipView.AppLauncherTooltip(
-					mainTitle,
-					mainTooltip,
+					Localization.Format("astrogator_mainTitle"),
+					Localization.Format("astrogator_mainTooltip"),
 					launcher);
 			}
 			tooltip.Show();

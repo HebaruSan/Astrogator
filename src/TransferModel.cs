@@ -2,13 +2,13 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 using KSP;
+using KSP.Localization;
 
 namespace Astrogator {
 
 	using static DebugTools;
 	using static PhysicsTools;
 	using static KerbalTools;
-	using static Language;
 
 	/// An object representing everything we need to know about a particular transfer.
 	public class TransferModel {
@@ -745,7 +745,7 @@ namespace Astrogator {
 					} else if (transferParent != null) {
 						// Otherwise focus on the parent of the transfer orbit so we can get an encounter
 						// Try to explain why this is happening with a screen message
-						ScreenFmt(adjustManeuversMessage);
+						ScreenFmt(Localization.Format("astrogator_adjustManeuversMessage"));
 						FocusMap(transferParent, transferDestination);
 					}
 				}
