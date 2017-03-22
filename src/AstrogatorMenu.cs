@@ -177,7 +177,7 @@ namespace Astrogator {
 						} else {
 							sb.AppendFormat(
 								colContentFormat(col),
-								TimePieceString(Localization.Format("astrogator_yearsValue"), dt.years, dt.needYears)
+								TimePieceString("astrogator_yearsValue", dt.years, dt.needYears)
 							);
 						}
 						break;
@@ -188,7 +188,7 @@ namespace Astrogator {
 						} else {
 							sb.AppendFormat(
 								colContentFormat(col),
-								TimePieceString(Localization.Format("astrogator_daysValue"), dt.days, dt.needDays)
+								TimePieceString("astrogator_daysValue", dt.days, dt.needDays)
 							);
 						}
 						break;
@@ -199,7 +199,7 @@ namespace Astrogator {
 						} else {
 							sb.AppendFormat(
 								colContentFormat(col),
-								TimePieceString(Localization.Format("astrogator_hoursValue"), dt.hours, dt.needHours)
+								TimePieceString("astrogator_hoursValue", dt.hours, dt.needHours)
 							);
 						}
 						break;
@@ -210,7 +210,7 @@ namespace Astrogator {
 						} else {
 							sb.AppendFormat(
 								colContentFormat(col),
-								TimePieceString(Localization.Format("astrogator_minutesValue"), dt.minutes, dt.needMinutes)
+								TimePieceString("astrogator_minutesValue", dt.minutes, dt.needMinutes)
 							);
 						}
 						break;
@@ -221,7 +221,7 @@ namespace Astrogator {
 						} else {
 							sb.AppendFormat(
 								colContentFormat(col),
-								TimePieceString(Localization.Format("astrogator_secondsValue"), dt.seconds, true)
+								TimePieceString("astrogator_secondsValue", dt.seconds, true)
 							);
 						}
 						break;

@@ -58,7 +58,8 @@ namespace Astrogator {
 				switch (col.content) {
 
 					case ContentEnum.PlanetName:
-						AddChild(LabelWithStyleAndSize(Localization.Format("<<CA:1>>", TheName(model.destination)),
+						AddChild(LabelWithStyleAndSize(
+							TheName(model.destination),
 							col.contentStyle, col.width, rowHeight));
 						break;
 
@@ -147,7 +148,7 @@ namespace Astrogator {
 			if (showLoadingText) {
 				return LoadingText;
 			} else {
-				return TimePieceString(Localization.Format("astrogator_yearsValue"), timeToWait.years, timeToWait.needYears);
+				return TimePieceString("astrogator_yearsValue", timeToWait.years, timeToWait.needYears);
 			}
 		}
 
@@ -160,7 +161,7 @@ namespace Astrogator {
 			if (showLoadingText) {
 				return LoadingText;
 			} else {
-				return TimePieceString(Localization.Format("astrogator_daysValue"), timeToWait.days, timeToWait.needDays);
+				return TimePieceString("astrogator_daysValue", timeToWait.days, timeToWait.needDays);
 			}
 		}
 
@@ -173,7 +174,7 @@ namespace Astrogator {
 			if (showLoadingText) {
 				return LoadingText;
 			} else {
-				return TimePieceString(Localization.Format("astrogator_hoursValue"), timeToWait.hours, timeToWait.needHours);
+				return TimePieceString("astrogator_hoursValue", timeToWait.hours, timeToWait.needHours);
 			}
 		}
 
@@ -186,7 +187,7 @@ namespace Astrogator {
 			if (showLoadingText) {
 				return LoadingText;
 			} else {
-				return TimePieceString(Localization.Format("astrogator_minutesValue"), timeToWait.minutes, timeToWait.needMinutes);
+				return TimePieceString("astrogator_minutesValue", timeToWait.minutes, timeToWait.needMinutes);
 			}
 		}
 
@@ -199,7 +200,7 @@ namespace Astrogator {
 			if (showLoadingText) {
 				return LoadingText;
 			} else {
-				return TimePieceString(Localization.Format("astrogator_secondsValue"), timeToWait.seconds, true);
+				return TimePieceString("astrogator_secondsValue", timeToWait.seconds, true);
 			}
 		}
 

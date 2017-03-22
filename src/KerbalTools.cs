@@ -200,7 +200,7 @@ namespace Astrogator {
 		public static string TheName(ITargetable target)
 		{
 			CelestialBody b = target as CelestialBody;
-			return b?.displayNameGender ?? target?.GetName() ?? "NULL";
+			return b?.displayName ?? target?.GetName() ?? "NULL";
 		}
 
 		/// <summary>
