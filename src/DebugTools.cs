@@ -25,7 +25,7 @@ namespace Astrogator {
 			lock (debugMutex) {
 				Debug.Log(string.Format(
 					"[{0} {1:000.000}] {2}",
-					Localization.Format("astrogator_mainTitle"),
+					Localizer.Format("astrogator_mainTitle"),
 					Time.realtimeSinceStartup,
 					formattedMessage
 				));

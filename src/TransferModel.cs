@@ -745,7 +745,7 @@ namespace Astrogator {
 					} else if (transferParent != null) {
 						// Otherwise focus on the parent of the transfer orbit so we can get an encounter
 						// Try to explain why this is happening with a screen message
-						ScreenFmt(Localization.Format("astrogator_adjustManeuversMessage"));
+						ScreenFmt(Localizer.Format("astrogator_adjustManeuversMessage"));
 						FocusMap(transferParent, transferDestination);
 					}
 				}

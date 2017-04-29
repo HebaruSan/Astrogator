@@ -95,12 +95,12 @@ namespace Astrogator {
 
 					case ContentEnum.CreateManeuverNodeButton:
 						AddChild(iconButton(maneuverIcon,
-							col.contentStyle, Localization.Format("astrogator_maneuverButtonTooltip"), model.CreateManeuvers));
+							col.contentStyle, Localizer.Format("astrogator_maneuverButtonTooltip"), model.CreateManeuvers));
 						break;
 
 					case ContentEnum.WarpToBurnButton:
 						AddChild(iconButton(warpIcon,
-							col.contentStyle, Localization.Format("astrogator_warpButtonTooltip"), model.WarpToBurn));
+							col.contentStyle, Localizer.Format("astrogator_warpButtonTooltip"), model.WarpToBurn));
 						break;
 
 				}

@@ -160,8 +160,8 @@ namespace Astrogator {
 
 			if (tooltip == null) {
 				tooltip = TooltipView.AppLauncherTooltip(
-					Localization.Format("astrogator_mainTitle"),
-					Localization.Format("astrogator_mainTooltip"),
+					Localizer.Format("astrogator_mainTitle"),
+					Localizer.Format("astrogator_mainTooltip"),
 					launcher);
 			}
 			tooltip.Show();

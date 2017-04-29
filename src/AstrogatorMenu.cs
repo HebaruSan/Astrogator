@@ -265,10 +265,10 @@ namespace Astrogator {
 			if ((Refresh() || cursorMoved) && transfers.Count == timeToWait.Count) {
 
 				StringBuilder sb = new StringBuilder();
-				sb.Append(centerString(" " + Localization.Format("astrogator_mainTitle") + " " + versionString + " ", columns, '-'));
+				sb.Append(centerString(" " + Localizer.Format("astrogator_mainTitle") + " " + versionString + " ", columns, '-'));
 				sb.Append(Environment.NewLine);
 				sb.Append("[#a0a0a0ff]");
-				sb.Append(centerString(Localization.Format("astrogator_normalSubtitle", TheName(model.origin)), columns));
+				sb.Append(centerString(Localizer.Format("astrogator_normalSubtitle", TheName(model.origin)), columns));
 				sb.Append(Environment.NewLine);
 				sb.Append(Environment.NewLine);
 

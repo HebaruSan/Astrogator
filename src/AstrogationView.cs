@@ -114,7 +114,7 @@ namespace Astrogator {
 					if (col.header != "") {
 						ColumnHeaders.AddChild(headerButton(
 							col.header + columnSortIndicator(col),
-							col.headerStyle, Localization.Format("astrogator_columnHeaderTooltip"), width, rowHeight, () => {
+							col.headerStyle, Localizer.Format("astrogator_columnHeaderTooltip"), width, rowHeight, () => {
 								SortClicked(col.sortKey);
 							}
 						));
@@ -194,36 +194,36 @@ namespace Astrogator {
 						return "Model's origin is null";
 					} else if (model.hyperbolicOrbit) {
 						if (model.inbound) {
-							return Localization.Format(
+							return Localizer.Format(
 								"astrogator_inboundHyperbolicWarning",
 								TheName(model.origin)
 							);
 						} else {
-							return Localization.Format(
+							return Localizer.Format(
 								"astrogator_outboundHyperbolicError",
 								TheName(model.origin)
 							);
 						}
 					} else if (model.badInclination) {
-						return Localization.Format(
+						return Localizer.Format(
 							"astrogator_highInclinationError",
 							(AngleFromEquatorial(model.origin.GetOrbit().inclination * Mathf.Deg2Rad) * Mathf.Rad2Deg).ToString("0.0"),
 							(AstrogationModel.maxInclination * Mathf.Rad2Deg).ToString("0")
 						);
 					} else if (model.transfers.Count == 0) {
-						return Localization.Format("astrogator_noTransfersError");
+						return Localizer.Format("astrogator_noTransfersError");
 					} else if (Landed(model.origin) || solidBodyWithoutVessel(model.origin)) {
 						CelestialBody b = model.origin as CelestialBody;
 						if (b == null) {
 							b = model.origin.GetOrbit().referenceBody;
 						}
-						return Localization.Format(
+						return Localizer.Format(
 							"astrogator_launchSubtitle",
 							TheName(model.origin),
 							FormatSpeed(DeltaVToOrbit(b), Settings.Instance.DisplayUnits)
 						);
 					} else {
-						return Localization.Format("astrogator_normalSubtitle", TheName(model.origin));
+						return Localizer.Format("astrogator_normalSubtitle", TheName(model.origin));
 					}
 				} else {
 					return "Internal error: Model not found";
@@ -237,7 +237,7 @@ namespace Astrogator {
 					&& Settings.Instance.TranslationAdjust
 					&& FlightGlobals.ActiveVessel != null
 					&& !FlightGlobals.ActiveVessel.ActionGroups[KSPActionGroup.RCS]) {
-				return Localization.Format("astrogator_translationControlsNotification");
+				return Localizer.Format("astrogator_translationControlsNotification");
 			} else {
 				return "";
 			}
@@ -274,9 +274,9 @@ namespace Astrogator {
 					mainWindowAnchorMin,
 					mainWindowAnchorMax,
 					new MultiOptionDialog(
-						Localization.Format("astrogator_mainTitle"),
+						Localizer.Format("astrogator_mainTitle"),
 						subTitle,
-						Localization.Format("astrogator_mainTitle") + " " + versionString,
+						Localizer.Format("astrogator_mainTitle") + " " + versionString,
 						skinToUse,
 						geometry,
 						this
