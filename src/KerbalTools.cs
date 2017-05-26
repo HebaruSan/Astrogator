@@ -195,12 +195,16 @@ namespace Astrogator {
 		/// </summary>
 		/// <param name="target">Body or vessel to check</param>
 		/// <returns>
-		/// Name of target, possibly with "the" in front
+		/// Name of target, including gender markers
+		/// (Historically, this checked CelestialBody.theName, which included a lower case
+		/// version of some names such as "the Mun". This was removed in the localization
+		/// update, and now we only have "The Mun" regardless of where in the sentence
+		/// the string will be used. This has been reported on the bug tracker:
+		///   http://bugs.kerbalspaceprogram.com/issues/14314 )
 		/// </returns>
 		public static string TheName(ITargetable target)
 		{
-			CelestialBody b = target as CelestialBody;
-			return b?.displayName ?? target?.GetName() ?? "NULL";
+			return target?.GetDisplayName() ?? target?.GetName() ?? "NULL";
 		}
 
 		/// <summary>

@@ -15,6 +15,7 @@ Localization
 		astrogator_transferColumnHeader = 転送
 		astrogator_timeColumnHeader = 書き込みまでの時間
 		astrogator_deltaVColumnHeader = Δ速
+		astrogator_planetLabel = <<1>>
 		astrogator_maneuverButtonTooltip = マヌーバを作成する
 		astrogator_warpButtonTooltip = ウィンドウにワープする
 		astrogator_yearsValue = <<1>>年

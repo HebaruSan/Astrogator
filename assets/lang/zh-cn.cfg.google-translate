@@ -15,6 +15,7 @@ Localization
 		astrogator_transferColumnHeader = 转移
 		astrogator_timeColumnHeader = 烧伤时间
 		astrogator_deltaVColumnHeader = Δ速
+		astrogator_planetLabel = <<1>>
 		astrogator_maneuverButtonTooltip = 创建机动
 		astrogator_warpButtonTooltip = 扭曲到窗口
 		astrogator_yearsValue = <<1>>年

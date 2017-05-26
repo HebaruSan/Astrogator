@@ -15,6 +15,7 @@ Localization
 		astrogator_transferColumnHeader = Transferir
 		astrogator_timeColumnHeader = Tiempo hasta quemar
 		astrogator_deltaVColumnHeader = Δv
+		astrogator_planetLabel = <<1>>
 		astrogator_maneuverButtonTooltip = Crear maniobra
 		astrogator_warpButtonTooltip = Deformar a la ventana
 		astrogator_yearsValue = <<1>>a
