@@ -1,0 +1,50 @@
+Localization
+{
+	zh-cn
+	{
+		astrogator_mainTitle = 空间 航海家
+		astrogator_versionFormat = 版<<1>>。<<2>>。<<3>>
+		astrogator_mainTooltip = 可达物体的转移窗口总结
+		astrogator_normalSubtitle = 从<<A:1>>传输
+		astrogator_inboundHyperbolicWarning = <<1>>正在逃生轨迹上。\n捕获以查看更多转移。
+		astrogator_outboundHyperbolicError = <<1>>处于逃生轨迹。\n捕获以查看传输。
+		astrogator_landedError = <<1>>登陆。发射到轨道看转移。
+		astrogator_highInclinationError = 倾角为<<1>>°，精度过低<<2>>°
+		astrogator_noTransfersError = 没有可用的传输
+		astrogator_launchSubtitle = 从<<A:1>>\n（启动〜<<2>>）
+		astrogator_transferColumnHeader = 转移
+		astrogator_timeColumnHeader = 烧伤时间
+		astrogator_deltaVColumnHeader = Δ速
+		astrogator_planetLabel = <<1>>
+		astrogator_maneuverButtonTooltip = 创建机动
+		astrogator_warpButtonTooltip = 扭曲到窗口
+		astrogator_yearsValue = <<1>>年
+		astrogator_daysValue = <<1>>天
+		astrogator_hoursValue = <<1>>小
+		astrogator_minutesValue = <<1>>分
+		astrogator_secondsValue = <<1>>秒
+		astrogator_settingsButtonTooltip = 设置
+		astrogator_columnHeaderTooltip = 排序
+		astrogator_translationControlsNotification = 使用翻译控件来调整节点
+		astrogator_adjustManeuversMessage = 调整机动来建立相遇
+		astrogator_manualLink = 点击在线手册
+		astrogator_manualLinkTooltip = 每个设置的含义在README.md文件中解释
+		astrogator_settingsSectionHeader = 设置：
+		astrogator_planeChangeBurnsSetting = 生成平面变化刻录
+		astrogator_addChangeBurnsSetting = 将平面更改刻录到Δv列
+		astrogator_autoDeleteNodesSetting = 自动删除用户创建的机动节点
+		astrogator_asteroidsSetting = 计算到跟踪小行星的转移
+		astrogator_maneuverCreationHeader = 机动创作：
+		astrogator_autoTargetDestSetting = 自动定位目的地
+		astrogator_autoFocusDestSetting = 自动对焦目的地
+		astrogator_autoEditEjecSetting = 自动编辑弹出节点
+		astrogator_autoEditPlaneChgSetting = 自动编辑平面变化节点
+		astrogator_autoSetSASSetting = 自动将SAS设置为机动模式
+		astrogator_adjustNodesSetting = 当RCS关闭时调整带有翻译控件的节点
+		astrogator_unitsHeader = 单位：
+		astrogator_metricSetting = 国际单位（公制）
+		astrogator_imperialSetting = 美国习惯（帝国）
+		astrogator_speedMetric = <<1>> 米/秒
+		astrogator_speedUSCustomary = <<1>> 英里每小时
+	}
+}

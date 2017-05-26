@@ -11,6 +11,7 @@ namespace Astrogator {
 
 		public TooltipView(string title, string description, Rect where)
 			: base(
+				" " + title + " ",
 				description,
 				" " + title + " ",
 				AstrogatorSkin,

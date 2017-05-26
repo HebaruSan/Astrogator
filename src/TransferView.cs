@@ -1,5 +1,6 @@
 using System;
 using System.Globalization;
+using KSP.Localization;
 
 namespace Astrogator {
 
@@ -57,7 +58,8 @@ namespace Astrogator {
 				switch (col.content) {
 
 					case ContentEnum.PlanetName:
-						AddChild(LabelWithStyleAndSize(CultureInfo.InstalledUICulture.TextInfo.ToTitleCase(TheName(model.destination)),
+						AddChild(LabelWithStyleAndSize(
+							Localizer.Format("astrogator_planetLabel", TheName(model.destination)),
 							col.contentStyle, col.width, rowHeight));
 						break;
 
@@ -93,12 +95,12 @@ namespace Astrogator {
 
 					case ContentEnum.CreateManeuverNodeButton:
 						AddChild(iconButton(maneuverIcon,
-							col.contentStyle, "Create maneuver", model.CreateManeuvers));
+							col.contentStyle, Localizer.Format("astrogator_maneuverButtonTooltip"), model.CreateManeuvers));
 						break;
 
 					case ContentEnum.WarpToBurnButton:
 						AddChild(iconButton(warpIcon,
-							col.contentStyle, "Warp to window", model.WarpToBurn));
+							col.contentStyle, Localizer.Format("astrogator_warpButtonTooltip"), model.WarpToBurn));
 						break;
 
 				}
@@ -146,7 +148,7 @@ namespace Astrogator {
 			if (showLoadingText) {
 				return LoadingText;
 			} else {
-				return TimePieceString("{0}y", timeToWait.years, timeToWait.needYears);
+				return TimePieceString("astrogator_yearsValue", timeToWait.years, timeToWait.needYears);
 			}
 		}
 
@@ -159,7 +161,7 @@ namespace Astrogator {
 			if (showLoadingText) {
 				return LoadingText;
 			} else {
-				return TimePieceString("{0}d", timeToWait.days, timeToWait.needDays);
+				return TimePieceString("astrogator_daysValue", timeToWait.days, timeToWait.needDays);
 			}
 		}
 
@@ -172,7 +174,7 @@ namespace Astrogator {
 			if (showLoadingText) {
 				return LoadingText;
 			} else {
-				return TimePieceString("{0}h", timeToWait.hours, timeToWait.needHours);
+				return TimePieceString("astrogator_hoursValue", timeToWait.hours, timeToWait.needHours);
 			}
 		}
 
@@ -185,7 +187,7 @@ namespace Astrogator {
 			if (showLoadingText) {
 				return LoadingText;
 			} else {
-				return TimePieceString("{0}m", timeToWait.minutes, timeToWait.needMinutes);
+				return TimePieceString("astrogator_minutesValue", timeToWait.minutes, timeToWait.needMinutes);
 			}
 		}
 
@@ -198,7 +200,7 @@ namespace Astrogator {
 			if (showLoadingText) {
 				return LoadingText;
 			} else {
-				return TimePieceString("{0}s", timeToWait.seconds, true);
+				return TimePieceString("astrogator_secondsValue", timeToWait.seconds, true);
 			}
 		}
 

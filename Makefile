@@ -1,13 +1,14 @@
 .PHONY: all clean
 
 SOURCEDIR=src
-SOURCE=$(wildcard $(SOURCEDIR)/*.cs)
+SOURCE=$(wildcard $(SOURCEDIR)/*.cs) $(wildcard $(SOURCEDIR)/*.csproj)
 ASSETDIR=assets
 ICONS=$(wildcard $(ASSETDIR)/*.png)
 CONFIGS=$(wildcard $(ASSETDIR)/*.cfg)
+LANGUAGES=$(ASSETDIR)/lang
 README=README.md
 GAMELINK=$(SOURCEDIR)/KSP_x64_Data
-DEFAULTGAMEDIR="$(HOME)/.local/share/Steam/SteamApps/common/Kerbal Space Program"
+DEFAULTGAMEDIR=$(HOME)/.local/share/Steam/SteamApps/common/Kerbal Space Program
 
 DEBUGDLL=$(SOURCEDIR)/bin/Debug/Astrogator.dll
 RELEASEDLL=$(SOURCEDIR)/bin/Release/Astrogator.dll
@@ -36,16 +37,16 @@ $(DEBUGDLL): $(SOURCE) $(GAMELINK)
 $(RELEASEDLL): $(SOURCE) $(GAMELINK)
 	cd $(SOURCEDIR) && xbuild /p:Configuration=Release
 
-$(RELEASEZIP): $(DEBUGDLL) $(ICONS) $(README) $(DLLDOCS) $(DLLSYMBOLS) $(LICENSE) $(VERSION) $(CONFIGS)
+$(RELEASEZIP): $(RELEASEDLL) $(ICONS) $(README) $(DLLDOCS) $(DLLSYMBOLS) $(LICENSE) $(VERSION) $(CONFIGS) $(LANGUAGES)
 	mkdir -p $(DISTDIR)
-	cp $^ $(DISTDIR)
-	zip -r $@ $(DISTDIR)
+	cp -a $^ $(DISTDIR)
+	zip -r $@ $(DISTDIR) -x \*.settings
 
 $(GAMELINK):
 	if [ -x "$(DEFAULTGAMEDIR)" ]; \
-	then; \
+	then \
 		ln -s "$(DEFAULTGAMEDIR)"/KSP_x64_Data $(GAMELINK); \
-	else; \
+	else \
 		echo "$(GAMELINK) not found."; \
 		echo 'This must be a symlink to Kerbal Space Program/KSP_x64_Data.'; \
 		exit 2; \

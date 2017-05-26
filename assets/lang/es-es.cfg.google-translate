@@ -1,0 +1,50 @@
+Localization
+{
+	es-es
+	{
+		astrogator_mainTitle = Astrogador
+		astrogator_versionFormat = v<<1>>.<<2>>.<<3>>
+		astrogator_mainTooltip = Resumen de ventanas de transferencia de cuerpos accesibles
+		astrogator_normalSubtitle = Transferencias desde <<A:1>>
+		astrogator_inboundHyperbolicWarning = <<1>> está en una trayectoria de escape.\nCaptura para ver más transferencias.
+		astrogator_outboundHyperbolicError = <<1>> está en una trayectoria de escape.\nCaptura para ver transferencias.
+		astrogator_landedError = <<1>> se desembarca. Iniciar en órbita para ver las transferencias.
+		astrogator_highInclinationError = La inclinación es <<1>>°, la precisión es demasiado baja después de <<2>>°
+		astrogator_noTransfersError = No hay transferencias disponibles
+		astrogator_launchSubtitle = Transferencias de <<A:1>>\n(Lanzamiento ~<<2>>)
+		astrogator_transferColumnHeader = Transferir
+		astrogator_timeColumnHeader = Tiempo hasta quemar
+		astrogator_deltaVColumnHeader = Δv
+		astrogator_planetLabel = <<1>>
+		astrogator_maneuverButtonTooltip = Crear maniobra
+		astrogator_warpButtonTooltip = Deformar a la ventana
+		astrogator_yearsValue = <<1>>a
+		astrogator_daysValue = <<1>>d
+		astrogator_hoursValue = <<1>>h
+		astrogator_minutesValue = <<1>>m
+		astrogator_secondsValue = <<1>>s
+		astrogator_settingsButtonTooltip = Ajustes
+		astrogator_columnHeaderTooltip = Ordenar
+		astrogator_translationControlsNotification = Usar controles de traducción para ajustar nodos
+		astrogator_adjustManeuversMessage = Ajuste las maniobras para establecer el encuentro
+		astrogator_manualLink = Haga clic para obtener el manual en línea
+		astrogator_manualLinkTooltip = El significado de cada configuración se explica en el archivo README.md
+		astrogator_settingsSectionHeader = Ajustes:
+		astrogator_planeChangeBurnsSetting = Generar quemaduras de cambio de plano
+		astrogator_addChangeBurnsSetting = Añadir el plano cambie las quemaduras a la columna Δv
+		astrogator_autoDeleteNodesSetting = Eliminación automática de nodos de maniobra creados por el usuario
+		astrogator_asteroidsSetting = Calcular transferencias a asteroides rastreados
+		astrogator_maneuverCreationHeader = Creación de maniobras:
+		astrogator_autoTargetDestSetting = Destino de destino automático
+		astrogator_autoFocusDestSetting = Enfocar destino automáticamente
+		astrogator_autoEditEjecSetting = Editar automáticamente nodo de expulsión
+		astrogator_autoEditPlaneChgSetting = Editar automáticamente nodo de cambio de plano
+		astrogator_autoSetSASSetting = Establecer automáticamente SAS en modo de maniobra
+		astrogator_adjustNodesSetting = Ajustar nodos con controles de traducción cuando RCS está desactivado
+		astrogator_unitsHeader = Unidades:
+		astrogator_metricSetting = Système International d'Unités (Métrico)
+		astrogator_imperialSetting = United States Customary (Imperial)
+		astrogator_speedMetric = <<1>> m/s
+		astrogator_speedUSCustomary = <<1>> mph
+	}
+}

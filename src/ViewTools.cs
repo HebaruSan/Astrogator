@@ -7,10 +7,12 @@ using UnityEngine.UI;
 using UnityEngine.Events;
 using TMPro;
 using KSP.UI.TooltipTypes;
+using KSP.Localization;
 
 namespace Astrogator {
 
 	using static DebugTools;
+	using static KerbalTools;
 	using static ViewTools;
 
 	/// Anything UI-related that needs to be used from multiple places.
@@ -36,17 +38,19 @@ namespace Astrogator {
 		/// <summary>
 		/// A string representing the version number of the mod.
 		/// </summary>
-		public static string versionString = string.Format(
-			"v{0}.{1}.{2}", modVersion.Major, modVersion.Minor, modVersion.Build
+		public static string versionString = Localizer.Format(
+			"astrogator_versionFormat", modVersion.Major, modVersion.Minor, modVersion.Build
 		);
 
 		/// <summary>
-		/// Sort the transfers from a model.
+		/// Return a list of a model's transfers sorted according to settings
 		/// </summary>
-		/// <returns>List of sorted transfers</returns>
-		/// <param name="m">Model from which to sort transfers</param>
-		/// <param name="how">Sort method</param>
+		/// <param name="m">Model from which to get transfers</param>
+		/// <param name="how">Method for sorting</param>
 		/// <param name="descend">True for descending sort, false for ascending</param>
+		/// <returns>
+		/// Sorted list
+		/// </returns>
 		public static List<TransferModel> SortTransfers(AstrogationModel m, SortEnum how, bool descend)
 		{
 			List<TransferModel> transfers = new List<TransferModel>(m.transfers);
@@ -74,22 +78,6 @@ namespace Astrogator {
 				transfers.Reverse();
 			}
 			return transfers;
-		}
-
-		/// <returns>
-		/// The full relative path from the main KSP folder to a given resource from this mod.
-		/// </returns>
-		/// <param name="filename">Name of file located in our plugin folder</param>
-		/// <param name="GameDataRelative">True if the KSP/GameData portion of the path is assumed, false if we need to provide the full path</param>
-		public static string FilePath(string filename, bool GameDataRelative = true)
-		{
-			if (GameDataRelative) {
-				return string.Format("{0}/{1}", Astrogator.Name, filename);
-			} else {
-				return string.Format("{0}/{1}",
-					System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location),
-					filename);
-			}
 		}
 
 		/// <summary>
@@ -714,7 +702,7 @@ namespace Astrogator {
 		/// </value>
 		public static ColumnDefinition[] Columns = new ColumnDefinition[] {
 			new ColumnDefinition() {
-				header	= "Transfer",
+				header	= Localizer.Format("astrogator_transferColumnHeader"),
 				width	= 60,
 				headerColSpan	= 1,
 				headerStyle	= leftHdrStyle,
@@ -723,7 +711,7 @@ namespace Astrogator {
 				sortKey	= SortEnum.Position,
 				monospaceWidth	= 6
 			}, new ColumnDefinition() {
-				header	= "Time Till Burn",
+				header	= Localizer.Format("astrogator_timeColumnHeader"),
 				width	= 30,
 				headerColSpan	= 5,
 				headerStyle	= midHdrStyle,
@@ -764,7 +752,7 @@ namespace Astrogator {
 				content	= ContentEnum.SecondsTillBurn,
 				monospaceWidth	= 3,
 			}, new ColumnDefinition() {
-				header	= "Δv",
+				header	= Localizer.Format("astrogator_deltaVColumnHeader"),
 				width	= 60,
 				headerColSpan	= 1,
 				headerStyle	= rightHdrStyle,
@@ -906,7 +894,7 @@ namespace Astrogator {
 			if (!forceShow && val == 0) {
 				return nullString;
 			} else {
-				return string.Format(fmt, val);
+				return Localizer.Format(fmt, val);
 			}
 		}
 
@@ -1037,10 +1025,10 @@ namespace Astrogator {
 			const double METERS_PER_SECOND_PER_MILES_PER_HOUR = 0.44704;
 			switch (units) {
 				case DisplayUnitsEnum.UnitedStatesCustomary:
-					return string.Format("{0:0} mph", speed / METERS_PER_SECOND_PER_MILES_PER_HOUR);
+					return Localizer.Format("astrogator_speedUSCustomary", (speed / METERS_PER_SECOND_PER_MILES_PER_HOUR).ToString("0"));
 				default:
 				case DisplayUnitsEnum.Metric:
-					return string.Format("{0:0} m/s", speed);
+					return Localizer.Format("astrogator_speedMetric", speed.ToString("0"));
 			}
 		}
 	}

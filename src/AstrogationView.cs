@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
+using KSP.Localization;
 
 namespace Astrogator {
 
@@ -31,7 +32,7 @@ namespace Astrogator {
 				TextAnchor.UpperCenter
 			)
 		{
-			model = m;
+			model         = m;
 			resetCallback = reset;
 			closeCallback = close;
 
@@ -79,12 +80,6 @@ namespace Astrogator {
 		}
 
 		/// <summary>
-		/// The user-facing name for this mod.
-		/// Use Astrogator.Name for filenames, internal representations, CKAN, etc.
-		/// </summary>
-		public const string DisplayName = "Astrogator";
-
-		/// <summary>
 		/// UI object representing the top row of the table
 		/// </summary>
 		private DialogGUIHorizontalLayout ColumnHeaders { get; set; }
@@ -92,8 +87,8 @@ namespace Astrogator {
 		private string columnSortIndicator(ColumnDefinition col)
 		{
 			return col.sortKey != Settings.Instance.TransferSort ? ""
-				: Settings.Instance.DescendingSort ? " ↓"
-				: " ↑";
+					: Settings.Instance.DescendingSort ? " v"
+					: " ^";
 		}
 
 		private void createHeaders()
@@ -119,7 +114,7 @@ namespace Astrogator {
 					if (col.header != "") {
 						ColumnHeaders.AddChild(headerButton(
 							col.header + columnSortIndicator(col),
-							col.headerStyle, "Sort", width, rowHeight, () => {
+							col.headerStyle, Localizer.Format("astrogator_columnHeaderTooltip"), width, rowHeight, () => {
 								SortClicked(col.sortKey);
 							}
 						));
@@ -199,36 +194,36 @@ namespace Astrogator {
 						return "Model's origin is null";
 					} else if (model.hyperbolicOrbit) {
 						if (model.inbound) {
-							return string.Format(
-								"{0} is on an escape trajectory.\nCapture to see more transfers.",
+							return Localizer.Format(
+								"astrogator_inboundHyperbolicWarning",
 								TheName(model.origin)
 							);
 						} else {
-							return string.Format(
-								"{0} is on an escape trajectory.\nCapture to see transfers.",
+							return Localizer.Format(
+								"astrogator_outboundHyperbolicError",
 								TheName(model.origin)
 							);
 						}
 					} else if (model.badInclination) {
-						return string.Format(
-							"Inclination is {0:0.0}°, accuracy too low past {1:0.}°",
-							AngleFromEquatorial(model.origin.GetOrbit().inclination * Mathf.Deg2Rad) * Mathf.Rad2Deg,
-							AstrogationModel.maxInclination * Mathf.Rad2Deg
+						return Localizer.Format(
+							"astrogator_highInclinationError",
+							(AngleFromEquatorial(model.origin.GetOrbit().inclination * Mathf.Deg2Rad) * Mathf.Rad2Deg).ToString("0.0"),
+							(AstrogationModel.maxInclination * Mathf.Rad2Deg).ToString("0")
 						);
 					} else if (model.transfers.Count == 0) {
-						return "No transfers available";
+						return Localizer.Format("astrogator_noTransfersError");
 					} else if (Landed(model.origin) || solidBodyWithoutVessel(model.origin)) {
 						CelestialBody b = model.origin as CelestialBody;
 						if (b == null) {
 							b = model.origin.GetOrbit().referenceBody;
 						}
-						return string.Format(
-							"Transfers from {0}\n(Launch ~{1})",
+						return Localizer.Format(
+							"astrogator_launchSubtitle",
 							TheName(model.origin),
 							FormatSpeed(DeltaVToOrbit(b), Settings.Instance.DisplayUnits)
 						);
 					} else {
-						return string.Format("Transfers from {0}", TheName(model.origin));
+						return Localizer.Format("astrogator_normalSubtitle", TheName(model.origin));
 					}
 				} else {
 					return "Internal error: Model not found";
@@ -242,7 +237,7 @@ namespace Astrogator {
 					&& Settings.Instance.TranslationAdjust
 					&& FlightGlobals.ActiveVessel != null
 					&& !FlightGlobals.ActiveVessel.ActionGroups[KSPActionGroup.RCS]) {
-				return "Use translation controls to adjust nodes";
+				return Localizer.Format("astrogator_translationControlsNotification");
 			} else {
 				return "";
 			}
@@ -279,8 +274,9 @@ namespace Astrogator {
 					mainWindowAnchorMin,
 					mainWindowAnchorMax,
 					new MultiOptionDialog(
+						Localizer.Format("astrogator_mainTitle"),
 						subTitle,
-						DisplayName + " " + versionString,
+						Localizer.Format("astrogator_mainTitle") + " " + versionString,
 						skinToUse,
 						geometry,
 						this

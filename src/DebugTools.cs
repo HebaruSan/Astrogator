@@ -1,6 +1,7 @@
 using System;
 using UnityEngine;
 using KSP;
+using KSP.Localization;
 
 namespace Astrogator {
 
@@ -24,7 +25,7 @@ namespace Astrogator {
 			lock (debugMutex) {
 				Debug.Log(string.Format(
 					"[{0} {1:000.000}] {2}",
-					AstrogationView.DisplayName,
+					Localizer.Format("astrogator_mainTitle"),
 					Time.realtimeSinceStartup,
 					formattedMessage
 				));

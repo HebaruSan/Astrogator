@@ -10,7 +10,11 @@
   - Only rule out a range once the entire thing is overdue
 - [ ] Merge the correction burn into the ejection burn
 - [ ] Re-do launch approximation to increase accuracy
-- [ ] i18n / l10n (once SQUAD releases their version of it)
+
+## Localization clean-up
+
+- [ ] ["the Mun"](http://bugs.kerbalspaceprogram.com/issues/14314)
+- [ ] Times not showing up in Chinese and Japanese
 
 ## Fixes
 

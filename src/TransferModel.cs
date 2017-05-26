@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 using KSP;
+using KSP.Localization;
 
 namespace Astrogator {
 
@@ -744,7 +745,7 @@ namespace Astrogator {
 					} else if (transferParent != null) {
 						// Otherwise focus on the parent of the transfer orbit so we can get an encounter
 						// Try to explain why this is happening with a screen message
-						ScreenFmt("Adjust maneuvers to establish encounter");
+						ScreenFmt(Localizer.Format("astrogator_adjustManeuversMessage"));
 						FocusMap(transferParent, transferDestination);
 					}
 				}

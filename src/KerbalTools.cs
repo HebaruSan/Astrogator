@@ -195,12 +195,16 @@ namespace Astrogator {
 		/// </summary>
 		/// <param name="target">Body or vessel to check</param>
 		/// <returns>
-		/// Name of target, possibly with "the" in front
+		/// Name of target, including gender markers
+		/// (Historically, this checked CelestialBody.theName, which included a lower case
+		/// version of some names such as "the Mun". This was removed in the localization
+		/// update, and now we only have "The Mun" regardless of where in the sentence
+		/// the string will be used. This has been reported on the bug tracker:
+		///   http://bugs.kerbalspaceprogram.com/issues/14314 )
 		/// </returns>
 		public static string TheName(ITargetable target)
 		{
-			CelestialBody b = target as CelestialBody;
-			return b?.theName ?? target?.GetName() ?? "NULL";
+			return target?.GetDisplayName() ?? target?.GetName() ?? "NULL";
 		}
 
 		/// <summary>
@@ -271,6 +275,22 @@ namespace Astrogator {
 			PatchedConicSolver solver = FlightGlobals.ActiveVessel.patchedConicSolver;
 			while (solver.maneuverNodes.Count > 0) {
 				solver.maneuverNodes.First().RemoveSelf();
+			}
+		}
+
+		/// <returns>
+		/// The full relative path from the main KSP folder to a given resource from this mod.
+		/// </returns>
+		/// <param name="filename">Name of file located in our plugin folder</param>
+		/// <param name="GameDataRelative">True if the KSP/GameData portion of the path is assumed, false if we need to provide the full path</param>
+		public static string FilePath(string filename, bool GameDataRelative = true)
+		{
+			if (GameDataRelative) {
+				return string.Format("{0}/{1}", Astrogator.Name, filename);
+			} else {
+				return string.Format("{0}/{1}",
+					System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location),
+					filename);
 			}
 		}
 

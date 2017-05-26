@@ -17,7 +17,7 @@ namespace Astrogator {
 		/// <param name="org">Body or vessel to start at</param>
 		public AstrogationModel(ITargetable org)
 		{
-			origin = org;
+			origin    = org;
 			transfers = new List<TransferModel>();
 
 			if (!ErrorCondition) {
@@ -160,12 +160,12 @@ namespace Astrogator {
 						b != null;
 						toSkip = b, b = ParentBody(b)) {
 
-					DbgFmt("Checking transfers around {0}", b.theName);
+					DbgFmt("Checking transfers around {0}", TheName(b));
 
 					// It's worth calculating return-from-satellite burns for Eve, Kerbin, and Duna,
 					// but not for Jool or the Sun.
 					if (b.hasSolidSurface && b != first) {
-						DbgFmt("Adding return-to-parent transfer to {0}", b.theName);
+						DbgFmt("Adding return-to-parent transfer to {0}", TheName(b));
 						transfers.Add(new TransferModel(origin, b));
 					}
 
@@ -173,7 +173,7 @@ namespace Astrogator {
 					for (int i = 0; i < numBodies; ++i) {
 						CelestialBody satellite = b.orbitingBodies[i];
 						if (satellite != toSkip) {
-							DbgFmt("Allocating transfer to {0}", satellite.theName);
+							DbgFmt("Allocating transfer to {0}", TheName(satellite));
 							transfers.Add(new TransferModel(origin, satellite));
 
 							if (satellite == targetBody) {

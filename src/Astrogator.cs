@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using KSP.UI.Screens;
+using KSP.Localization;
 
 namespace Astrogator {
 
@@ -43,11 +44,6 @@ namespace Astrogator {
 		/// (Yes, they are the same at the moment. Don't worry about that.)
 		/// </summary>
 		public const string Name = "Astrogator";
-
-		/// <summary>
-		/// Text to be shown in the tooltip to explain what this mod does.
-		/// </summary>
-		public const string Description = "Summary of transfer windows of reachable bodies";
 
 		/// <summary>
 		/// This is called at creation
@@ -164,8 +160,8 @@ namespace Astrogator {
 
 			if (tooltip == null) {
 				tooltip = TooltipView.AppLauncherTooltip(
-					AstrogationView.DisplayName,
-					Description,
+					Localizer.Format("astrogator_mainTitle"),
+					Localizer.Format("astrogator_mainTooltip"),
 					launcher);
 			}
 			tooltip.Show();
@@ -490,7 +486,7 @@ namespace Astrogator {
 		private void SOIChanged(CelestialBody newBody)
 		{
 			if (model != null && view != null) {
-				DbgFmt("Entered {0}'s sphere of influence", newBody.theName);
+				DbgFmt("Entered {0}'s sphere of influence", TheName(newBody));
 				// The old list no longer applies because reachable bodies depend on current SOI
 				loader.TryStartLoad(
 					model.origin ?? (ITargetable)FlightGlobals.ActiveVessel ?? (ITargetable)FlightGlobals.getMainBody(),

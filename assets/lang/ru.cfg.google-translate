@@ -1,0 +1,50 @@
+Localization
+{
+	ru
+	{
+		astrogator_mainTitle = Астрогатор
+		astrogator_versionFormat = в<<1>>.<<2>>.<<3>>
+		astrogator_mainTooltip = сводка о переносе окон достижимых тел
+		astrogator_normalSubtitle = Трансферы от <<A:1>>
+		astrogator_inboundHyperbolicWarning = <<1>> находится на траектории эвакуации.\nЗахват, чтобы увидеть больше передач.
+		astrogator_outboundHyperbolicError = <<1>> находится на траектории эвакуации.\nЗахват для просмотра передач.
+		astrogator_landedError = <<1>> выгружается. Запуск на орбиту, чтобы увидеть передачи.
+		astrogator_highInclinationError = Наклонение равно <<1>>°, точность слишком низкая мимо <<2>>°
+		astrogator_noTransfersError = Нет доступных передач
+		astrogator_launchSubtitle = передачи из <<A:1>>\n(запуск ~<<2>>)
+		astrogator_transferColumnHeader = Перенос
+		astrogator_timeColumnHeader = Время до сжигания
+		astrogator_deltaVColumnHeader = Δс
+		astrogator_planetLabel = <<1>>
+		astrogator_maneuverButtonTooltip = Создать маневр
+		astrogator_warpButtonTooltip = Перейти к окну
+		astrogator_yearsValue = <<1>>Л
+		astrogator_daysValue = <<1>>Д
+		astrogator_hoursValue = <<1>>Ч
+		astrogator_minutesValue = <<1>>М
+		astrogator_secondsValue = <<1>>С
+		astrogator_settingsButtonTooltip = Настройки
+		astrogator_columnHeaderTooltip = Сортировать
+		astrogator_translationControlsNotification = использовать элементы управления трансляцией для настройки узлов
+		astrogator_adjustManeuversMessage = Настроить маневры для установления встречи
+		astrogator_manualLink = Нажмите для онлайн-руководства
+		astrogator_manualLinkTooltip = Значение каждого параметра объясняется в файле README.md
+		astrogator_settingsSectionHeader = Настройки:
+		astrogator_planeChangeBurnsSetting = Генерация изменений смены плоскости
+		astrogator_addChangeBurnsSetting = Добавить изменения смены плоскости на Δv столбец
+		astrogator_autoDeleteNodesSetting = Автоматическое удаление созданных пользователем узлов маневра
+		astrogator_asteroidsSetting = Рассчитать переводы на отслеживаемые астероиды
+		astrogator_maneuverCreationHeader = Создание маневра:
+		astrogator_autoTargetDestSetting = автоматически целевое назначение
+		astrogator_autoFocusDestSetting = Автоматическое назначение фокуса
+		astrogator_autoEditEjecSetting = Автоматически редактировать узел выталкивания
+		astrogator_autoEditPlaneChgSetting = Автоматическое редактирование узла изменения плоскости
+		astrogator_autoSetSASSetting = автоматически настроить режим SAS для маневра
+		astrogator_adjustNodesSetting = Настроить узлы с помощью средств управления переводом, когда RCS выключен
+		astrogator_unitsHeader = Единицы измерения:
+		astrogator_metricSetting = Système International d'Unités (метрическая система)
+		astrogator_imperialSetting = Соединенные Штаты Америки (императорский)
+		astrogator_speedMetric = <<1>> М/C
+		astrogator_speedUSCustomary = <<1>> мвч
+	}
+}

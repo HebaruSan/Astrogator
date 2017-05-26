@@ -1,5 +1,6 @@
 using System;
 using UnityEngine;
+using KSP.Localization;
 
 namespace Astrogator {
 
@@ -28,26 +29,26 @@ namespace Astrogator {
 			try {
 
 				AddChild(headerButton(
-					"Click for online manual",
-					linkStyle, "The meaning of each setting is explained in the README.md file", RowWidth, rowHeight,
+					Localizer.Format("astrogator_manualLink"),
+					linkStyle, Localizer.Format("astrogator_manualLinkTooltip"), RowWidth, rowHeight,
 					() => { Application.OpenURL(docsURL); }
 				));
 
 				AddChild(LabelWithStyleAndSize(
-					"Settings:",
+					Localizer.Format("astrogator_settingsSectionHeader"),
 					midHdrStyle,
 					mainWindowMinWidth, rowHeight
 				));
 
 				AddChild(new DialogGUIToggle(
 					() => Settings.Instance.GeneratePlaneChangeBurns,
-					"Generate plane change burns",
+					Localizer.Format("astrogator_planeChangeBurnsSetting"),
 					(bool b) => { Settings.Instance.GeneratePlaneChangeBurns = b; }
 				));
 
 				AddChild(new DialogGUIToggle(
 					() => Settings.Instance.AddPlaneChangeDeltaV,
-					"Add plane change burns to Δv column",
+					Localizer.Format("astrogator_addChangeBurnsSetting"),
 					(bool b) => {
 						Settings.Instance.AddPlaneChangeDeltaV = b;
 						// Only need to reload if we don't already have the plane change values
@@ -59,73 +60,73 @@ namespace Astrogator {
 
 				AddChild(new DialogGUIToggle(
 					() => Settings.Instance.DeleteExistingManeuvers,
-					"Auto-delete user-created maneuver nodes",
+					Localizer.Format("astrogator_autoDeleteNodesSetting"),
 					(bool b) => { Settings.Instance.DeleteExistingManeuvers = b; }
 				));
 
 				AddChild(new DialogGUIToggle(
 					() => Settings.Instance.ShowTrackedAsteroids,
-					"Calculate transfers to tracked asteroids",
+					Localizer.Format("astrogator_asteroidsSetting"),
 					(bool b) => { Settings.Instance.ShowTrackedAsteroids = b; resetCallback(true); }
 				));
 
 				AddChild(LabelWithStyleAndSize(
-					"Maneuver creation:",
+					Localizer.Format("astrogator_maneuverCreationHeader"),
 					midHdrStyle,
 					mainWindowMinWidth, rowHeight
 				));
 
 				AddChild(new DialogGUIToggle(
 					() => Settings.Instance.AutoTargetDestination,
-					"Automatically target destination",
+					Localizer.Format("astrogator_autoTargetDestSetting"),
 					(bool b) => { Settings.Instance.AutoTargetDestination = b; }
 				));
 
 				AddChild(new DialogGUIToggle(
 					() => Settings.Instance.AutoFocusDestination,
-					"Automatically focus destination",
+					Localizer.Format("astrogator_autoFocusDestSetting"),
 					(bool b) => { Settings.Instance.AutoFocusDestination = b; }
 				));
 
 				AddChild(new DialogGUIToggle(
 					() => Settings.Instance.AutoEditEjectionNode,
-					"Automatically edit ejection node",
+					Localizer.Format("astrogator_autoEditEjecSetting"),
 					(bool b) => { Settings.Instance.AutoEditEjectionNode = b; }
 				));
 
 				AddChild(new DialogGUIToggle(
 					() => Settings.Instance.AutoEditPlaneChangeNode,
-					"Automatically edit plane change node",
+					Localizer.Format("astrogator_autoEditPlaneChgSetting"),
 					(bool b) => { Settings.Instance.AutoEditPlaneChangeNode = b; }
 				));
 
 				AddChild(new DialogGUIToggle(
 					() => Settings.Instance.AutoSetSAS,
-					"Automatically set SAS to maneuver mode",
+					Localizer.Format("astrogator_autoSetSASSetting"),
 					(bool b) => { Settings.Instance.AutoSetSAS = b; }
 				));
 
 				AddChild(new DialogGUIToggle(
 					() => Settings.Instance.TranslationAdjust,
-					"Adjust nodes with translation controls when RCS is off",
+					Localizer.Format("astrogator_adjustNodesSetting"),
 					(bool b) => { Settings.Instance.TranslationAdjust = b; }
 				));
 
 				AddChild(LabelWithStyleAndSize(
-					"Units:",
+					Localizer.Format("astrogator_unitsHeader"),
 					midHdrStyle,
 					mainWindowMinWidth, rowHeight
 				));
 
 				AddChild(new DialogGUIToggle(
 					() => Settings.Instance.DisplayUnits == DisplayUnitsEnum.Metric,
-					"Système International d'Unités (Metric)",
+					Localizer.Format("astrogator_metricSetting"),
 					(bool b) => { if (b) Settings.Instance.DisplayUnits = DisplayUnitsEnum.Metric; resetCallback(false); }
 				));
 
 				AddChild(new DialogGUIToggle(
 					() => Settings.Instance.DisplayUnits == DisplayUnitsEnum.UnitedStatesCustomary,
-					"United States Customary (Imperial)",
+					Localizer.Format("astrogator_imperialSetting"),
 					(bool b) => { if (b) Settings.Instance.DisplayUnits = DisplayUnitsEnum.UnitedStatesCustomary; resetCallback(false); }
 				));
 

@@ -3,6 +3,7 @@ using System.Text;
 using System.Globalization;
 using System.Collections.Generic;
 using UnityEngine;
+using KSP.Localization;
 
 namespace Astrogator {
 
@@ -155,7 +156,7 @@ namespace Astrogator {
 
 		private void addRow(StringBuilder sb, TransferModel m, DateTimeParts dt, bool selected)
 		{
-			string destLabel = CultureInfo.InstalledUICulture.TextInfo.ToTitleCase(TheName(m.destination));
+			string destLabel = Localizer.Format("astrogatr_planetLabel", TheName(m.destination));
 
 			sb.Append(Environment.NewLine);
 			sb.Append(selected ? "> " : "  ");
@@ -176,7 +177,7 @@ namespace Astrogator {
 						} else {
 							sb.AppendFormat(
 								colContentFormat(col),
-								TimePieceString("{0}y", dt.years, dt.needYears)
+								TimePieceString("astrogator_yearsValue", dt.years, dt.needYears)
 							);
 						}
 						break;
@@ -187,7 +188,7 @@ namespace Astrogator {
 						} else {
 							sb.AppendFormat(
 								colContentFormat(col),
-								TimePieceString("{0}d", dt.days, dt.needDays)
+								TimePieceString("astrogator_daysValue", dt.days, dt.needDays)
 							);
 						}
 						break;
@@ -198,7 +199,7 @@ namespace Astrogator {
 						} else {
 							sb.AppendFormat(
 								colContentFormat(col),
-								TimePieceString("{0}h", dt.hours, dt.needHours)
+								TimePieceString("astrogator_hoursValue", dt.hours, dt.needHours)
 							);
 						}
 						break;
@@ -209,7 +210,7 @@ namespace Astrogator {
 						} else {
 							sb.AppendFormat(
 								colContentFormat(col),
-								TimePieceString("{0}m", dt.minutes, dt.needMinutes)
+								TimePieceString("astrogator_minutesValue", dt.minutes, dt.needMinutes)
 							);
 						}
 						break;
@@ -220,7 +221,7 @@ namespace Astrogator {
 						} else {
 							sb.AppendFormat(
 								colContentFormat(col),
-								TimePieceString("{0}s", dt.seconds, true)
+								TimePieceString("astrogator_secondsValue", dt.seconds, true)
 							);
 						}
 						break;
@@ -264,10 +265,10 @@ namespace Astrogator {
 			if ((Refresh() || cursorMoved) && transfers.Count == timeToWait.Count) {
 
 				StringBuilder sb = new StringBuilder();
-				sb.Append(centerString(" " + AstrogationView.DisplayName + " " + versionString + " ", columns, '-'));
+				sb.Append(centerString(" " + Localizer.Format("astrogator_mainTitle") + " " + versionString + " ", columns, '-'));
 				sb.Append(Environment.NewLine);
 				sb.Append("[#a0a0a0ff]");
-				sb.Append(centerString(String.Format("Transfers from {0}", TheName(model.origin)), columns));
+				sb.Append(centerString(Localizer.Format("astrogator_normalSubtitle", TheName(model.origin)), columns));
 				sb.Append(Environment.NewLine);
 				sb.Append(Environment.NewLine);
 
