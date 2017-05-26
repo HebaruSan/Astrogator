@@ -519,6 +519,22 @@ namespace Astrogator {
 		};
 
 		/// <value>
+		/// Variant of the standard checkbox style to support long strings.
+		/// </value>
+		public static UIStyle toggleStyle = new UIStyle() {
+			normal	= UISkinManager.defaultSkin.toggle.normal,
+			active	= UISkinManager.defaultSkin.toggle.active,
+			disabled	= UISkinManager.defaultSkin.toggle.disabled,
+			highlight	= UISkinManager.defaultSkin.toggle.highlight,
+			alignment	= TextAnchor.MiddleLeft,
+			fontSize	= UISkinManager.defaultSkin.toggle.fontSize,
+			lineHeight	= UISkinManager.defaultSkin.toggle.fontSize + 1,
+			fontStyle	= UISkinManager.defaultSkin.toggle.fontStyle,
+			wordWrap	= true,
+			stretchHeight	= true,
+		};
+
+		/// <value>
 		/// The skin we use for our tooltip and main window.
 		/// </value>
 		public static UISkinDef AstrogatorSkin = new UISkinDef() {
@@ -527,7 +543,7 @@ namespace Astrogator {
 			box	= UISkinManager.defaultSkin.box,
 			font	= UISkinManager.defaultSkin.font,
 			label	= subTitleStyle,
-			toggle	= UISkinManager.defaultSkin.toggle,
+			toggle	= toggleStyle,
 			button	= UISkinManager.defaultSkin.button,
 		};
 
@@ -553,7 +569,7 @@ namespace Astrogator {
 			box	= UISkinManager.defaultSkin.box,
 			font	= UISkinManager.defaultSkin.font,
 			label	= subTitleErrorStyle,
-			toggle	= UISkinManager.defaultSkin.toggle,
+			toggle	= toggleStyle,
 			button	= UISkinManager.defaultSkin.button,
 		};
 
@@ -819,6 +835,8 @@ namespace Astrogator {
 		/// Space around the edges of the settings pane
 		/// </summary>
 		public static RectOffset settingsPadding = new RectOffset(0, 0, 0, 0);
+
+		public static float mainWindowInternalWidth = mainWindowMinWidth - mainWindowPadding.left - 2 * mainWindowPadding.right;
 
 		/// <summary>
 		/// Pixels between elements of the settings

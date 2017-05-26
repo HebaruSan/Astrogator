@@ -31,28 +31,28 @@ The remaining steps are different depending on whether the file already exists:
 
 Follow these steps to make improvements to an existing translation:
 
-3. Edit the file for your language in your favorite text editor
-4. Make the changes you wish to see in-game (see the [File format section](#file-format) below for details)
-5. Save your changes
-6. Remember to [test your changes](#testing)!
+4. Edit the file for your language in your favorite text editor
+5. Make the changes you wish to see in-game (see the [File format section](#file-format) below for details)
+6. Save your changes
+7. Remember to [test your changes](#testing)!
 
 #### If the file does not exist
 
 Follow these steps to start your own translation from scratch:
 
-3. Make a copy of `en-us.cfg` in the `lang` folder
-4. Rename the file according to the list of languages above
-5. Edit the file for your language in your favorite text editor
-6. Change the third line from `en-us` to the string for your language
-7. Translate each string from English to your language (see the [File format section](#file-format) below for details)
-8. Save your changes
-9. Remember to [test your changes](#testing)!
+4. Make a copy of `en-us.cfg` in the `lang` folder
+5. Rename the file according to the list of languages above
+6. Edit the file for your language in your favorite text editor
+7. Change the third line from `en-us` to the string for your language
+8. Translate each string from English to your language (see the [File format section](#file-format) below for details)
+9. Save your changes
+10. Remember to [test your changes](#testing)!
 
 #### File format
 
 The middle part of the `cfg` file contains the strings to translate. The format is `name = translation`, where the name is a special string defined by the mod. For example:
 
-    astrogator_launchSubtitle = Transfers from <<A:1>>\n(Launch ~<<2>>)
+    astrogator_launchSubtitle = Transfers from <<1>>\n(Launch ~<<2>>)
 
 Do **not** change the part to the left of the equals sign ("=")! These names must be the same in every language file.
 
@@ -67,7 +67,7 @@ The part to the right of the equals sign is the string to be used in-game. Most 
 
 For example, this is a possible translation of the above line into Spanish, courtesy of Google Translate:
 
-    astrogator_launchSubtitle = Transferencias de <<A:1>>\n(Lanzamiento ~<<2>>)
+    astrogator_launchSubtitle = Transferencias desde <<1>>\n(Lanzamiento ~<<2>>)
 
 #### Testing
 

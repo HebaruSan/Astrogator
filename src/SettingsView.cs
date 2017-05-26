@@ -40,13 +40,14 @@ namespace Astrogator {
 					mainWindowMinWidth, rowHeight
 				));
 
-				AddChild(new DialogGUIToggle(
+				AddChild(new WrappingToggle(
 					() => Settings.Instance.GeneratePlaneChangeBurns,
 					Localizer.Format("astrogator_planeChangeBurnsSetting"),
-					(bool b) => { Settings.Instance.GeneratePlaneChangeBurns = b; }
+					(bool b) => { Settings.Instance.GeneratePlaneChangeBurns = b; },
+					mainWindowInternalWidth
 				));
 
-				AddChild(new DialogGUIToggle(
+				AddChild(new WrappingToggle(
 					() => Settings.Instance.AddPlaneChangeDeltaV,
 					Localizer.Format("astrogator_addChangeBurnsSetting"),
 					(bool b) => {
@@ -55,19 +56,22 @@ namespace Astrogator {
 						if (b) {
 							resetCallback(true);
 						}
-					}
+					},
+					mainWindowInternalWidth
 				));
 
-				AddChild(new DialogGUIToggle(
+				AddChild(new WrappingToggle(
 					() => Settings.Instance.DeleteExistingManeuvers,
 					Localizer.Format("astrogator_autoDeleteNodesSetting"),
-					(bool b) => { Settings.Instance.DeleteExistingManeuvers = b; }
+					(bool b) => { Settings.Instance.DeleteExistingManeuvers = b; },
+					mainWindowInternalWidth
 				));
 
-				AddChild(new DialogGUIToggle(
+				AddChild(new WrappingToggle(
 					() => Settings.Instance.ShowTrackedAsteroids,
 					Localizer.Format("astrogator_asteroidsSetting"),
-					(bool b) => { Settings.Instance.ShowTrackedAsteroids = b; resetCallback(true); }
+					(bool b) => { Settings.Instance.ShowTrackedAsteroids = b; resetCallback(true); },
+					mainWindowInternalWidth
 				));
 
 				AddChild(LabelWithStyleAndSize(
@@ -76,40 +80,46 @@ namespace Astrogator {
 					mainWindowMinWidth, rowHeight
 				));
 
-				AddChild(new DialogGUIToggle(
+				AddChild(new WrappingToggle(
 					() => Settings.Instance.AutoTargetDestination,
 					Localizer.Format("astrogator_autoTargetDestSetting"),
-					(bool b) => { Settings.Instance.AutoTargetDestination = b; }
+					(bool b) => { Settings.Instance.AutoTargetDestination = b; },
+					mainWindowInternalWidth
 				));
 
-				AddChild(new DialogGUIToggle(
+				AddChild(new WrappingToggle(
 					() => Settings.Instance.AutoFocusDestination,
 					Localizer.Format("astrogator_autoFocusDestSetting"),
-					(bool b) => { Settings.Instance.AutoFocusDestination = b; }
+					(bool b) => { Settings.Instance.AutoFocusDestination = b; },
+					mainWindowInternalWidth
 				));
 
-				AddChild(new DialogGUIToggle(
+				AddChild(new WrappingToggle(
 					() => Settings.Instance.AutoEditEjectionNode,
 					Localizer.Format("astrogator_autoEditEjecSetting"),
-					(bool b) => { Settings.Instance.AutoEditEjectionNode = b; }
+					(bool b) => { Settings.Instance.AutoEditEjectionNode = b; },
+					mainWindowInternalWidth
 				));
 
-				AddChild(new DialogGUIToggle(
+				AddChild(new WrappingToggle(
 					() => Settings.Instance.AutoEditPlaneChangeNode,
 					Localizer.Format("astrogator_autoEditPlaneChgSetting"),
-					(bool b) => { Settings.Instance.AutoEditPlaneChangeNode = b; }
+					(bool b) => { Settings.Instance.AutoEditPlaneChangeNode = b; },
+					mainWindowInternalWidth
 				));
 
-				AddChild(new DialogGUIToggle(
+				AddChild(new WrappingToggle(
 					() => Settings.Instance.AutoSetSAS,
 					Localizer.Format("astrogator_autoSetSASSetting"),
-					(bool b) => { Settings.Instance.AutoSetSAS = b; }
+					(bool b) => { Settings.Instance.AutoSetSAS = b; },
+					mainWindowInternalWidth
 				));
 
-				AddChild(new DialogGUIToggle(
+				AddChild(new WrappingToggle(
 					() => Settings.Instance.TranslationAdjust,
 					Localizer.Format("astrogator_adjustNodesSetting"),
-					(bool b) => { Settings.Instance.TranslationAdjust = b; }
+					(bool b) => { Settings.Instance.TranslationAdjust = b; },
+					mainWindowInternalWidth
 				));
 
 				AddChild(LabelWithStyleAndSize(
@@ -118,16 +128,18 @@ namespace Astrogator {
 					mainWindowMinWidth, rowHeight
 				));
 
-				AddChild(new DialogGUIToggle(
+				AddChild(new WrappingToggle(
 					() => Settings.Instance.DisplayUnits == DisplayUnitsEnum.Metric,
 					Localizer.Format("astrogator_metricSetting"),
-					(bool b) => { if (b) Settings.Instance.DisplayUnits = DisplayUnitsEnum.Metric; resetCallback(false); }
+					(bool b) => { if (b) Settings.Instance.DisplayUnits = DisplayUnitsEnum.Metric; resetCallback(false); },
+					mainWindowInternalWidth
 				));
 
-				AddChild(new DialogGUIToggle(
+				AddChild(new WrappingToggle(
 					() => Settings.Instance.DisplayUnits == DisplayUnitsEnum.UnitedStatesCustomary,
 					Localizer.Format("astrogator_imperialSetting"),
-					(bool b) => { if (b) Settings.Instance.DisplayUnits = DisplayUnitsEnum.UnitedStatesCustomary; resetCallback(false); }
+					(bool b) => { if (b) Settings.Instance.DisplayUnits = DisplayUnitsEnum.UnitedStatesCustomary; resetCallback(false); },
+					mainWindowInternalWidth
 				));
 
 			} catch (Exception ex) {

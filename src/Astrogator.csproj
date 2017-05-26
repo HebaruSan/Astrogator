@@ -58,6 +58,7 @@
     <Compile Include="Astrogator.cs" />
     <Compile Include="AstrogatorMenu.cs" />
     <Compile Include="KerbalTools.cs" />
+    <Compile Include="WrappingToggle.cs" />
     <Compile Include="ViewTools.cs" />
     <Compile Include="PhysicsTools.cs" />
     <Compile Include="AstrogationLoadBehaviorette.cs" />
