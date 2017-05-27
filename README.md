@@ -112,6 +112,7 @@ See [INSTALL.md](INSTALL.md).
 ## Credits, acknowledgements, and dedication
 
 Special thanks to all those who have helped to translate Astrogator to other languages!
+
 | Language | Translation | Corrections |
 | --- | --- | --- |
 | Spanish | Iván ([hashashin](https://github.com/hashashin)) | |
