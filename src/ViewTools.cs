@@ -836,6 +836,9 @@ namespace Astrogator {
 		/// </summary>
 		public static RectOffset settingsPadding = new RectOffset(0, 0, 0, 0);
 
+		/// <summary>
+		/// Distance from the left inner margin to the right inner margin of main window
+		/// </summary>
 		public static float mainWindowInternalWidth = mainWindowMinWidth - mainWindowPadding.left - 2 * mainWindowPadding.right;
 
 		/// <summary>
