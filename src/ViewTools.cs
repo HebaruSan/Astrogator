@@ -920,6 +920,53 @@ namespace Astrogator {
 		}
 
 		/// <summary>
+		/// Save a reference on demand to a tooltip prefab from the stock UI.
+		/// Should only be used in SetTooltip.
+		/// </summary>
+		private static Tooltip_Text tooltipPrefab = null;
+
+		/// <summary>
+		/// Create a tooltip component for a GameObject.
+		/// Assumes the stock UI has been set up already.
+		/// Sets tooltipPrefab if null.
+		/// </summary>
+		/// <param name="gameObj">The GameObject for which to set a tooltip</param>
+		/// <param name="tooltip">The tooltip to set</param>
+		private static void SetTooltip(GameObject gameObj, string tooltip)
+		{
+			if (tooltipPrefab == null) {
+ 				tooltipPrefab = GameObject.FindObjectOfType<TooltipController_Text>()?.prefab;
+			}
+			TooltipController_Text tt = (gameObj?.GetComponent<TooltipController_Text>() ?? gameObj?.AddComponent<TooltipController_Text>());
+			if (tt != null) {
+				tt.textString = tooltip;
+				tt.prefab = tooltipPrefab;
+			}
+		}
+
+		/// <summary>
+		/// Set up an event handler to create a tooltip after a DialogGUIButton's GameObject is created.
+		/// GameObject is a core Unity type needed for many things, but it's null when you first create
+		/// a DialogGUIButton. It gets created later, when the whole popup is displayed.
+		/// </summary>
+		/// <param name="btn">The button for which to create an event handler. Should already have the tooltipText property set.</param>
+		/// <returns>
+		/// Same object as the parameter.
+		/// </returns>
+		private static DialogGUIButton DeferTooltip(DialogGUIButton btn)
+		{
+			if (btn.tooltipText != "") {
+				btn.OnUpdate = () => {
+					if (btn.uiItem != null) {
+						SetTooltip(btn.uiItem, btn.tooltipText);
+						btn.OnUpdate = () => {};
+					}
+				};
+			}
+			return btn;
+		}
+
+		/// <summary>
 		/// Create a button that looks like a label
 		/// </summary>
 		/// <param name="text">String to display</param>
@@ -934,10 +981,10 @@ namespace Astrogator {
 		public static DialogGUIButton headerButton(string text, UIStyle style, string tooltip, float width, float height, Callback cb)
 		{
 			// The 'transparent' Sprite makes the default button borders go away
-			return new DialogGUIButton(transparent, text, cb, width, height, false) {
+			return DeferTooltip(new DialogGUIButton(transparent, text, cb, width, height, false) {
 				guiStyle    = style,
 				tooltipText = tooltip
-			};
+			});
 		}
 
 		/// <returns>
@@ -949,10 +996,10 @@ namespace Astrogator {
 		/// <param name="cb">Function to call when the user clicks the button</param>
 		public static DialogGUIButton iconButton(Sprite icon, UIStyle style, string tooltip, Callback cb)
 		{
-			return new DialogGUIButton(icon, cb, buttonIconWidth, buttonIconWidth) {
+			return DeferTooltip(new DialogGUIButton(icon, cb, buttonIconWidth, buttonIconWidth) {
 				guiStyle    = style,
 				tooltipText = tooltip
-			};
+			});
 		}
 
 		/// <summary>
@@ -964,8 +1011,9 @@ namespace Astrogator {
 		/// <param name="innerHorizOffset">Horizontal position; if positive, number of pixels between left edge of window and left edge of button, if negative, then vice versa on right side</param>
 		/// <param name="innerVertOffset">Vertical position; if positive, number of pixels between bottom edge of window and bottom edge of button, if negative, then vice versa on top side</param>
 		/// <param name="style">Style object containing the sprites for the button</param>
+		/// <param name="tooltip">String to show when user hovers on button</param>
 		/// <param name="onClick">Function to call when the user clicks the button</param>
-		public static void AddFloatingButton(Transform parentTransform, float innerHorizOffset, float innerVertOffset, UIStyle style, UnityAction onClick)
+		public static void AddFloatingButton(Transform parentTransform, float innerHorizOffset, float innerVertOffset, UIStyle style, string tooltip, UnityAction onClick)
 		{
 			// This creates a new button object using the prefab from KSP's UISkinManager.
 			// The same prefab is used for the PopupDialog system buttons.
@@ -1007,6 +1055,9 @@ namespace Astrogator {
 
 			// The text will be "Button" if we don't clear it.
 			btnGameObj.GetChild("Text").GetComponent<TextMeshProUGUI>().text = "";
+
+			// Set the tooltip
+			SetTooltip(btnGameObj, tooltip);
 
 			// Set the code to call when clicked.
 			button.onClick.AddListener(onClick);

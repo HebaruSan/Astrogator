@@ -263,6 +263,16 @@ namespace Astrogator {
 			}
 		}
 
+		private string settingsToggleTooltip {
+			get {
+				if (Settings.Instance.ShowSettings) {
+					return "astrogator_backButtonTooltip";
+				} else {
+					return "astrogator_settingsButtonTooltip";
+				}
+			}
+		}
+
 		/// <summary>
 		/// Launch a PopupDialog containing the view.
 		/// Use Dismiss() to get rid of it.
@@ -291,6 +301,7 @@ namespace Astrogator {
 					dialog.transform,
 					-mainWindowPadding.right - mainWindowSpacing, -mainWindowPadding.top,
 					closeStyle,
+					"astrogator_closeButtonTooltip",
 					closeCallback
 				);
 
@@ -301,6 +312,7 @@ namespace Astrogator {
 					-mainWindowPadding.right - 3 * mainWindowSpacing - buttonIconWidth,
 					-mainWindowPadding.top,
 					settingsToggleStyle,
+					settingsToggleTooltip,
 					toggleSettingsVisible
 				);
 			}
