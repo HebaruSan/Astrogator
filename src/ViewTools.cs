@@ -932,16 +932,23 @@ namespace Astrogator {
 		/// </summary>
 		/// <param name="gameObj">The GameObject for which to set a tooltip</param>
 		/// <param name="tooltip">The tooltip to set</param>
-		private static void SetTooltip(GameObject gameObj, string tooltip)
+		/// <returns>
+		/// True if we successfully set up a tooltip component, false if something stopped us.
+		/// </returns>
+		private static bool SetTooltip(GameObject gameObj, string tooltip)
 		{
 			if (tooltipPrefab == null) {
  				tooltipPrefab = GameObject.FindObjectOfType<TooltipController_Text>()?.prefab;
 			}
-			TooltipController_Text tt = (gameObj?.GetComponent<TooltipController_Text>() ?? gameObj?.AddComponent<TooltipController_Text>());
-			if (tt != null) {
-				tt.textString = tooltip;
-				tt.prefab = tooltipPrefab;
+			if (gameObj != null && tooltipPrefab != null) {
+				TooltipController_Text tt = (gameObj.GetComponent<TooltipController_Text>() ?? gameObj.AddComponent<TooltipController_Text>());
+				if (tt != null) {
+					tt.textString = tooltip;
+					tt.prefab = tooltipPrefab;
+					return true;
+				}
 			}
+			return false;
 		}
 
 		/// <summary>
@@ -957,8 +964,8 @@ namespace Astrogator {
 		{
 			if (btn.tooltipText != "") {
 				btn.OnUpdate = () => {
-					if (btn.uiItem != null) {
-						SetTooltip(btn.uiItem, btn.tooltipText);
+					if (btn.uiItem != null
+							&& SetTooltip(btn.uiItem, btn.tooltipText)) {
 						btn.OnUpdate = () => {};
 					}
 				};
