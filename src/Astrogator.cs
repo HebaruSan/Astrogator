@@ -261,7 +261,7 @@ namespace Astrogator {
 			if (resetModel) {
 				loader.TryStartLoad(
 					model.origin ?? (ITargetable)FlightGlobals.ActiveVessel ?? (ITargetable)FlightGlobals.getMainBody(),
-					null, ResetViewBackground, null);
+					null, ResetViewBackground, null, true);
 			} else if (view != null) {
 				HideMainWindow(false);
 				ShowMainWindow();

@@ -174,7 +174,7 @@ namespace Astrogator {
 				Settings.Instance.DescendingSort
 			);
 			for (int i = 0; i < transfers.Count; ++i) {
-				AddChild(new TransferView(transfers[i], resetCallback));
+				AddChild(new TransferView(transfers[i]));
 			}
 		}
 
