@@ -90,7 +90,15 @@ namespace Astrogator {
 			}
 		}
 
-		private bool AllowStart(ITargetable newOrigin) {
+		/// <summary>
+		/// Return whether to allow a new load to start now.
+		/// </summary>
+		/// <param name="newOrigin">The body or vessel from which to calculate transfers</param>
+		/// <param name="overrideTimer">True if we absolutely positively must reload now even if it has been less than 5 seconds since the last one</param>
+		/// <returns>
+		/// True to allow load, false to prevent.
+		/// </returns>
+		private bool AllowStart(ITargetable newOrigin, bool overrideTimer) {
 			return model != null
 				&& numOpenDisplays > 0
 				&& (
@@ -98,7 +106,7 @@ namespace Astrogator {
 					newOrigin != model.origin
 					// Otherwise we only update if there isn't already one in progress
 					// and the minimum refresh interval has elapsed since the last one.
-					|| (!loading && lastUpdateTime + minSecondsBetweenLoads < Planetarium.GetUniversalTime())
+					|| (!loading && (overrideTimer || lastUpdateTime + minSecondsBetweenLoads < Planetarium.GetUniversalTime()))
 				);
 		}
 
@@ -131,14 +139,15 @@ namespace Astrogator {
 		/// <param name="partialLoaded">Function to call when we have enough data for a simple display, but not quite complete</param>
 		/// <param name="fullyLoaded">Function to call on successful completion of the load</param>
 		/// <param name="aborted">Function to call if we decide not to load</param>
+		/// <param name="overrideTimer">True if we absolutely positively must reload now even if it has been less than 5 seconds since the last one</param>
 		/// <returns>
 		/// True if we kicked off an actual refresh, false otherwise.
 		/// </returns>
-		public bool TryStartLoad(ITargetable newOrigin, LoadDoneCallback partialLoaded, LoadDoneCallback fullyLoaded, LoadDoneCallback aborted)
+		public bool TryStartLoad(ITargetable newOrigin, LoadDoneCallback partialLoaded, LoadDoneCallback fullyLoaded, LoadDoneCallback aborted, bool overrideTimer = false)
 		{
 			if (newOrigin != null) {
 				// 1. Check whether we should even do anything, if not call aborted() and return
-				if (!AllowStart(newOrigin)) {
+				if (!AllowStart(newOrigin, overrideTimer)) {
 					if (aborted != null) {
 						aborted();
 					}

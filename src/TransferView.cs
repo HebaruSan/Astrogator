@@ -17,20 +17,16 @@ namespace Astrogator {
 		/// Construct a view for the given model.
 		/// </summary>
 		/// <param name="m">Model for which to construct a view</param>
-		/// <param name="reset">Callback to call when a UI layout change may be needed</param>
-		public TransferView(TransferModel m, AstrogationView.ResetCallback reset)
+		public TransferView(TransferModel m)
 			: base()
 		{
 			model = m;
-			resetCallback = reset;
-
 			CreateLayout();
 		}
 
 		private TransferModel                 model             { get; set; }
 		private double                        lastUniversalTime { get; set; }
 		private DateTimeParts                 timeToWait        { get; set; }
-		private AstrogationView.ResetCallback resetCallback     { get; set; }
 
 		private void CreateLayout()
 		{
