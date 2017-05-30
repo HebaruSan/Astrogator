@@ -1122,10 +1122,23 @@ namespace Astrogator {
 			secondsPerMinute =  60;
 
 		private static double
-			hoursPerDay = FlightGlobals.GetHomeBody().rotationPeriod / secondsPerMinute / minutesPerHour,
+			hoursPerDay = solarDayLength(FlightGlobals.GetHomeBody()) / secondsPerMinute / minutesPerHour,
 			daysPerYear = FlightGlobals.GetHomeBody().GetOrbit().period / secondsPerMinute / minutesPerHour / hoursPerDay;
 
-		private int mod(double numerator, double denominator)
+		/// <summary>
+		/// https://en.wikipedia.org/wiki/Sidereal_time#Sidereal_days_compared_to_solar_days_on_other_planets
+		/// </summary>
+		private static double solarDayLength(CelestialBody b)
+		{
+			if (b.rotationPeriod == b.GetOrbit().period) {
+				// Tidally locked, don't divide by zero
+				return 0;
+			} else {
+				return b.rotationPeriod / (1 - (b.rotationPeriod / b.GetOrbit().period));
+			}
+		}
+
+		private static int mod(double numerator, double denominator)
 		{
 			return (int)Math.Floor(numerator % denominator);
 		}
