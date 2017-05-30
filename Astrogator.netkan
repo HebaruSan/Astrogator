@@ -27,6 +27,7 @@
         { "name": "LandingHeight" },
         { "name": "NavballDockingIndicator" },
         { "name": "WarpEverywhere" },
-        { "name": "RasterPropMonitor" }
+        { "name": "RasterPropMonitor" },
+        { "name": "ManeuverQueue" }
     ]
 }
