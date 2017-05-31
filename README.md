@@ -113,9 +113,10 @@ See [INSTALL.md](INSTALL.md).
 
 Special thanks to all those who have helped to translate Astrogator to other languages!
 
-| Language | Translation | Corrections |
-| --- | --- | --- |
-| Spanish | Iván ([hashashin](https://github.com/hashashin)) | [Deltathiago98](https://github.com/Deltathiago98) |
+| Language | Translators |
+| --- | --- |
+| Spanish | Iván ([hashashin](https://github.com/hashashin)), [Deltathiago98](https://github.com/Deltathiago98) |
+| Chinese | [QAQdong](https://github.com/QAQdong) |
 
 - AN/DN logic and plane change calculations borrowed from MechJeb
 - Phase angle logic and some icons borrowed from Kerbal Alarm Clock
