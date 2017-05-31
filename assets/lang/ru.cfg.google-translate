@@ -24,6 +24,8 @@ Localization
 		astrogator_minutesValue = <<1>>М
 		astrogator_secondsValue = <<1>>С
 		astrogator_settingsButtonTooltip = Настройки
+		astrogator_backButtonTooltip = назад
+		astrogator_closeButtonTooltip = Закрыть
 		astrogator_columnHeaderTooltip = Сортировать
 		astrogator_translationControlsNotification = использовать элементы управления трансляцией для настройки узлов
 		astrogator_adjustManeuversMessage = Настроить маневры для установления встречи

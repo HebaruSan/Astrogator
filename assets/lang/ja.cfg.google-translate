@@ -24,6 +24,8 @@ Localization
 		astrogator_minutesValue = <<1>>分
 		astrogator_secondsValue = <<1>>秒
 		astrogator_settingsButtonTooltip = 設定
+		astrogator_backButtonTooltip = バック
+		astrogator_closeButtonTooltip = 閉じる
 		astrogator_columnHeaderTooltip = ソート
 		astrogator_translationControlsNotification = 翻訳コントロールを使用してノードを調整する
 		astrogator_adjustManeuversMessage = マヌーバを調整して遭遇を確立する
