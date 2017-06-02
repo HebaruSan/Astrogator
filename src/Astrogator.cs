@@ -223,16 +223,60 @@ namespace Astrogator {
 		/// </summary>
 		private void ShowMainWindow()
 		{
-			DbgFmt("Deploying main window");
+			if (GameSettings.UI_SCALE < 0.95 || GameSettings.UI_SCALE > 1.05) {
+				// UI scaling breaks the coordinate system for the window position,
+				// which we need to be able to remember window position and for
+				// layout updates.
+				// Turn it off so the user can see our window.
+				PopupDialog.SpawnPopupDialog(
+					new MultiOptionDialog(
+						"astrogator_uiScaleError",
+						"Incompatible settings detected.",
+						"UI Scale Problem",
+						AstrogatorSkin,
+						new DialogGUILabel(
+							"The UI Scale setting is set to a value other than 100%. This makes incoherent and unpredictable changes to the coordinate system used to display popup windows, which breaks parts of Astrogator and makes it unusable.\n\nWould you like to reset UI Scale to 100% or disable Astrogator?",
+							true,
+							true
+						) {
+							guiStyle = planetStyle
+						},
+						new DialogGUIHorizontalLayout(
+							new DialogGUIButton(
+								"Reset UI Scale to 100%",
+								() => {
+									GameSettings.UI_SCALE = 1f;
+									GameSettings.ApplySettings();
+									finishShowMainWindow();
+								},
+								true
+							),
+							new DialogGUIButton(
+								"Disable Astrogator",
+								() => {
+									HideMainWindow(true);
+									RemoveLauncher();
+								},
+								true
+							)
+						)
+					),
+					false,
+					AstrogatorSkin,
+					true
+				);
+			} else {
+				finishShowMainWindow();
+			}
+		}
 
+		private void finishShowMainWindow()
+		{
 			Settings.Instance.MainWindowVisible = true;
 			if (view == null) {
 				view = new AstrogationView(model, ResetView, () => { launcher.SetFalse(true); });
-				DbgFmt("View mated to booster");
 			}
 			view.Show();
-
-			DbgFmt("Deployed main window");
 		}
 
 		/// <summary>
