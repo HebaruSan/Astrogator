@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using UnityEngine;
 using KSP.UI.Screens;
 using KSP.Localization;
 
@@ -231,11 +232,11 @@ namespace Astrogator {
 				PopupDialog.SpawnPopupDialog(
 					new MultiOptionDialog(
 						"astrogator_uiScaleError",
-						"Incompatible settings detected.",
-						"UI Scale Problem",
-						AstrogatorSkin,
+						"astrogator_uiScaleErrorSubtitle",
+						"astrogator_uiScaleErrorTitle",
+						AstrogatorErrorSkin,
 						new DialogGUILabel(
-							"The UI Scale setting is set to a value other than 100%. This makes incoherent and unpredictable changes to the coordinate system used to display popup windows, which breaks parts of Astrogator and makes it unusable.\n\nWould you like to reset UI Scale to 100% or disable Astrogator?",
+							"astrogator_uiScaleErrorMessage",
 							true,
 							true
 						) {
@@ -243,26 +244,28 @@ namespace Astrogator {
 						},
 						new DialogGUIHorizontalLayout(
 							new DialogGUIButton(
-								"Reset UI Scale to 100%",
+								"astrogator_uiScaleResetButton",
 								() => {
 									GameSettings.UI_SCALE = 1f;
 									GameSettings.ApplySettings();
+									GameSettings.SaveSettings();
 									finishShowMainWindow();
 								},
 								true
 							),
 							new DialogGUIButton(
-								"Disable Astrogator",
+								"astrogator_uiScaleCancelButton",
 								() => {
-									HideMainWindow(true);
-									RemoveLauncher();
+									launcher.SetFalse(true);
 								},
 								true
 							)
-						)
+						) {
+							anchor = TextAnchor.UpperCenter
+						}
 					),
 					false,
-					AstrogatorSkin,
+					AstrogatorErrorSkin,
 					true
 				);
 			} else {
