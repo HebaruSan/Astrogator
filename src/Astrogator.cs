@@ -224,57 +224,6 @@ namespace Astrogator {
 		/// </summary>
 		private void ShowMainWindow()
 		{
-			if (GameSettings.UI_SCALE < 0.95 || GameSettings.UI_SCALE > 1.05) {
-				// UI scaling breaks the coordinate system for the window position,
-				// which we need to be able to remember window position and for
-				// layout updates.
-				// Turn it off so the user can see our window.
-				PopupDialog.SpawnPopupDialog(
-					new MultiOptionDialog(
-						"astrogator_uiScaleError",
-						"astrogator_uiScaleErrorSubtitle",
-						"astrogator_uiScaleErrorTitle",
-						AstrogatorErrorSkin,
-						new DialogGUILabel(
-							"astrogator_uiScaleErrorMessage",
-							true,
-							true
-						) {
-							guiStyle = planetStyle
-						},
-						new DialogGUIHorizontalLayout(
-							new DialogGUIButton(
-								"astrogator_uiScaleResetButton",
-								() => {
-									GameSettings.UI_SCALE = 1f;
-									GameSettings.ApplySettings();
-									GameSettings.SaveSettings();
-									finishShowMainWindow();
-								},
-								true
-							),
-							new DialogGUIButton(
-								"astrogator_uiScaleCancelButton",
-								() => {
-									launcher.SetFalse(true);
-								},
-								true
-							)
-						) {
-							anchor = TextAnchor.UpperCenter
-						}
-					),
-					false,
-					AstrogatorErrorSkin,
-					true
-				);
-			} else {
-				finishShowMainWindow();
-			}
-		}
-
-		private void finishShowMainWindow()
-		{
 			Settings.Instance.MainWindowVisible = true;
 			if (view == null) {
 				view = new AstrogationView(model, ResetView, () => { launcher.SetFalse(true); });
