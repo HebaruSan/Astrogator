@@ -79,7 +79,7 @@ namespace Astrogator {
 			return false;
 		}
 
-		private static Vector2 defaultWindowPosition = new Vector2(0.75f, 0.75f);
+		public static Vector2 defaultWindowPosition = new Vector2(0.5f, 0.7f);
 
 		/// <value>
 		/// Screen position of the main window.

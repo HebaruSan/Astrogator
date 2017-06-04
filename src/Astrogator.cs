@@ -375,6 +375,8 @@ namespace Astrogator {
 			}
 		};
 
+		private static float prevUIScale = 1f;
+
 		/// <summary>
 		/// Called by the framework for each UI tick.
 		/// </summary>
@@ -385,6 +387,12 @@ namespace Astrogator {
 				HideMainWindow(false);
 				ShowMainWindow();
 				needViewOpen = false;
+			} else if (view != null && Math.Abs(prevUIScale - GameSettings.UI_SCALE) > 0.05) {
+				DbgFmt("Resetting position because UI_SCALE changed from {0} to {1}", prevUIScale, GameSettings.UI_SCALE);
+				HideMainWindow(false);
+				Settings.Instance.MainWindowPosition = Settings.defaultWindowPosition;
+				ShowMainWindow();
+				prevUIScale = GameSettings.UI_SCALE;
 			}
 
 			CheckIfNodesDisappeared();

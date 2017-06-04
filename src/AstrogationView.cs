@@ -263,9 +263,9 @@ namespace Astrogator {
 			}
 		}
 
-		private bool         needUIScaleOffsetUpdate = false;
-		private static float prevUIScale             = 1f;
-		private static       Vector2 uiScaleOffset   = Vector2.zero;
+		private bool           needUIScaleOffsetUpdate = false;
+		private static float   prevUIScale             = 1f;
+		private static Vector2 uiScaleOffset           = Vector2.zero;
 
 		private static Rect geometry {
 			get {
@@ -396,9 +396,6 @@ namespace Astrogator {
 		public void Dismiss()
 		{
 			if (dialog != null) {
-				Vector3 rt = dialog.RTrf.position;
-				DbgFmt("Coordinates at window close: {0}", rt.ToString());
-				DbgFmt("Screen dimensions at window close: {0}x{1}", Screen.width, Screen.height);
 				geometry = new Rect(
 					currentGeometry.x, currentGeometry.y,
 					mainWindowMinWidth,	mainWindowMinHeight
