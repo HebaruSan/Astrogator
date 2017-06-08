@@ -86,7 +86,7 @@ namespace Astrogator {
 
 					case ContentEnum.DeltaV:
 						AddChild(LabelWithStyleAndSize(getDeltaV,
-							col.contentStyle, col.width, rowHeight));
+							col.contentStyle, col.width));
 						break;
 
 					case ContentEnum.CreateManeuverNodeButton:

@@ -877,7 +877,7 @@ namespace Astrogator {
 		/// <param name="style">Visual appearance settings for the label</param>
 		/// <param name="width">Width of the label</param>
 		/// <param name="height">Height of the label</param>
-		public static DialogGUILabel LabelWithStyleAndSize(string message, UIStyle style, float width, float height)
+		public static DialogGUILabel LabelWithStyleAndSize(string message, UIStyle style, float width, float height = -1)
 		{
 			return new DialogGUILabel(message, width, height) {
 				guiStyle = style,
@@ -895,7 +895,7 @@ namespace Astrogator {
 		/// <param name="style">Visual appearance settings for the label</param>
 		/// <param name="width">Width of the label</param>
 		/// <param name="height">Height of the label</param>
-		public static DialogGUILabel LabelWithStyleAndSize(Func<string> getString, UIStyle style, float width, float height)
+		public static DialogGUILabel LabelWithStyleAndSize(Func<string> getString, UIStyle style, float width, float height = -1)
 		{
 			return new DialogGUILabel(getString, width, height) {
 				guiStyle = style,

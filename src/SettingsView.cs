@@ -37,7 +37,7 @@ namespace Astrogator {
 				AddChild(LabelWithStyleAndSize(
 					Localizer.Format("astrogator_settingsSectionHeader"),
 					midHdrStyle,
-					mainWindowMinWidth, rowHeight
+					mainWindowMinWidth
 				));
 
 				AddChild(new WrappingToggle(
@@ -77,7 +77,7 @@ namespace Astrogator {
 				AddChild(LabelWithStyleAndSize(
 					Localizer.Format("astrogator_maneuverCreationHeader"),
 					midHdrStyle,
-					mainWindowMinWidth, rowHeight
+					mainWindowMinWidth
 				));
 
 				AddChild(new WrappingToggle(
@@ -125,7 +125,7 @@ namespace Astrogator {
 				AddChild(LabelWithStyleAndSize(
 					Localizer.Format("astrogator_unitsHeader"),
 					midHdrStyle,
-					mainWindowMinWidth, rowHeight
+					mainWindowMinWidth
 				));
 
 				AddChild(new WrappingToggle(
