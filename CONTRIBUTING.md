@@ -56,7 +56,7 @@ The middle part of the `cfg` file contains the strings to translate. The format 
 
 Do **not** change the part to the left of the equals sign ("=")! These names must be the same in every language file.
 
-The part to the right of the equals sign is the string to be used in-game. Most of the text will be shown as-is, but it can contain a few special strings as shown in the [Lingoona grammar module demo](http://lingoona.com/cgi-bin/grammar#l=en):
+The part to the right of the equals sign is the string to be used in-game. Most of the text will be shown as-is, but it can contain a few special strings as shown in the [Lingoona grammar module demo](http://lingoona.com/cgi-bin/grammar#l=en&oh=1):
 
 | String | Purpose |
 | --- | --- |
