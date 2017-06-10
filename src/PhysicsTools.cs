@@ -461,53 +461,32 @@ namespace Astrogator {
 		}
 
 		/// <summary>
-		/// Calculate the delta V needed to change from one orbit to another.
-		/// </summary>
-		/// <param name="currentOrbit">Orbit you're starting from</param>
-		/// <param name="targetOrbit">Orbit with which you're matching planes</param>
-		/// <param name="nodeTime">Time of the burn</param>
-		/// <param name="ascendingNode">True if burning at the AN, false for DN</param>
-		/// <returns>
-		/// Magnitude in m/s of the burn needed.
-		/// </returns>
-		public static double PlaneChangeDeltaV(Orbit currentOrbit, Orbit targetOrbit, double nodeTime, bool ascendingNode)
-		{
-			// DeltaVToMatchPlanes is precise, but it tries to flip orbits if they're going
-			// in opposite directions.
-			// In fact, we don't care if one is prograde and the other retrograde.
-			if (currentOrbit.GetRelativeInclination(targetOrbit) < 90f) {
-				return (ascendingNode ? -1.0 : 1.0)
-					* DeltaVToMatchPlanes(currentOrbit, targetOrbit, nodeTime).magnitude;
-			} else {
-				return (ascendingNode ? 1.0 : -1.0)
-					* DeltaVToMatchPlanes(currentOrbit, targetOrbit, nodeTime).magnitude;
-			}
-		}
-
-		/// <summary>
 		/// Calculate the delta V required to change planes from o to target at time burnUT.
-		/// Borrowed from MechJeb
+		/// Borrowed from MechJeb.
 		/// </summary>
-		/// <param name="o">Starting Orbit</param>
+		/// <param name="currentOrbit">Starting orbit</param>
 		/// <param name="target">Destination orbit</param>
 		/// <param name="burnUT">Time to burn</param>
 		/// <returns>
-		/// Delta V in m/s
+		/// Delta V in m/s, in (radial, normal, prograde) format
 		/// </returns>
-		public static Vector3d DeltaVToMatchPlanes(Orbit o, Orbit target, double burnUT)
+		public static Vector3d DeltaVToMatchPlanes(Orbit currentOrbit, Orbit target, double burnUT)
 		{
-			if (o.GetRelativeInclination(target) < 90f) {
-				Vector3d desiredHorizontal = Vector3d.Cross(target.SwappedOrbitNormal(), o.Up(burnUT));
-				Vector3d actualHorizontalVelocity = Vector3d.Exclude(o.Up(burnUT), o.SwappedOrbitalVelocityAtUT(burnUT));
-				Vector3d desiredHorizontalVelocity = actualHorizontalVelocity.magnitude * desiredHorizontal;
-				return desiredHorizontalVelocity - actualHorizontalVelocity;
-			} else {
-				// Try to match a retrograde orbit with a prograde one
-				Vector3d desiredHorizontal = Vector3d.Cross(o.Up(burnUT), target.SwappedOrbitNormal());
-				Vector3d actualHorizontalVelocity = Vector3d.Exclude(o.Up(burnUT), o.SwappedOrbitalVelocityAtUT(burnUT));
-				Vector3d desiredHorizontalVelocity = actualHorizontalVelocity.magnitude * desiredHorizontal;
-				return desiredHorizontalVelocity - actualHorizontalVelocity;
-			}
+			Vector3d desiredHorizontal =
+				(currentOrbit.GetRelativeInclination(target) < 90f)
+				? Vector3d.Cross(target.SwappedOrbitNormal(), currentOrbit.Up(burnUT))
+				: Vector3d.Cross(currentOrbit.Up(burnUT), target.SwappedOrbitNormal());
+			Vector3d actualHorizontalVelocity = Vector3d.Exclude(
+				currentOrbit.Up(burnUT), currentOrbit.SwappedOrbitalVelocityAtUT(burnUT));
+			Vector3d desiredHorizontalVelocity = actualHorizontalVelocity.magnitude * desiredHorizontal;
+			Vector3d theBurn = desiredHorizontalVelocity - actualHorizontalVelocity;
+			Vector3d normalizedOrbitalV = currentOrbit.SwappedOrbitalVelocityAtUT(burnUT).normalized;
+			// Convert from absolute coordinates to (radial, normal, prograde)
+			return new Vector3d(
+				Vector3d.Dot(Vector3d.Exclude(normalizedOrbitalV, currentOrbit.Up(burnUT)).normalized, theBurn),
+				Vector3d.Dot(-currentOrbit.SwappedOrbitNormal(), theBurn),
+				Vector3d.Dot(normalizedOrbitalV, theBurn)
+			);
 		}
 
 	}

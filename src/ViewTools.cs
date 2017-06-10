@@ -719,7 +719,7 @@ namespace Astrogator {
 		public static ColumnDefinition[] Columns = new ColumnDefinition[] {
 			new ColumnDefinition() {
 				header	= Localizer.Format("astrogator_transferColumnHeader"),
-				width	= 60,
+				width	= 80,
 				headerColSpan	= 1,
 				headerStyle	= leftHdrStyle,
 				contentStyle	= planetStyle,

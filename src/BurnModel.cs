@@ -25,10 +25,24 @@ namespace Astrogator {
 			totalDeltaV = Math.Sqrt(prograde * prograde + normal * normal + radial * radial);
 		}
 
+		/// <summary>
+		/// Construct a burn object from a time and a vector.
+		/// </summary>
+		/// <param name="t">Time of burn</param>
+		/// <param name="dv">3 dimensional vector describing the burn, should be in (radial, normal, prograde) format.</param>
+		public BurnModel(double? t, Vector3d dv)
+		{
+			atTime      = t;
+			radial      = dv.x;
+			normal      = dv.y;
+			prograde    = dv.z;
+			totalDeltaV = Math.Sqrt(prograde * prograde + normal * normal + radial * radial);
+		}
+
 		/// <value>
 		/// Maneuver node created from this burn, if any.
 		/// </value>
-		public ManeuverNode node { get; private set; }
+		public ManeuverNode node  { get; private set; }
 
 		/// <summary>
 		/// The UT of the burn.

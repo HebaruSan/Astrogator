@@ -63,16 +63,6 @@ namespace Astrogator {
 		private ResetCallback resetCallback { get; set; }
 		private UnityAction   closeCallback { get; set; }
 
-		private static Rect geometry {
-			get {
-				Vector2 pos = Settings.Instance.MainWindowPosition;
-				return new Rect(pos.x, pos.y, mainWindowMinWidth, mainWindowMinHeight);
-			}
-			set {
-				Settings.Instance.MainWindowPosition = new Vector2(value.x, value.y);
-			}
-		}
-
 		private void toggleSettingsVisible()
 		{
 			Settings.Instance.ShowSettings = !Settings.Instance.ShowSettings;
@@ -273,6 +263,52 @@ namespace Astrogator {
 			}
 		}
 
+		private bool           needUIScaleOffsetUpdate = false;
+		private static float   prevUIScale             = 1f;
+		private static Vector2 uiScaleOffset           = Vector2.zero;
+
+		private static Rect geometry {
+			get {
+				Vector2 pos = Settings.Instance.MainWindowPosition;
+				return new Rect(
+					pos.x / GameSettings.UI_SCALE,
+					pos.y / GameSettings.UI_SCALE,
+					mainWindowMinWidth, mainWindowMinHeight);
+			}
+			set {
+				Settings.Instance.MainWindowPosition = new Vector2(
+					value.x * GameSettings.UI_SCALE,
+					value.y * GameSettings.UI_SCALE
+				);
+			}
+		}
+
+		private Rect currentGeometry {
+			get {
+				Vector3 rt = dialog.GetComponent<RectTransform>().position;
+				return new Rect(
+					rt.x / GameSettings.UI_SCALE / Screen.width  + 0.5f,
+					rt.y / GameSettings.UI_SCALE / Screen.height + 0.5f,
+					mainWindowMinWidth, mainWindowMinHeight);
+			}
+		}
+
+		private void replaceScratchWindowWithRealView()
+		{
+			// Update the offsets and note the applicable UI Scale
+			prevUIScale = GameSettings.UI_SCALE;
+			uiScaleOffset = new Vector2(
+				currentGeometry.x - geometry.x,
+				currentGeometry.y - geometry.y
+			);
+
+			// Get rid of the scratch window
+			Dismiss();
+
+			// Open a new window using the new offset
+			Show();
+		}
+
 		/// <summary>
 		/// Launch a PopupDialog containing the view.
 		/// Use Dismiss() to get rid of it.
@@ -280,41 +316,76 @@ namespace Astrogator {
 		public PopupDialog Show()
 		{
 			if (dialog == null) {
-				dialog = PopupDialog.SpawnPopupDialog(
-					mainWindowAnchorMin,
-					mainWindowAnchorMax,
-					new MultiOptionDialog(
-						Localizer.Format("astrogator_mainTitle"),
-						subTitle,
-						Localizer.Format("astrogator_mainTitle") + " " + versionString,
+				if (Math.Abs(prevUIScale - GameSettings.UI_SCALE) > 0.05) {
+					// New UI Scale setting, so we can't open the real window yet.
+					// Instead, we open a scratch window to see how much
+					// distortion is applied at this level of scaling.
+					dialog = PopupDialog.SpawnPopupDialog(
+						mainWindowAnchorMin,
+						mainWindowAnchorMax,
+						new MultiOptionDialog("", "", "",
+							AstrogatorSkin,
+							geometry,
+							new DialogGUIHorizontalLayout() {
+								OnUpdate = () => {
+									if (needUIScaleOffsetUpdate) {
+										needUIScaleOffsetUpdate = false;
+										replaceScratchWindowWithRealView();
+									}
+								}
+							}
+						),
+						false,
+						AstrogatorSkin,
+						false
+					);
+					needUIScaleOffsetUpdate = true;
+
+				} else {
+
+					// Calculate where the new window should go based on the
+					// difference between where we said the scratch window should
+					// go and where it actually went.
+					Rect offsetGeometry = geometry;
+					offsetGeometry.x -= uiScaleOffset.x;
+					offsetGeometry.y -= uiScaleOffset.y;
+
+					dialog = PopupDialog.SpawnPopupDialog(
+						mainWindowAnchorMin,
+						mainWindowAnchorMax,
+						new MultiOptionDialog(
+							Localizer.Format("astrogator_mainTitle"),
+							subTitle,
+							Localizer.Format("astrogator_mainTitle") + " " + versionString,
+							skinToUse,
+							offsetGeometry,
+							this
+						),
+						false,
 						skinToUse,
-						geometry,
-						this
-					),
-					false,
-					skinToUse,
-					false
-				);
+						false
+					);
 
-				// Add the close button in the upper right corner after the PopupDialog has been created.
-				AddFloatingButton(
-					dialog.transform,
-					-mainWindowPadding.right - mainWindowSpacing, -mainWindowPadding.top,
-					closeStyle,
-					"astrogator_closeButtonTooltip",
-					closeCallback
-				);
+					// Add the close button in the upper right corner after the PopupDialog has been created.
+					AddFloatingButton(
+						dialog.transform,
+						-mainWindowPadding.right - mainWindowSpacing, -mainWindowPadding.top,
+						closeStyle,
+						"astrogator_closeButtonTooltip",
+						closeCallback
+					);
 
-				// Add the settings button next to the close button.
-				// If the settings are visible it's a back '<' icon, otherwise a wrench+screwdriver.
-				AddFloatingButton(
-					dialog.transform,
-					-mainWindowPadding.right - 3 * mainWindowSpacing - buttonIconWidth,
-					-mainWindowPadding.top,
-					settingsToggleStyle,
-					settingsToggleTooltip,
-					toggleSettingsVisible
-				);
+					// Add the settings button next to the close button.
+					// If the settings are visible it's a back '<' icon, otherwise a wrench+screwdriver.
+					AddFloatingButton(
+						dialog.transform,
+						-mainWindowPadding.right - 3 * mainWindowSpacing - buttonIconWidth,
+						-mainWindowPadding.top,
+						settingsToggleStyle,
+						settingsToggleTooltip,
+						toggleSettingsVisible
+					);
+				}
 			}
 			return dialog;
 		}
@@ -325,14 +396,9 @@ namespace Astrogator {
 		public void Dismiss()
 		{
 			if (dialog != null) {
-				Vector3 rt = dialog.RTrf.position;
-				DbgFmt("Coordinates at window close: {0}", rt.ToString());
-				DbgFmt("Screen dimensions at window close: {0}x{1}", Screen.width, Screen.height);
 				geometry = new Rect(
-					rt.x / Screen.width  + 0.5f,
-					rt.y / Screen.height + 0.5f,
-					mainWindowMinWidth,
-					mainWindowMinHeight
+					currentGeometry.x, currentGeometry.y,
+					mainWindowMinWidth,	mainWindowMinHeight
 				);
 				dialog.Dismiss();
 				dialog = null;

@@ -630,13 +630,10 @@ namespace Astrogator {
 								DbgFmt("Pinpointed plane change for {0}", transferParent.GetName());
 
 								if (planeTime > 0 && planeTime > ejectionBurn.atTime) {
-									double magnitude = PlaneChangeDeltaV(o, transferDestination.GetOrbit(), planeTime, ascendingNode);
-									// Don't bother to create tiny maneuver nodes
-									if (Math.Abs(magnitude) > 0.05) {
-										// Add a maneuver node to change planes
-										planeChangeBurn = new BurnModel(planeTime, 0,
-											magnitude);
-										DbgFmt("Transmitted correction burn for {0}: {1}", transferDestination.GetName(), magnitude);
+									Vector3d dv = DeltaVToMatchPlanes(
+										o, transferDestination.GetOrbit(), planeTime);
+									if (Math.Abs(dv.magnitude) > 0.1) {
+										planeChangeBurn = new BurnModel(planeTime, dv);
 									} else {
 										planeChangeBurn = null;
 										DbgFmt("No plane change needed for {0}", transferDestination.GetName());
