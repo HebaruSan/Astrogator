@@ -1,6 +1,5 @@
 # TODO
 
-- [ ] Reduce ejection burn by the amount the plane change burn adds to it (i.e., fix Minmus overshoots)
 - [ ] Allow a window of times for transfers
   - Calculate current absolute time
   - Use a fudge factor that scales with orbital period to choose a range
