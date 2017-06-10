@@ -79,6 +79,10 @@ namespace Astrogator {
 			return false;
 		}
 
+		/// <summary>
+		/// Default position for main window.
+		/// Should be a value that works for all UI Scale values.
+		/// </summary>
 		public static Vector2 defaultWindowPosition = new Vector2(0.5f, 0.7f);
 
 		/// <value>
