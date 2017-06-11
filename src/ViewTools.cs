@@ -923,7 +923,7 @@ namespace Astrogator {
 		/// Save a reference on demand to a tooltip prefab from the stock UI.
 		/// Should only be used in SetTooltip.
 		/// </summary>
-		private static Tooltip_Text tooltipPrefab = null;
+		private static Tooltip_Text tooltipPrefab = AssetBase.GetPrefab<Tooltip_Text>("Tooltip_Text");
 
 		/// <summary>
 		/// Create a tooltip component for a GameObject.
@@ -937,9 +937,6 @@ namespace Astrogator {
 		/// </returns>
 		private static bool SetTooltip(GameObject gameObj, string tooltip)
 		{
-			if (tooltipPrefab == null) {
- 				tooltipPrefab = GameObject.FindObjectOfType<TooltipController_Text>()?.prefab;
-			}
 			if (gameObj != null && tooltipPrefab != null) {
 				TooltipController_Text tt = (gameObj.GetComponent<TooltipController_Text>() ?? gameObj.AddComponent<TooltipController_Text>());
 				if (tt != null) {
