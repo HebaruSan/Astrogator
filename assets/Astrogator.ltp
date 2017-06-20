@@ -1,0 +1,7 @@
+LOADINGTOOLTIPSPLUS
+{
+	Overwrite = false
+	ToolTip  = astrogator_loadingTip1
+	ToolTip2 = astrogator_loadingTip2
+	ToolTip3 = astrogator_loadingTip3
+}

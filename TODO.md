@@ -36,6 +36,7 @@
   - Event handlers
 - [ ] Implement [TaxiService's method of updating the UI without close/reopen](http://forum.kerbalspaceprogram.com/index.php?/topic/149324-popupdialog-and-the-dialoggui-classes/&do=findComment&comment=2950891)
 - [ ] Unit tests
+- [ ] Make my statics readonly
 
 ## Deferred pending stock changes
 

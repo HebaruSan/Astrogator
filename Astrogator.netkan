@@ -15,8 +15,9 @@
         "bugtracker": "https://github.com/HebaruSan/Astrogator/issues",
         "repository": "https://github.com/HebaruSan/Astrogator"
     },
-    "depends": [
-        { "name": "ModuleManager" }
+    "recommends": [
+        { "name": "ModuleManager" },
+        { "name": "LoadingTipsPlus" }
     ],
     "suggests": [
         { "name": "GravityTurn" },

@@ -47,5 +47,31 @@ namespace Astrogator {
 			);
 		}
 
+		[System.Diagnostics.Conditional("DEBUG")]
+		public static void printComponentNames(GameObject gameObj)
+		{
+			Component[] comps = gameObj.GetComponents<Component>();
+			for (int i = 0; i < comps.Length; ++i) {
+				MonoBehaviour.print($"Component {i}: {comps[i].GetType()}");
+			}
+		}
+
+		[System.Diagnostics.Conditional("DEBUG")]
+		private static void printPartModules(Part part)
+		{
+			for (int i = 0; i < part.Modules.Count; ++i) {
+				MonoBehaviour.print($"Module {i}: {part.Modules[i].GetType()}");
+			}
+		}
+
+		[System.Diagnostics.Conditional("DEBUG")]
+		private static void printResoures(Part part)
+		{
+			for (int i = 0; i < part.Resources.Count; ++i) {
+				PartResource r = part.Resources[i];
+				MonoBehaviour.print($"Resource {i}: {r.resourceName}");
+			}
+		}
+
 	}
 }
