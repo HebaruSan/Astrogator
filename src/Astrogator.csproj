@@ -68,7 +68,7 @@
     <Compile Include="TransferView.cs" />
     <Compile Include="BurnModel.cs" />
     <Compile Include="OrbitModel.cs" />
-    <Compile Include="TooltipView.cs" />
+    <Compile Include="TooltipExtensions.cs" />
     <Compile Include="DebugTools.cs" />
     <Compile Include="Settings.cs" />
     <Compile Include="SettingsView.cs" />

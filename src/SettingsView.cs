@@ -43,7 +43,14 @@ namespace Astrogator {
 				AddChild(new WrappingToggle(
 					() => Settings.Instance.GeneratePlaneChangeBurns,
 					Localizer.Format("astrogator_planeChangeBurnsSetting"),
-					(bool b) => { Settings.Instance.GeneratePlaneChangeBurns = b; },
+					(bool b) => {
+						Settings.Instance.GeneratePlaneChangeBurns = b;
+						if (!b) {
+							Settings.Instance.DeleteExistingManeuvers = false;
+							Settings.Instance.AutoEditPlaneChangeNode = false;
+							Settings.Instance.AddPlaneChangeDeltaV    = false;
+						}
+					},
 					mainWindowInternalWidth
 				));
 
@@ -54,6 +61,7 @@ namespace Astrogator {
 						Settings.Instance.AddPlaneChangeDeltaV = b;
 						// Only need to reload if we don't already have the plane change values
 						if (b) {
+							Settings.Instance.GeneratePlaneChangeBurns = true;
 							resetCallback(true);
 						}
 					},
@@ -97,14 +105,25 @@ namespace Astrogator {
 				AddChild(new WrappingToggle(
 					() => Settings.Instance.AutoEditEjectionNode,
 					Localizer.Format("astrogator_autoEditEjecSetting"),
-					(bool b) => { Settings.Instance.AutoEditEjectionNode = b; },
+					(bool b) => {
+						Settings.Instance.AutoEditEjectionNode = b;
+						if (b) {
+							Settings.Instance.AutoEditPlaneChangeNode = false;
+						}
+					},
 					mainWindowInternalWidth
 				));
 
 				AddChild(new WrappingToggle(
 					() => Settings.Instance.AutoEditPlaneChangeNode,
 					Localizer.Format("astrogator_autoEditPlaneChgSetting"),
-					(bool b) => { Settings.Instance.AutoEditPlaneChangeNode = b; },
+					(bool b) => {
+						Settings.Instance.AutoEditPlaneChangeNode = b;
+						if (b) {
+							Settings.Instance.GeneratePlaneChangeBurns = true;
+							Settings.Instance.AutoEditEjectionNode = false;
+						}
+					},
 					mainWindowInternalWidth
 				));
 

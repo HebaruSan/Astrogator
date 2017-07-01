@@ -156,7 +156,7 @@ namespace Astrogator {
 
 		private void addRow(StringBuilder sb, TransferModel m, DateTimeParts dt, bool selected)
 		{
-			string destLabel = Localizer.Format("astrogatr_planetLabel", TheName(m.destination));
+			string destLabel = Localizer.Format("astrogator_planetLabel", TheName(m.destination));
 
 			sb.Append(Environment.NewLine);
 			sb.Append(selected ? "> " : "  ");

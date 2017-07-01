@@ -6,9 +6,17 @@ A space-navigational aide for [Kerbal Space Program](http://www.kerbalspaceprogr
 
 See all the transfers that you could choose from your current location at a glance, including the time till the burn and delta V, and turn them into maneuvers with one click.
 
+[![Donate][Donation image]][Donation link]
+
+[Donation link]: https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=7H2LCH6SP7TTE&lc=US&item_name=HebaruSan_Mods&currency_code=USD&bn=PP%2dDonationsBF%3abtn_donate_LG%2egif%3aNonHosted
+
+[Donation image]: https://i.imgur.com/M9m07Qw.png
+
 ## Download
 
-The [latest version](https://github.com/HebaruSan/Astrogator/releases/latest) is available on Github.
+The [latest version] is available on Github.
+
+[latest version]: https://github.com/HebaruSan/Astrogator/releases/latest
 
 Unzip to your GameData folder.
 

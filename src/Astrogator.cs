@@ -130,10 +130,15 @@ namespace Astrogator {
 
 				launcher = ApplicationLauncher.Instance.AddModApplication(
 					onAppLaunchToggleOn, onAppLaunchToggleOff,
-					onAppLaunchHover,    onAppLaunchHoverOut,
-					null, null,
+					null,                null,
+					null,                null,
 					VisibleInScenes,
 					AppIcon);
+
+				launcher?.gameObject?.SetTooltip(
+					"astrogator_mainTitle",
+					"astrogator_mainTooltip"
+				);
 			}
 
 			// Auto open the window if it was open the last time we ran
@@ -147,37 +152,6 @@ namespace Astrogator {
 			if (launcher != null) {
 				ApplicationLauncher.Instance.RemoveModApplication(launcher);
 				launcher = null;
-			}
-		}
-
-		private TooltipView tooltip { get; set; }
-
-		/// <summary>
-		/// React to user hovering over the app launcher by showing the tooltip.
-		/// </summary>
-		private void onAppLaunchHover()
-		{
-			DbgFmt("Hovered over");
-
-			if (tooltip == null) {
-				tooltip = TooltipView.AppLauncherTooltip(
-					Localizer.Format("astrogator_mainTitle"),
-					Localizer.Format("astrogator_mainTooltip"),
-					launcher);
-			}
-			tooltip.Show();
-		}
-
-		/// <summary>
-		/// React to the user de-hovering the app launcher by hiding the tooltip.
-		/// </summary>
-		private void onAppLaunchHoverOut()
-		{
-			DbgFmt("Unhovered");
-
-			if (tooltip != null) {
-				tooltip.Dismiss();
-				tooltip = null;
 			}
 		}
 

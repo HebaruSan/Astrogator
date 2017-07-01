@@ -14,6 +14,7 @@ namespace Astrogator {
 	using static DebugTools;
 	using static KerbalTools;
 	using static ViewTools;
+	using static TooltipExtensions;
 
 	/// Anything UI-related that needs to be used from multiple places.
 	public static class ViewTools {
@@ -33,12 +34,12 @@ namespace Astrogator {
 		/// </value>
 		public const int buttonIconWidth = 16;
 
-		private static Version modVersion = typeof(Astrogator).Assembly.GetName().Version;
+		private static readonly Version modVersion = Assembly.GetExecutingAssembly().GetName().Version;
 
 		/// <summary>
 		/// A string representing the version number of the mod.
 		/// </summary>
-		public static string versionString = Localizer.Format(
+		public static readonly string versionString = Localizer.Format(
 			"astrogator_versionFormat", modVersion.Major, modVersion.Minor, modVersion.Build
 		);
 
@@ -80,35 +81,16 @@ namespace Astrogator {
 			return transfers;
 		}
 
-		/// <summary>
-		/// Parse a string into an enum for Settings
-		/// Inverse of Enum.ToString()
-		/// </summary>
-		/// <param name="val">String from the settings</param>
-		/// <param name="defaultVal">Default to use if can't match to any value from the enum</param>
-		/// <returns>
-		/// Enum value matching the string, if any
-		/// </returns>
-		public static T ParseEnum<T>(string val, T defaultVal) where T : IConvertible
-		{
-			try {
-				return (T) Enum.Parse(typeof(T), val, true);
-			} catch (Exception ex) {
-				DbgExc("Problem parsing enum", ex);
-				return defaultVal;
-			}
-		}
-
 		/// <value>
 		/// The icon to show for this mod in the app launcher.
 		/// </value>
-		public static Texture2D AppIcon = GetImage(FilePath("Astrogator"));
+		public static readonly Texture2D AppIcon = GetImage(FilePath("Astrogator"));
 
 		/// <returns>
 		/// A texture object for the image file at the given path.
 		/// </returns>
 		/// <param name="filepath">Path to image file to load</param>
-		public static Texture2D GetImage(string filepath)
+		private static Texture2D GetImage(string filepath)
 		{
 			return GameDatabase.Instance.GetTexture(filepath, false);
 		}
@@ -120,7 +102,7 @@ namespace Astrogator {
 		/// <returns>
 		/// A 1x1 texture
 		/// </returns>
-		public static Texture2D SolidColorTexture(Color c)
+		private static Texture2D SolidColorTexture(Color c)
 		{
 			Texture2D tex = new Texture2D(1, 1, TextureFormat.ARGB32, false);
 			tex.SetPixel(1, 1, c);
@@ -145,7 +127,7 @@ namespace Astrogator {
 		/// <returns>
 		/// A sprite object for the image at the given path.
 		/// </returns>
-		public static Sprite GetSprite(string filepath)
+		private static Sprite GetSprite(string filepath)
 		{
 			return SpriteFromTexture(GetImage(filepath));
 		}
@@ -153,7 +135,7 @@ namespace Astrogator {
 		/// <returns>
 		/// A 1x1 sprite object of the given color.
 		/// </returns>
-		public static Sprite SolidColorSprite(Color c)
+		private static Sprite SolidColorSprite(Color c)
 		{
 			return SpriteFromTexture(SolidColorTexture(c));
 		}
@@ -161,18 +143,18 @@ namespace Astrogator {
 		/// <value>
 		/// Black image with 50% opacity.
 		/// </value>
-		public static Sprite halfTransparentBlack = SolidColorSprite(new Color(0f, 0f, 0f, 0.5f));
+		public static readonly Sprite halfTransparentBlack = SolidColorSprite(new Color(0f, 0f, 0f, 0.5f));
 
 		/// <value>
 		/// Completely transparent sprite so we can use buttons for the headers
 		/// without the default button graphic.
 		/// </value>
-		public static Sprite transparent = SolidColorSprite(new Color(0f, 0f, 0f, 0f));
+		public static readonly Sprite transparent = SolidColorSprite(new Color(0f, 0f, 0f, 0f));
 
 		/// <value>
 		/// Backgrounds and text colors for the tooltip and main window.
 		/// </value>
-		public static UIStyleState windowStyleState = new UIStyleState() {
+		public static readonly UIStyleState windowStyleState = new UIStyleState() {
 			background	= halfTransparentBlack,
 			textColor	= Color.HSVToRGB(0.3f, 0.8f, 0.8f)
 		};
@@ -180,7 +162,7 @@ namespace Astrogator {
 		/// <value>
 		/// Text color for table headers.
 		/// </value>
-		public static UIStyleState headingFont = new UIStyleState() {
+		public static readonly UIStyleState headingFont = new UIStyleState() {
 			background	= transparent,
 			textColor	= Color.HSVToRGB(0.3f, 0.8f, 0.8f)
 		};
@@ -188,28 +170,28 @@ namespace Astrogator {
 		/// <value>
 		/// Text color for main table content.
 		/// </value>
-		public static UIStyleState numberFont = new UIStyleState() {
+		public static readonly UIStyleState numberFont = new UIStyleState() {
 			textColor	= Color.HSVToRGB(0.3f, 0.2f, 0.8f)
 		};
 
 		/// <value>
 		/// Text color for the line under the title.
 		/// </value>
-		public static UIStyleState subTitleFont = new UIStyleState() {
+		public static readonly UIStyleState subTitleFont = new UIStyleState() {
 			textColor	= Color.HSVToRGB(0.3f, 0.2f, 0.6f)
 		};
 
 		/// <value>
 		/// Text color for the line under the title when it's an error message.
 		/// </value>
-		public static UIStyleState subTitleErrorFont = new UIStyleState() {
+		public static readonly UIStyleState subTitleErrorFont = new UIStyleState() {
 			textColor	= Color.HSVToRGB(0f, 0.9f, 0.9f)
 		};
 
 		/// <value>
 		/// Text color for the line under the title.
 		/// </value>
-		public static UIStyleState linkFont = new UIStyleState() {
+		public static readonly UIStyleState linkFont = new UIStyleState() {
 			background	= transparent,
 			textColor	= Color.HSVToRGB(0.6f, 0.7f, 0.9f)
 		};
@@ -217,7 +199,7 @@ namespace Astrogator {
 		/// <value>
 		/// Font sizes, normal/highlight styles, and alignment for the tooltip and main window.
 		/// </value>
-		public static UIStyle windowStyle = new UIStyle() {
+		public static readonly UIStyle windowStyle = new UIStyle() {
 			normal	= windowStyleState,
 			active	= windowStyleState,
 			disabled	= windowStyleState,
@@ -230,7 +212,7 @@ namespace Astrogator {
 		/// <value>
 		/// Font sizes, normal/highlight styles, and alignment for planet header.
 		/// </value>
-		public static UIStyle leftHdrStyle = new UIStyle() {
+		public static readonly UIStyle leftHdrStyle = new UIStyle() {
 			normal	= headingFont,
 			active	= headingFont,
 			disabled	= headingFont,
@@ -244,7 +226,7 @@ namespace Astrogator {
 		/// <value>
 		/// Font sizes, normal/highlight styles, and alignment for the time header.
 		/// </value>
-		public static UIStyle midHdrStyle = new UIStyle() {
+		public static readonly UIStyle midHdrStyle = new UIStyle() {
 			normal	= headingFont,
 			active	= headingFont,
 			disabled	= headingFont,
@@ -258,7 +240,7 @@ namespace Astrogator {
 		/// <value>
 		/// Font sizes, normal/highlight styles, and alignment for the delta V header.
 		/// </value>
-		public static UIStyle rightHdrStyle = new UIStyle() {
+		public static readonly UIStyle rightHdrStyle = new UIStyle() {
 			normal	= headingFont,
 			active	= headingFont,
 			disabled	= headingFont,
@@ -272,7 +254,7 @@ namespace Astrogator {
 		/// <value>
 		/// Font sizes, normal/highlight styles, and alignment for the planet names.
 		/// </value>
-		public static UIStyle planetStyle = new UIStyle() {
+		public static readonly UIStyle planetStyle = new UIStyle() {
 			normal	= headingFont,
 			active	= headingFont,
 			disabled	= headingFont,
@@ -286,7 +268,7 @@ namespace Astrogator {
 		/// <value>
 		/// Font sizes, normal/highlight styles, and alignment for normal content.
 		/// </value>
-		public static UIStyle numberStyle = new UIStyle() {
+		public static readonly UIStyle numberStyle = new UIStyle() {
 			normal	= numberFont,
 			active	= numberFont,
 			disabled	= numberFont,
@@ -300,12 +282,12 @@ namespace Astrogator {
 		/// <value>
 		/// Icon for normal state of settings button.
 		/// </value>
-		public static Sprite settingsIcon = GetSprite(FilePath("settings"));
+		public static readonly Sprite settingsIcon = GetSprite(FilePath("settings"));
 
 		/// <value>
 		/// Icon for normal state of settings button.
 		/// </value>
-		public static UIStyleState settingsStyleState = new UIStyleState() {
+		public static readonly UIStyleState settingsStyleState = new UIStyleState() {
 			background	= settingsIcon,
 			textColor	= Color.black
 		};
@@ -313,12 +295,12 @@ namespace Astrogator {
 		/// <value>
 		/// Icon for hovered state of settings button.
 		/// </value>
-		public static Sprite settingsHoverIcon = GetSprite(FilePath("settingsHover"));
+		public static readonly Sprite settingsHoverIcon = GetSprite(FilePath("settingsHover"));
 
 		/// <value>
 		/// Icon for hovered state of settings button.
 		/// </value>
-		public static UIStyleState settingsHoverStyleState = new UIStyleState() {
+		public static readonly UIStyleState settingsHoverStyleState = new UIStyleState() {
 			background	= settingsHoverIcon,
 			textColor	= Color.black
 		};
@@ -326,7 +308,7 @@ namespace Astrogator {
 		/// <value>
 		/// Normal/highlight icons for the settings button.
 		/// </value>
-		public static UIStyle settingsStyle = new UIStyle() {
+		public static readonly UIStyle settingsStyle = new UIStyle() {
 			normal	= settingsStyleState,
 			highlight	= settingsHoverStyleState,
 			active	= settingsHoverStyleState,
@@ -337,12 +319,12 @@ namespace Astrogator {
 		/// <summary>
 		/// Icon for the normal state of the back button.
 		/// </summary>
-		public static Sprite backIcon = GetSprite(FilePath("back"));
+		public static readonly Sprite backIcon = GetSprite(FilePath("back"));
 
 		/// <summary>
 		/// Icon for the normal state of the back button.
 		/// </summary>
-		public static UIStyleState backStyleState = new UIStyleState() {
+		public static readonly UIStyleState backStyleState = new UIStyleState() {
 			background	= backIcon,
 			textColor	= Color.black
 		};
@@ -350,12 +332,12 @@ namespace Astrogator {
 		/// <summary>
 		/// Icon for the hovered state of the back button.
 		/// </summary>
-		public static Sprite backHoverIcon = GetSprite(FilePath("backHover"));
+		public static readonly Sprite backHoverIcon = GetSprite(FilePath("backHover"));
 
 		/// <summary>
 		/// Icon for the hovered state of the back button.
 		/// </summary>
-		public static UIStyleState backHoverStyleState = new UIStyleState() {
+		public static readonly UIStyleState backHoverStyleState = new UIStyleState() {
 			background	= backHoverIcon,
 			textColor	= Color.black
 		};
@@ -363,7 +345,7 @@ namespace Astrogator {
 		/// <value>
 		/// Normal/highlight icons for the back button.
 		/// </value>
-		public static UIStyle backStyle = new UIStyle() {
+		public static readonly UIStyle backStyle = new UIStyle() {
 			normal	= backStyleState,
 			highlight	= backHoverStyleState,
 			active	= backHoverStyleState,
@@ -374,12 +356,12 @@ namespace Astrogator {
 		/// <value>
 		/// Icon for normal state of maneuver node creation button.
 		/// </value>
-		public static Sprite maneuverIcon = GetSprite(FilePath("maneuver"));
+		public static readonly Sprite maneuverIcon = GetSprite(FilePath("maneuver"));
 
 		/// <value>
 		/// Icon for normal state of maneuver creation button.
 		/// </value>
-		public static UIStyleState maneuverStyleState = new UIStyleState() {
+		public static readonly UIStyleState maneuverStyleState = new UIStyleState() {
 			background	= maneuverIcon,
 			textColor	= Color.black
 		};
@@ -387,12 +369,12 @@ namespace Astrogator {
 		/// <value>
 		/// Icon for hovered state of maneuver node creation button.
 		/// </value>
-		public static Sprite maneuverHoverIcon = GetSprite(FilePath("maneuverHover"));
+		public static readonly Sprite maneuverHoverIcon = GetSprite(FilePath("maneuverHover"));
 
 		/// <value>
 		/// Icon for hovered state of maneuver creation button.
 		/// </value>
-		public static UIStyleState maneuverHoverStyleState = new UIStyleState() {
+		public static readonly UIStyleState maneuverHoverStyleState = new UIStyleState() {
 			background	= maneuverHoverIcon,
 			textColor	= Color.black
 		};
@@ -400,7 +382,7 @@ namespace Astrogator {
 		/// <value>
 		/// Normal/highlight icons for the maneuver creation button.
 		/// </value>
-		public static UIStyle maneuverStyle = new UIStyle() {
+		public static readonly UIStyle maneuverStyle = new UIStyle() {
 			normal	= maneuverStyleState,
 			highlight	= maneuverHoverStyleState,
 			active	= maneuverHoverStyleState,
@@ -410,12 +392,12 @@ namespace Astrogator {
 		/// <value>
 		/// Icon for normal state of warp button.
 		/// </value>
-		public static Sprite warpIcon = GetSprite(FilePath("warp"));
+		public static readonly Sprite warpIcon = GetSprite(FilePath("warp"));
 
 		/// <value>
 		/// Icon for normal state of warp button.
 		/// </value>
-		public static UIStyleState warpStyleState = new UIStyleState() {
+		public static readonly UIStyleState warpStyleState = new UIStyleState() {
 			background	= warpIcon,
 			textColor	= Color.black
 		};
@@ -423,12 +405,12 @@ namespace Astrogator {
 		/// <value>
 		/// Icon for hovered state of warp button.
 		/// </value>
-		public static Sprite warpHoverIcon = GetSprite(FilePath("warpHover"));
+		public static readonly Sprite warpHoverIcon = GetSprite(FilePath("warpHover"));
 
 		/// <value>
 		/// Icon for hovered state of warp button.
 		/// </value>
-		public static UIStyleState warpHoverStyleState = new UIStyleState() {
+		public static readonly UIStyleState warpHoverStyleState = new UIStyleState() {
 			background	= warpHoverIcon,
 			textColor	= Color.black
 		};
@@ -436,7 +418,7 @@ namespace Astrogator {
 		/// <summary>
 		/// Normal/highlight icons for the warp button.
 		/// </summary>
-		public static UIStyle warpStyle = new UIStyle() {
+		public static readonly UIStyle warpStyle = new UIStyle() {
 			normal	= warpStyleState,
 			highlight	= warpHoverStyleState,
 			active	= warpHoverStyleState,
@@ -446,12 +428,12 @@ namespace Astrogator {
 		/// <summary>
 		/// Icon for close X button when not hovered.
 		/// </summary>
-		public static Sprite closeIcon = GetSprite(FilePath("close"));
+		public static readonly Sprite closeIcon = GetSprite(FilePath("close"));
 
 		/// <summary>
 		/// Icon for close X button when not hovered.
 		/// </summary>
-		public static UIStyleState closeStyleState = new UIStyleState() {
+		public static readonly UIStyleState closeStyleState = new UIStyleState() {
 			background	= closeIcon,
 			textColor	= Color.black
 		};
@@ -459,12 +441,12 @@ namespace Astrogator {
 		/// <summary>
 		/// Icon for close X button when hovered.
 		/// </summary>
-		public static Sprite closeHoverIcon = GetSprite(FilePath("closeHover"));
+		public static readonly Sprite closeHoverIcon = GetSprite(FilePath("closeHover"));
 
 		/// <summary>
 		/// Icon for close X button when hovered.
 		/// </summary>
-		public static UIStyleState closeHoverStyleState = new UIStyleState() {
+		public static readonly UIStyleState closeHoverStyleState = new UIStyleState() {
 			background	= closeHoverIcon,
 			textColor	= Color.black
 		};
@@ -472,7 +454,7 @@ namespace Astrogator {
 		/// <summary>
 		/// Style for close X button.
 		/// </summary>
-		public static UIStyle closeStyle = new UIStyle() {
+		public static readonly UIStyle closeStyle = new UIStyle() {
 			normal	= closeStyleState,
 			highlight	= closeHoverStyleState,
 			active	= closeHoverStyleState,
@@ -482,7 +464,7 @@ namespace Astrogator {
 		/// <value>
 		/// A centered variant of the normal content font.
 		/// </value>
-		public static UIStyle subTitleStyle = new UIStyle() {
+		public static readonly UIStyle subTitleStyle = new UIStyle() {
 			normal	= subTitleFont,
 			active	= subTitleFont,
 			disabled	= subTitleFont,
@@ -495,7 +477,7 @@ namespace Astrogator {
 		/// <value>
 		/// Left aligned italic text for telling the user things.
 		/// </value>
-		public static UIStyle notificationStyle = new UIStyle() {
+		public static readonly UIStyle notificationStyle = new UIStyle() {
 			normal	= subTitleFont,
 			active	= subTitleFont,
 			disabled	= subTitleFont,
@@ -508,7 +490,7 @@ namespace Astrogator {
 		/// <value>
 		/// A red, centered variant of the normal content font for error messages.
 		/// </value>
-		public static UIStyle subTitleErrorStyle = new UIStyle() {
+		public static readonly UIStyle subTitleErrorStyle = new UIStyle() {
 			normal	= subTitleErrorFont,
 			active	= subTitleErrorFont,
 			disabled	= subTitleErrorFont,
@@ -521,7 +503,7 @@ namespace Astrogator {
 		/// <value>
 		/// Variant of the standard checkbox style to support long strings.
 		/// </value>
-		public static UIStyle toggleStyle = new UIStyle() {
+		public static readonly UIStyle toggleStyle = new UIStyle() {
 			normal	= UISkinManager.defaultSkin.toggle.normal,
 			active	= UISkinManager.defaultSkin.toggle.active,
 			disabled	= UISkinManager.defaultSkin.toggle.disabled,
@@ -537,7 +519,7 @@ namespace Astrogator {
 		/// <value>
 		/// The skin we use for our tooltip and main window.
 		/// </value>
-		public static UISkinDef AstrogatorSkin = new UISkinDef() {
+		public static readonly UISkinDef AstrogatorSkin = new UISkinDef() {
 			name	= "Astrogator Skin",
 			window	= windowStyle,
 			box	= UISkinManager.defaultSkin.box,
@@ -550,7 +532,7 @@ namespace Astrogator {
 		/// <value>
 		/// Left aligned blue text for a link to the README in the settings.
 		/// </value>
-		public static UIStyle linkStyle = new UIStyle() {
+		public static readonly UIStyle linkStyle = new UIStyle() {
 			normal	= linkFont,
 			active	= linkFont,
 			disabled	= linkFont,
@@ -563,7 +545,7 @@ namespace Astrogator {
 		/// <value>
 		/// The skin we use for our tooltip and main window.
 		/// </value>
-		public static UISkinDef AstrogatorErrorSkin = new UISkinDef() {
+		public static readonly UISkinDef AstrogatorErrorSkin = new UISkinDef() {
 			name	= "Astrogator Error Skin",
 			window	= windowStyle,
 			box	= UISkinManager.defaultSkin.box,
@@ -716,7 +698,7 @@ namespace Astrogator {
 		/// <value>
 		/// Columns for our table.
 		/// </value>
-		public static ColumnDefinition[] Columns = new ColumnDefinition[] {
+		public static readonly ColumnDefinition[] Columns = new ColumnDefinition[] {
 			new ColumnDefinition() {
 				header	= Localizer.Format("astrogator_transferColumnHeader"),
 				width	= 80,
@@ -803,12 +785,12 @@ namespace Astrogator {
 		/// The width of a row and/or the window.
 		/// Calculated from the widths of the columns and the padding.
 		/// </summary>
-		public static int RowWidth = Columns.Select(x => x.width + 6).Sum();
+		public static readonly int RowWidth = Columns.Select(x => x.width + 6).Sum();
 
 		/// <summary>
 		/// Minimum width of the main window.
 		/// </summary>
-		public static int mainWindowMinWidth = RowWidth;
+		public static readonly int mainWindowMinWidth = RowWidth;
 
 		/// <summary>
 		/// Minimum height of the main window.
@@ -824,22 +806,22 @@ namespace Astrogator {
 		/// <summary>
 		/// Extra space around the edges of the window
 		/// </summary>
-		public static RectOffset mainWindowPadding = new RectOffset(6, 6, 10, 10);
+		public static readonly RectOffset mainWindowPadding = new RectOffset(6, 6, 10, 10);
 
 		/// <summary>
 		/// Space around the edges of the settings button (only on top)
 		/// </summary>
-		public static RectOffset wrenchPadding = new RectOffset(0, 0, 10, 0);
+		public static readonly RectOffset wrenchPadding = new RectOffset(0, 0, 10, 0);
 
 		/// <summary>
 		/// Space around the edges of the settings pane
 		/// </summary>
-		public static RectOffset settingsPadding = new RectOffset(0, 0, 0, 0);
+		public static readonly RectOffset settingsPadding = new RectOffset(0, 0, 0, 0);
 
 		/// <summary>
 		/// Distance from the left inner margin to the right inner margin of main window
 		/// </summary>
-		public static float mainWindowInternalWidth = mainWindowMinWidth - mainWindowPadding.left - 2 * mainWindowPadding.right;
+		public static readonly float mainWindowInternalWidth = mainWindowMinWidth - mainWindowPadding.left - 2 * mainWindowPadding.right;
 
 		/// <summary>
 		/// Pixels between elements of the settings
@@ -851,19 +833,19 @@ namespace Astrogator {
 		/// This choice is equivalent to UpperCenter anchoring.
 		/// Relates to mainWindowAnchorMax somehow, but I can't tell how.
 		/// </summary>
-		public static Vector2 mainWindowAnchorMin = new Vector2(0.5f, 1f);
+		public static readonly Vector2 mainWindowAnchorMin = new Vector2(0.5f, 1f);
 
 		/// <summary>
 		/// Window-relative coordinate of the spot that stays fixed in place when the size changes.
 		/// This choice is equivalent to UpperCenter anchoring.
 		/// Relates to mainWindowAnchorMin somehow, but I can't tell how.
 		/// </summary>
-		public static Vector2 mainWindowAnchorMax = new Vector2(0.5f, 1f);
+		public static readonly Vector2 mainWindowAnchorMax = new Vector2(0.5f, 1f);
 
 		/// <summary>
 		/// A label option for truncating long strings with an ellipsis.
 		/// </summary>
-		public static DialogGUILabel.TextLabelOptions useEllipsis = new DialogGUILabel.TextLabelOptions() {
+		public static readonly DialogGUILabel.TextLabelOptions useEllipsis = new DialogGUILabel.TextLabelOptions() {
 			OverflowMode = TMPro.TextOverflowModes.Ellipsis
 		};
 
@@ -920,57 +902,6 @@ namespace Astrogator {
 		}
 
 		/// <summary>
-		/// Save a reference on demand to a tooltip prefab from the stock UI.
-		/// Should only be used in SetTooltip.
-		/// </summary>
-		private static Tooltip_Text tooltipPrefab = AssetBase.GetPrefab<Tooltip_Text>("Tooltip_Text");
-
-		/// <summary>
-		/// Create a tooltip component for a GameObject.
-		/// Assumes the stock UI has been set up already.
-		/// Sets tooltipPrefab if null.
-		/// </summary>
-		/// <param name="gameObj">The GameObject for which to set a tooltip</param>
-		/// <param name="tooltip">The tooltip to set</param>
-		/// <returns>
-		/// True if we successfully set up a tooltip component, false if something stopped us.
-		/// </returns>
-		private static bool SetTooltip(GameObject gameObj, string tooltip)
-		{
-			if (gameObj != null && tooltipPrefab != null) {
-				TooltipController_Text tt = (gameObj.GetComponent<TooltipController_Text>() ?? gameObj.AddComponent<TooltipController_Text>());
-				if (tt != null) {
-					tt.textString = tooltip;
-					tt.prefab = tooltipPrefab;
-					return true;
-				}
-			}
-			return false;
-		}
-
-		/// <summary>
-		/// Set up an event handler to create a tooltip after a DialogGUIButton's GameObject is created.
-		/// GameObject is a core Unity type needed for many things, but it's null when you first create
-		/// a DialogGUIButton. It gets created later, when the whole popup is displayed.
-		/// </summary>
-		/// <param name="btn">The button for which to create an event handler. Should already have the tooltipText property set.</param>
-		/// <returns>
-		/// Same object as the parameter.
-		/// </returns>
-		private static DialogGUIButton DeferTooltip(DialogGUIButton btn)
-		{
-			if (btn.tooltipText != "") {
-				btn.OnUpdate = () => {
-					if (btn.uiItem != null
-							&& SetTooltip(btn.uiItem, btn.tooltipText)) {
-						btn.OnUpdate = () => {};
-					}
-				};
-			}
-			return btn;
-		}
-
-		/// <summary>
 		/// Create a button that looks like a label
 		/// </summary>
 		/// <param name="text">String to display</param>
@@ -982,7 +913,7 @@ namespace Astrogator {
 		/// <returns>
 		/// Button with the given properties
 		/// </returns>
-		public static DialogGUIButton headerButton(string text, UIStyle style, string tooltip, float width, float height, Callback cb)
+		public static DialogGUIBase headerButton(string text, UIStyle style, string tooltip, float width, float height, Callback cb)
 		{
 			// The 'transparent' Sprite makes the default button borders go away
 			return DeferTooltip(new DialogGUIButton(transparent, text, cb, width, height, false) {
@@ -998,7 +929,7 @@ namespace Astrogator {
 		/// <param name="style">Container for sprites to use on hover, disable, etc.</param>
 		/// <param name="tooltip">Value for tooltipText (which doesn't seem to work)</param>
 		/// <param name="cb">Function to call when the user clicks the button</param>
-		public static DialogGUIButton iconButton(Sprite icon, UIStyle style, string tooltip, Callback cb)
+		public static DialogGUIBase iconButton(Sprite icon, UIStyle style, string tooltip, Callback cb)
 		{
 			return DeferTooltip(new DialogGUIButton(icon, cb, buttonIconWidth, buttonIconWidth) {
 				guiStyle    = style,
@@ -1118,7 +1049,7 @@ namespace Astrogator {
 			minutesPerHour   =  60,
 			secondsPerMinute =  60;
 
-		private static double
+		private static readonly double
 			hoursPerDay = solarDayLength(FlightGlobals.GetHomeBody()) / secondsPerMinute / minutesPerHour,
 			daysPerYear = FlightGlobals.GetHomeBody().GetOrbit().period / secondsPerMinute / minutesPerHour / hoursPerDay;
 

@@ -28,9 +28,9 @@ namespace Astrogator {
 			});
 		}
 
-		private static float toggleImageWidth = 24;
+		private const float toggleImageWidth = 24;
 
-		private static DialogGUILabel.TextLabelOptions wordWrap = new DialogGUILabel.TextLabelOptions() {
+		private static readonly DialogGUILabel.TextLabelOptions wordWrap = new DialogGUILabel.TextLabelOptions() {
 			OverflowMode = TMPro.TextOverflowModes.Overflow
 		};
 

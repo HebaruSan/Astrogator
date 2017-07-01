@@ -21,14 +21,8 @@ namespace Astrogator {
 		public static void DbgFmt(string format, params object[] args)
 		{
 			string formattedMessage = string.Format(format, args);
-
 			lock (debugMutex) {
-				Debug.Log(string.Format(
-					"[{0} {1:000.000}] {2}",
-					Localizer.Format("astrogator_mainTitle"),
-					Time.realtimeSinceStartup,
-					formattedMessage
-				));
+				MonoBehaviour.print($"[{Astrogator.Name} {Time.realtimeSinceStartup:000.000}] {formattedMessage}");
 			}
 		}
 
@@ -47,6 +41,10 @@ namespace Astrogator {
 			);
 		}
 
+		/// <summary>
+		/// List the components associated with a Unityu GameObject
+		/// </summary>
+		/// <param name="gameObj">The object to examine</param>
 		[System.Diagnostics.Conditional("DEBUG")]
 		public static void printComponentNames(GameObject gameObj)
 		{
