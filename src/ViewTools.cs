@@ -15,6 +15,7 @@ namespace Astrogator {
 	using static KerbalTools;
 	using static ViewTools;
 	using static TooltipExtensions;
+	using static PhysicsTools;
 
 	/// Anything UI-related that needs to be used from multiple places.
 	public static class ViewTools {
@@ -1036,6 +1037,55 @@ namespace Astrogator {
 				default:
 				case DisplayUnitsEnum.Metric:
 					return Localizer.Format("astrogator_speedMetric", speed.ToString("0"));
+			}
+		}
+
+		/// <summary>
+		/// Generate a string describing the state of a model.
+		/// </summary>
+		/// <param name="model">Model to examine</param>
+		/// <returns>
+		/// Description of error or warning if applicable,
+		/// otherwise "Transfers from X".
+		/// </returns>
+		public static string ModelDescription(AstrogationModel model)
+		{
+			if (model == null) {
+				return "Internal error: Model not found";
+			} else if (model.origin == null) {
+				return "Internal error: Model's origin is null";
+			} else if (model.hyperbolicOrbit) {
+				if (model.inbound) {
+					return Localizer.Format(
+						"astrogator_inboundHyperbolicWarning",
+						TheName(model.origin)
+					);
+				} else {
+					return Localizer.Format(
+						"astrogator_outboundHyperbolicError",
+						TheName(model.origin)
+					);
+				}
+			} else if (model.badInclination) {
+				return Localizer.Format(
+					"astrogator_highInclinationError",
+					(AngleFromEquatorial(model.origin.GetOrbit().inclination * Mathf.Deg2Rad) * Mathf.Rad2Deg).ToString("0.0"),
+					(AstrogationModel.maxInclination * Mathf.Rad2Deg).ToString("0")
+				);
+			} else if (model.transfers.Count == 0) {
+				return Localizer.Format("astrogator_noTransfersError");
+			} else if (Landed(model.origin) || solidBodyWithoutVessel(model.origin)) {
+				CelestialBody b = model.origin as CelestialBody;
+				if (b == null) {
+					b = model.origin.GetOrbit().referenceBody;
+				}
+				return Localizer.Format(
+					"astrogator_launchSubtitle",
+					TheName(model.origin),
+					FormatSpeed(DeltaVToOrbit(b), Settings.Instance.DisplayUnits)
+				);
+			} else {
+				return Localizer.Format("astrogator_normalSubtitle", TheName(model.origin));
 			}
 		}
 	}

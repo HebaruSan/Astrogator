@@ -89,6 +89,24 @@ namespace Astrogator {
 		private int                         rowsPerPage       { get; set; }
 		private List<TransferModel>         transfers         { get; set; }
 
+		private void addTitle(StringBuilder sb, int columns)
+		{
+			sb.Append(centerString(" " + Localizer.Format("astrogator_mainTitle") + " " + versionString + " ", columns, '-'));
+			sb.Append(Environment.NewLine);
+			sb.Append(centerString(
+				ModelDescription(model),
+				columns,
+				' ',
+				styleColorString(
+					model.ErrorCondition
+					? AstrogatorErrorSkin.label
+					: AstrogatorSkin.label
+				)
+			));
+			sb.Append(Environment.NewLine);
+			sb.Append(Environment.NewLine);
+		}
+
 		private void addHeaders(StringBuilder sb)
 		{
 			bool firstCol = true;
@@ -262,38 +280,47 @@ namespace Astrogator {
 		/// </returns>
 		public string ShowMenu(int columns, int rows)
 		{
-			if ((Refresh() || cursorMoved) && transfers.Count == timeToWait.Count) {
-
+			if ((RefreshTransfers() || cursorMoved)) {
 				StringBuilder sb = new StringBuilder();
-				sb.Append(centerString(" " + Localizer.Format("astrogator_mainTitle") + " " + versionString + " ", columns, '-'));
-				sb.Append(Environment.NewLine);
-				sb.Append("[#a0a0a0ff]");
-				sb.Append(centerString(Localizer.Format("astrogator_normalSubtitle", TheName(model.origin)), columns));
-				sb.Append(Environment.NewLine);
-				sb.Append(Environment.NewLine);
 
-				// [#rrggbbaa]
-				addHeaders(sb);
+				// Top title and subtitle
+				addTitle(sb, columns);
 
-				// Wrap the cursor around the edges now because it only tells us dimensions here.
-				while (cursorTransfer < 0) {
-					cursorTransfer += transfers.Count;
-				}
-				while (cursorTransfer >= transfers.Count) {
-					cursorTransfer -= transfers.Count;
-				}
+				if (!ErrorCondition
+						&& transfers != null && timeToWait != null
+						&& transfers.Count == timeToWait.Count) {
 
-				rowsPerPage = rows - 4;
-				int screenPage = cursorTransfer / rowsPerPage;
-				for (int t = screenPage * rowsPerPage, r = 0;
-						t < transfers.Count && r < rowsPerPage;
-						++t, ++r) {
-					addRow(sb, transfers[t], timeToWait[t], (cursorTransfer == t));
+					addHeaders(sb);
+
+					// Wrap the cursor around the edges now because it only tells us dimensions here.
+					while (cursorTransfer < 0) {
+						cursorTransfer += transfers.Count;
+					}
+					while (cursorTransfer >= transfers.Count) {
+						cursorTransfer -= transfers.Count;
+					}
+
+					rowsPerPage = rows - 4;
+					int screenPage = cursorTransfer / rowsPerPage;
+					for (int t = screenPage * rowsPerPage, r = 0;
+							t < transfers.Count && r < rowsPerPage;
+							++t, ++r) {
+						addRow(sb, transfers[t], timeToWait[t], (cursorTransfer == t));
+					}
 				}
 				menu = sb.ToString();
 				cursorMoved = false;
 			}
 			return menu;
+		}
+
+		private bool ErrorCondition {
+			get {
+				return model == null
+					|| model.origin == null
+					|| model.transfers.Count == 0
+					|| model.ErrorCondition;
+			}
 		}
 
 		/// <summary>
@@ -312,10 +339,19 @@ namespace Astrogator {
 			}
 		}
 
-		private string centerString(string val, int columns, char padding = ' ')
+		private string centerString(string val, int columns, char padding = ' ', string linePrefix = "")
 		{
-			int numPads = columns - val.Length;
-			return val.PadLeft(columns - numPads/2, padding).PadRight(columns, padding);
+			StringBuilder sb = new StringBuilder();
+			string[] lines = val.Split(new char[] { '\n' });
+			for (int i = 0; i < lines.Length; ++i) {
+				int numPads = columns - lines[i].Length;
+				if (i > 0) {
+					sb.Append("\n");
+				}
+				sb.Append(linePrefix);
+				sb.Append(lines[i].PadLeft(columns - numPads/2, padding).PadRight(columns, padding));
+			}
+			return sb.ToString();
 		}
 
 		/// <summary>
@@ -366,27 +402,29 @@ namespace Astrogator {
 			activeButton = null;
 		}
 
-		private bool Refresh()
+		private bool RefreshTransfers()
 		{
 			double now = Math.Floor(Planetarium.GetUniversalTime());
 			if (lastUniversalTime != now) {
 
-				transfers = SortTransfers(
-					model,
-					Settings.Instance.TransferSort,
-					Settings.Instance.DescendingSort
-				);
+				if (!ErrorCondition) {
+					transfers = SortTransfers(
+						model,
+						Settings.Instance.TransferSort,
+						Settings.Instance.DescendingSort
+					);
 
-				timeToWait = new List<DateTimeParts>();
-				for (int i = 0; i < transfers.Count; ++i) {
+					timeToWait = new List<DateTimeParts>();
+					for (int i = 0; i < transfers.Count; ++i) {
 
-					if (transfers[i].ejectionBurn != null && transfers[i].ejectionBurn.atTime != null) {
-						timeToWait.Add(new DateTimeParts((transfers[i].ejectionBurn.atTime ?? 0) - Planetarium.GetUniversalTime()));
-					} else {
-						timeToWait.Add(null);
+						if (transfers[i].ejectionBurn != null && transfers[i].ejectionBurn.atTime != null) {
+							timeToWait.Add(new DateTimeParts((transfers[i].ejectionBurn.atTime ?? 0) - Planetarium.GetUniversalTime()));
+						} else {
+							timeToWait.Add(null);
+						}
 					}
-
 				}
+
 				lastUniversalTime = now;
 				return true;
 			}

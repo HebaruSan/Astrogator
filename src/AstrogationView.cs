@@ -9,7 +9,6 @@ namespace Astrogator {
 	using static DebugTools;
 	using static KerbalTools;
 	using static ViewTools;
-	using static PhysicsTools;
 
 	/// <summary>
 	/// A DialogGUI* object that displays our app's data.
@@ -127,35 +126,6 @@ namespace Astrogator {
 			resetCallback();
 		}
 
-		private List<TransferModel> SortTransfers(AstrogationModel m, SortEnum how, bool descend)
-		{
-			List<TransferModel> transfers = new List<TransferModel>(m.transfers);
-			switch (how) {
-				case SortEnum.Name:
-					transfers.Sort((a, b) =>
-						a?.destination?.GetName().CompareTo(b?.destination?.GetName()) ?? 0);
-					break;
-				case SortEnum.Position:
-					// Use the natural/default ordering in the model
-					break;
-				case SortEnum.Time:
-					transfers.Sort((a, b) =>
-						a?.ejectionBurn?.atTime?.CompareTo(b?.ejectionBurn?.atTime ?? 0) ?? 0);
-					break;
-				case SortEnum.DeltaV:
-					transfers.Sort((a, b) =>
-						a?.ejectionBurn?.totalDeltaV.CompareTo(b?.ejectionBurn?.totalDeltaV) ?? 0);
-					break;
-				default:
-					DbgFmt("Bad sort argument: {0}", how.ToString());
-					break;
-			}
-			if (descend) {
-				transfers.Reverse();
-			}
-			return transfers;
-		}
-
 		private void createRows()
 		{
 			List<TransferModel> transfers = SortTransfers(
@@ -174,50 +144,6 @@ namespace Astrogator {
 					|| model.origin == null
 					|| model.transfers.Count == 0
 					|| model.ErrorCondition;
-			}
-		}
-
-		private string subTitle {
-			get {
-				if (model != null) {
-					if (model.origin == null) {
-						return "Model's origin is null";
-					} else if (model.hyperbolicOrbit) {
-						if (model.inbound) {
-							return Localizer.Format(
-								"astrogator_inboundHyperbolicWarning",
-								TheName(model.origin)
-							);
-						} else {
-							return Localizer.Format(
-								"astrogator_outboundHyperbolicError",
-								TheName(model.origin)
-							);
-						}
-					} else if (model.badInclination) {
-						return Localizer.Format(
-							"astrogator_highInclinationError",
-							(AngleFromEquatorial(model.origin.GetOrbit().inclination * Mathf.Deg2Rad) * Mathf.Rad2Deg).ToString("0.0"),
-							(AstrogationModel.maxInclination * Mathf.Rad2Deg).ToString("0")
-						);
-					} else if (model.transfers.Count == 0) {
-						return Localizer.Format("astrogator_noTransfersError");
-					} else if (Landed(model.origin) || solidBodyWithoutVessel(model.origin)) {
-						CelestialBody b = model.origin as CelestialBody;
-						if (b == null) {
-							b = model.origin.GetOrbit().referenceBody;
-						}
-						return Localizer.Format(
-							"astrogator_launchSubtitle",
-							TheName(model.origin),
-							FormatSpeed(DeltaVToOrbit(b), Settings.Instance.DisplayUnits)
-						);
-					} else {
-						return Localizer.Format("astrogator_normalSubtitle", TheName(model.origin));
-					}
-				} else {
-					return "Internal error: Model not found";
-				}
 			}
 		}
 
@@ -355,7 +281,7 @@ namespace Astrogator {
 						mainWindowAnchorMax,
 						new MultiOptionDialog(
 							Localizer.Format("astrogator_mainTitle"),
-							subTitle,
+							ModelDescription(model),
 							Localizer.Format("astrogator_mainTitle") + " " + versionString,
 							skinToUse,
 							offsetGeometry,
