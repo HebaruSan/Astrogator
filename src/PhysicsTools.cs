@@ -31,15 +31,17 @@ namespace Astrogator {
 		/// Force an angle to be within 0 and Tau (2PI)
 		/// </summary>
 		/// <param name="angle">Angle in radians to clamp</param>
+		/// <param name="minAllowed">Minimum angle for clamp range, default 0</param>
 		/// <returns>
-		/// An angle in [0,2PI] that has the same sin and cos as the param.
+		/// An angle in [minAllowed,minAllowed+2PI] that has
+		/// the same sin and cos as the param.
 		/// </returns>
-		public static double clamp(double angle)
+		public static double clamp(double angle, double minAllowed = 0)
 		{
-			while (angle > Tau) {
+			while (angle > minAllowed + Tau) {
 				angle -= Tau;
 			}
-			while (angle < 0) {
+			while (angle < minAllowed) {
 				angle += Tau;
 			}
 			return angle;
@@ -159,6 +161,198 @@ namespace Astrogator {
 				)
 				+ o.TrueAnomalyAtUT(t) * cosInc
 			);
+		}
+
+		/// <summary>
+		/// Calculate distance from parent body to satellite at a given absolute phase angle.
+		/// Absolute phase angle means the angle between the body and the absolute
+		/// reference direction. This concept allows us to compare angles for bodies
+		/// with different LAN / AoP.
+		/// </summary>
+		/// <param name="o">Orbit of body to consider</param>
+		/// <param name="phaseAngle">Angle in radians between body and the absolute reference direction</param>
+		/// <returns>
+		/// Distance in meters from parent body to satellite when
+		/// absolute phase angle has the given value.
+		/// </returns>
+		private static double RadiusAtAbsolutePhaseAngle(Orbit o, double phaseAngle)
+		{
+			double cosInc = o.inclination < 90f ? 1 : -1;
+			return o.RadiusAtTrueAnomaly(
+				phaseAngle - Mathf.Deg2Rad * (
+					  o.LAN
+					+ o.argumentOfPeriapsis * cosInc
+				)
+			);
+		}
+
+		/// <summary>
+		/// Calculate the angle at arrival between a craft on a Hohmann transfer
+		/// and its destination, if the craft departs at the given time.
+		///
+		/// We use the orbital radii of the starting body at the start time
+		/// and the destination body on the opposite side of the parent (180°)
+		/// to determine the transfer orbit, which in turn determines the travel time,
+		/// which we use to compare the position of the craft and the destination
+		/// at arrival.
+		///
+		/// This function will be called in a tight loop, so it should be fast.
+		/// </summary>
+		/// <param name="origOrb">Orbit of starting body</param>
+		/// <param name="destOrb">Orbit of destination body</param>
+		/// <param name="transTime">UT at departure</param>
+		/// <returns>
+		/// Angle at arrival in radians between the destination body
+		/// and a craft on a Hohmann transfer from the starting body.
+		/// Values will be in [-PI, PI] to allow meaningful comparisons of
+		/// values near zero.
+		/// </returns>
+		private static double ArrivalPhaseAngleDifference(Orbit origOrb, Orbit destOrb, double transTime)
+		{
+			double arrivalPhaseAngle    = AbsolutePhaseAngle(origOrb, transTime) + Math.PI;
+			double arrivalTime          = transTime + TransferTravelTime(
+				origOrb, destOrb, transTime, arrivalPhaseAngle
+			);
+			double destArrivePhaseAngle = AbsolutePhaseAngle(destOrb, arrivalTime);
+			return clamp(arrivalPhaseAngle - destArrivePhaseAngle, -Math.PI);
+		}
+
+		/// <summary>
+		/// Calculate how long it takes to perform a Hohmann transfer from
+		/// one orbiting body to another, starting at a given time.
+		///
+		/// We use half the orbital period of an orbit touching the starting
+		/// orbit at the given time and the destination orbit at the opposite
+		/// point.
+		/// </summary>
+		/// <param name="origOrb">Orbit of starting body</param>
+		/// <param name="destOrb">Orbit of destination body</param>
+		/// <param name="transTime">UT at departure</param>
+		/// <param name="arrivalPhaseAngle">Absolute phase angle at arrival, if already calculated; if null, will be computed from the other params</param>
+		/// <returns>
+		/// Time in seconds to travel from one orbit to the other,
+		/// starting at the specified time.
+		/// </returns>
+		public static double TransferTravelTime(Orbit origOrb, Orbit destOrb, double transTime, double? arrivalPhaseAngle = null)
+		{
+			return 0.5 * OrbitalPeriod(
+				destOrb.referenceBody,
+				RadiusAtTime(origOrb, transTime),
+				RadiusAtAbsolutePhaseAngle(
+					destOrb,
+					arrivalPhaseAngle ?? (AbsolutePhaseAngle(origOrb, transTime) + Math.PI)
+				)
+			);
+		}
+
+		/// <summary>
+		/// Find a point where a continuous function is zero.
+		/// We use the absolute simplest bisection method,
+		/// because it does not require us to know the derivative:
+		/// https://en.wikipedia.org/wiki/Root-finding_algorithm#Bisection_method
+		/// </summary>
+		/// <param name="f">Function for which to find a root</param>
+		/// <param name="min">Minimum value of domain to search</param>
+		/// <param name="max">Maximum value of domain to search</param>
+		/// <param name="epsilon">How close the return value should be to the root, default 0.0001</param>
+		/// <param name="rangeEpsilon">Maximum value allowed for final slope, used to detect discontinuities, default 0.1</param>
+		/// <returns>
+		/// A value t such that f(t) ≈ 0.
+		/// If no such value is found in the interval: double.NaN.
+		/// If the function has a sign-changing discontinuity in the range: double.NaN.
+		/// </returns>
+		private static double FindRoot(Func<double, double> f, double min, double max, double epsilon = 0.0001, double rangeEpsilon = 0.1)
+		{
+			double minVal = f(min), maxVal = f(max);
+			if (Math.Sign(minVal) == Math.Sign(maxVal)) {
+				// Can't search if both negative or both positive.
+				// Well, we could try, but it would be sheer luck if it worked,
+				// since there's no systematic way to pick better bounds.
+				return double.NaN;
+			} else {
+				double mid = 0.5 * (min + max);
+				// Zoom in on a change in sign
+				while (max - min > epsilon) {
+					double midVal = f(mid);
+
+					if (Math.Sign(minVal) == Math.Sign(midVal)) {
+						// Min and mid have same sign
+						// Replace min with mid
+						min    = mid;
+						minVal = midVal;
+					} else {
+						// Mid and max have same sign
+						// Replace max with mid
+						max    = mid;
+						maxVal = midVal;
+					}
+					mid = 0.5 * (min + max);
+				}
+				// We have found the position of a change in sign.
+				// However, only half of such changes are legitimate zeroes;
+				// the other half are where the relative phase angle overflows
+				// from PI to -PI or vice versa.
+				// Accept the former and reject the latter.
+				if (Math.Abs(maxVal - minVal) < rangeEpsilon) {
+					return mid;
+				} else {
+					// Reject bad solutions where we home in on the transition from PI to -PI
+					return double.NaN;
+				}
+			}
+		}
+
+		/// <summary>
+		/// Calculate the time in a given range when a craft on the given starting orbit
+		/// should leave on a Hohmann transfer to reach a body on the destination orbit.
+		/// </summary>
+		/// <param name="origOrb">Orbit of starting body</param>
+		/// <param name="destOrb">Orbit of destination body</param>
+		/// <param name="minTime">Start of search range</param>
+		/// <param name="maxTime">End of search range</param>
+		/// <returns>
+		/// Departure time with the closest approach at arrival.
+		/// If there's no closest approach in the interval: double.NaN.
+		/// </returns>
+		private static double OptimalTransferTime(Orbit origOrb, Orbit destOrb, double minTime, double maxTime)
+		{
+			return FindRoot(
+				(double t) => { return ArrivalPhaseAngleDifference(origOrb, destOrb, t); },
+				minTime,
+				maxTime
+			);
+		}
+
+		/// <summary>
+		/// Evaluate our burn time solver over successive intervals
+		/// until a solution is found.
+		/// </summary>
+		/// <param name="origOrb">Orbit of starting body</param>
+		/// <param name="destOrb">Orbit of destination body</param>
+		/// <param name="searchStart">Minimum of the first interval to search</param>
+		/// <param name="searchEnd">Maximum of the first interval to search</param>
+		/// <returns>
+		/// Return value description
+		/// </returns>
+		public static double BurnTimeSearch(Orbit origOrb, Orbit destOrb, double searchStart, double searchEnd)
+		{
+			// Now we have a very rough approximation for the burn time.
+			// To do better, we define a function that calculates how close we are at arrival,
+			// then use the bisection method to solve for its root.
+			// Since that function requires a range, use the initial estimate to seed the
+			// range to search, and try later ranges until a solution is found.
+			double searchInterval = searchEnd - searchStart;
+			while (true) {
+				double adjustedBurnTime = OptimalTransferTime(
+					origOrb, destOrb, searchStart, searchEnd
+				);
+				if (!double.IsNaN(adjustedBurnTime)) {
+					return adjustedBurnTime;
+				} else {
+					searchStart = searchEnd;
+					searchEnd += searchInterval;
+				}
+			}
 		}
 
 		/// <summary>

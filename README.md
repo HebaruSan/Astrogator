@@ -112,6 +112,7 @@ See [INSTALL.md](INSTALL.md).
 - https://en.wikipedia.org/wiki/Hyperbolic_trajectory#Hyperbolic_excess_velocity
 - http://www.dtic.mil/dtic/tr/fulltext/u2/a200383.pdf
 - http://forum.kerbalspaceprogram.com/index.php?/topic/122779-changing-orbital-angle-without-changing-apoapsis/
+- https://upload.wikimedia.org/wikipedia/commons/e/eb/Orbit1.svg
 
 ### Performance
 - http://www.somasim.com/blog/2015/04/csharp-memory-and-performance-tips-for-unity/

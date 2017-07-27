@@ -110,12 +110,18 @@ namespace Astrogator {
 				return null;
 			}
 
-			double timeTillBurn = Math.Abs(angleToMakeUp / phaseAnglePerSecond);
-			double ejectionBurnTime = now + timeTillBurn;
-			double arrivalTime = ejectionBurnTime + 0.5 * OrbitalPeriod(
-				transferDestination.GetOrbit().referenceBody,
-				transferDestination.GetOrbit().semiMajorAxis,
-				currentOrbit.semiMajorAxis
+			// This is the launch time used by Kerbal Alarm Clock
+			double timeTillOptimalPhaseAngle = Math.Abs(angleToMakeUp / phaseAnglePerSecond);
+			// We'll search a time span this wide for the best burn time
+			double searchInterval = 0.5 * Math.PI / Math.Abs(phaseAnglePerSecond);
+			double ejectionBurnTime = BurnTimeSearch(
+				currentOrbit,
+				transferDestination.GetOrbit(),
+				Math.Max(now, now + timeTillOptimalPhaseAngle - 0.5 * searchInterval),
+				now + timeTillOptimalPhaseAngle + 0.5 * searchInterval
+			);
+			double arrivalTime = ejectionBurnTime + TransferTravelTime(
+				currentOrbit, transferDestination.GetOrbit(), ejectionBurnTime
 			);
 
 			if (currentOrbit.semiMajorAxis < transferDestination.GetOrbit().semiMajorAxis) {
