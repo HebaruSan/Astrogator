@@ -5,6 +5,7 @@ using UnityEngine;
 
 namespace Astrogator {
 
+	using static DebugTools;
 	using static ViewTools;
 
 	using MonoBehavior = UnityEngine.MonoBehaviour;
@@ -17,7 +18,13 @@ namespace Astrogator {
 		private Settings()
 		{
 			if (File.Exists(path)) {
-				ConfigNode.LoadObjectFromConfig(this, ConfigNode.Load(path));
+				// ConfigNode.Load can return null if the file is empty,
+				// and this crashes LoadObjectFromConfig.
+				try {
+					ConfigNode.LoadObjectFromConfig(this, ConfigNode.Load(path));
+				} catch (Exception ex) {
+					DbgExc("Failed to load settings file", ex);
+				}
 			}
 		}
 
