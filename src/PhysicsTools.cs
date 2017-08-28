@@ -107,7 +107,7 @@ namespace Astrogator {
 			if (!body.rotates || body.rotationPeriod == 0) {
 				return 0;
 			} else {
-				return 2 * Math.PI * body.Radius / body.rotationPeriod;
+				return Tau * body.Radius / body.rotationPeriod;
 			}
 		}
 
