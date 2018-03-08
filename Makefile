@@ -9,7 +9,7 @@ ICONS=$(wildcard $(ASSETDIR)/*.png)
 CONFIGS=$(wildcard $(ASSETDIR)/*.cfg) $(wildcard $(ASSETDIR)/*.ltp)
 LANGUAGES=$(ASSETDIR)/lang
 README=README.md
-GAMELINK=$(SOURCEDIR)/KSP_x64_Data
+GAMELINK=$(SOURCEDIR)/KSP_Data
 DEFAULTGAMEDIR=$(HOME)/.local/share/Steam/SteamApps/common/Kerbal Space Program
 
 DEBUGDLL=$(SOURCEDIR)/bin/Debug/$(PROJECT).dll
@@ -17,8 +17,9 @@ RELEASEDLL=$(SOURCEDIR)/bin/Release/$(PROJECT).dll
 DISTDIR=$(PROJECT)
 RELEASEZIP=$(PROJECT).zip
 DLLDOCS=$(SOURCEDIR)/bin/Release/$(PROJECT).xml
-DLLSYMBOLS=$(DEBUGDLL).mdb
+DLLSYMBOLS=$(SOURCEDIR)/bin/Debug/$(PROJECT).pdb
 LICENSE=LICENSE
+INTERNALCKAN=$(PROJECT).ckan
 VERSION=$(PROJECT).version
 TAGS=tags
 
@@ -29,17 +30,15 @@ all: $(TAGS) $(TARGETS)
 $(TAGS): $(SOURCE)
 	ctags -f $@ $^
 
-$(DLLSYMBOLS): $(DEBUGDLL)
-
 $(DLLDOCS): $(RELEASEDLL)
 
-$(DEBUGDLL): $(SOURCE) $(GAMELINK)
-	cd $(SOURCEDIR) && xbuild /p:Configuration=Debug
+$(DEBUGDLL) $(DLLSYMBOLS): $(SOURCE) $(GAMELINK)
+	cd $(SOURCEDIR) && msbuild /p:Configuration=Debug
 
 $(RELEASEDLL): $(SOURCE) $(GAMELINK)
-	cd $(SOURCEDIR) && xbuild /p:Configuration=Release
+	cd $(SOURCEDIR) && msbuild /p:Configuration=Release
 
-$(RELEASEZIP): $(RELEASEDLL) $(ICONS) $(README) $(DLLDOCS) $(DLLSYMBOLS) $(LICENSE) $(VERSION) $(CONFIGS) $(LANGUAGES)
+$(RELEASEZIP): $(RELEASEDLL) $(ICONS) $(README) $(DLLDOCS) $(DLLSYMBOLS) $(LICENSE) $(INTERNALCKAN) $(VERSION) $(CONFIGS) $(LANGUAGES)
 	mkdir -p $(DISTDIR)
 	cp -a $^ $(DISTDIR)
 	zip -qr $@ $(DISTDIR) -x \*.settings
@@ -47,14 +46,17 @@ $(RELEASEZIP): $(RELEASEDLL) $(ICONS) $(README) $(DLLDOCS) $(DLLSYMBOLS) $(LICEN
 $(GAMELINK):
 	if [ -x "$(DEFAULTGAMEDIR)" ]; \
 	then \
-		ln -s "$(DEFAULTGAMEDIR)"/KSP_x64_Data $(GAMELINK); \
+		ln -s "$(DEFAULTGAMEDIR)"/KSP_Data $(GAMELINK); \
 	else \
 		echo "$(GAMELINK) not found."; \
-		echo 'This must be a symlink to Kerbal Space Program/KSP_x64_Data.'; \
+		echo 'This must be a symlink to Kerbal Space Program/KSP_Data.'; \
 		exit 2; \
 	fi
 
 clean:
-	cd $(SOURCEDIR) && xbuild /t:Clean
+	cd $(SOURCEDIR) && msbuild /t:Clean
 	rm -f $(TARGETS) $(TAGS)
 	rm -rf $(SOURCEDIR)/bin $(SOURCEDIR)/obj $(DISTDIR)
+
+install-dev: $(RELEASEZIP)
+	ln -sf "$$(pwd)/$(DISTDIR)" "$(DEFAULTGAMEDIR)/GameData"

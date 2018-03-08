@@ -993,7 +993,7 @@ namespace Astrogator {
 			btnGameObj.GetChild("Text").GetComponent<TextMeshProUGUI>().text = "";
 
 			// Set the tooltip
-			SetTooltip(btnGameObj, tooltip);
+			btnGameObj.SetTooltip(tooltip);
 
 			// Set the code to call when clicked.
 			button.onClick.AddListener(onClick);

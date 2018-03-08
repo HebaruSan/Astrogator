@@ -1,34 +1,5 @@
 {
     "spec_version": 1,
-    "identifier": "Astrogator",
-    "name": "Astrogator",
-    "abstract": "Summary of transfer windows with automatic maneuver node creation",
-    "description": "Displays a table of all of the bodies reachable from the current location, along with the time till burn and delta V needed to reach them. These values can be used to time warp or generate maneuver nodes. Supports prograde and retrograde orbits, nested ejection trajectories, transfers to satellites of the current parent body, and transfers to other vessels.",
-    "comment": "Indexed by author. Please report any problems at the repository bugtracker.",
-    "$kref": "#/ckan/github/HebaruSan/Astrogator",
-    "$vref": "#/ckan/ksp-avc",
-    "license": "GPL-3.0",
-    "kind": "package",
-    "release_status": "development",
-    "resources": {
-        "homepage": "http://forum.kerbalspaceprogram.com/index.php?/topic/155998-122-astrogator",
-        "bugtracker": "https://github.com/HebaruSan/Astrogator/issues",
-        "repository": "https://github.com/HebaruSan/Astrogator"
-    },
-    "recommends": [
-        { "name": "ModuleManager" },
-        { "name": "LoadingTipsPlus" }
-    ],
-    "suggests": [
-        { "name": "GravityTurn" },
-        { "name": "Trajectories" },
-        { "name": "BetterBurnTime" },
-        { "name": "PreciseNode" },
-        { "name": "PreciseManeuver" },
-        { "name": "LandingHeight" },
-        { "name": "NavballDockingIndicator" },
-        { "name": "WarpEverywhere" },
-        { "name": "RasterPropMonitor" },
-        { "name": "ManeuverQueue" }
-    ]
+    "identifier":  "Astrogator",
+    "$kref":       "#/ckan/github/HebaruSan/Astrogator"
 }

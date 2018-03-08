@@ -26,9 +26,14 @@ namespace Astrogator {
 	[KSPAddon(KSPAddon.Startup.SpaceCentre, false)]
 	public class SpaceCenterAstrogator     : Astrogator { }
 
+	/// <summary>
 	/// Our main plugin behavior.
+	/// </summary>
 	public class Astrogator : MonoBehavior {
 
+		/// <summary>
+		/// Initialize the plugin
+		/// </summary>
 		public Astrogator()
 			: base()
 		{

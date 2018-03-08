@@ -46,23 +46,23 @@
       <Private>false</Private>
     </Reference>
     <Reference Include="KSPAssets">
-      <HintPath>KSP_x64_Data\Managed\KSPAssets.dll</HintPath>
+      <HintPath>KSP_Data\Managed\KSPAssets.dll</HintPath>
       <Private>false</Private>
     </Reference>
     <Reference Include="Assembly-CSharp">
-      <HintPath>KSP_x64_Data\Managed\Assembly-CSharp.dll</HintPath>
+      <HintPath>KSP_Data\Managed\Assembly-CSharp.dll</HintPath>
       <Private>false</Private>
     </Reference>
     <Reference Include="UnityEngine">
-      <HintPath>KSP_x64_Data\Managed\UnityEngine.dll</HintPath>
+      <HintPath>KSP_Data\Managed\UnityEngine.dll</HintPath>
       <Private>false</Private>
     </Reference>
     <Reference Include="Assembly-CSharp-firstpass">
-      <HintPath>KSP_x64_Data\Managed\Assembly-CSharp-firstpass.dll</HintPath>
+      <HintPath>KSP_Data\Managed\Assembly-CSharp-firstpass.dll</HintPath>
       <Private>false</Private>
     </Reference>
     <Reference Include="UnityEngine.UI">
-      <HintPath>KSP_x64_Data\Managed\UnityEngine.UI.dll</HintPath>
+      <HintPath>KSP_Data\Managed\UnityEngine.UI.dll</HintPath>
       <Private>false</Private>
     </Reference>
   </ItemGroup>
