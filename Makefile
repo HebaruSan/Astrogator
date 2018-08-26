@@ -41,7 +41,7 @@ $(RELEASEDLL): $(SOURCE) $(GAMELINK)
 $(RELEASEZIP): $(RELEASEDLL) $(ICONS) $(README) $(LICENSE) $(INTERNALCKAN) $(VERSION) $(CONFIGS) $(LANGUAGES)
 	mkdir -p $(DISTDIR)
 	cp -a $^ $(DISTDIR)
-	zip -qr $@ $(DISTDIR) -x \*.settings
+	zip -qr -9 $@ $(DISTDIR) -x \*.settings
 
 $(GAMELINK):
 	if [ -x "$(DEFAULTGAMEDIR)" ]; \
