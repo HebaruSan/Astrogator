@@ -68,6 +68,9 @@ namespace Astrogator {
 			// Reset the view when we take off or land, etc.
 			GameEvents.onVesselSituationChange.Add(OnSituationChanged);
 
+			// Save window position before Unity pre-emptively destroys it
+			GameEvents.onGameSceneSwitchRequested.Add(BeforeSceneChange);
+
 			// This event fires on SOI change
 			if (FlightGlobals.ActiveVessel != null) {
 				VesselMode = true;
@@ -108,6 +111,9 @@ namespace Astrogator {
 
 			// Reset the view when we take off or land, etc.
 			GameEvents.onVesselSituationChange.Remove(OnSituationChanged);
+
+			// Save window position before Unity pre-emptively destroys it
+			GameEvents.onGameSceneSwitchRequested.Remove(BeforeSceneChange);
 
 			// The launcher destroyed event doesn't always fire when we need it (?)
 			RemoveLauncher();
@@ -494,6 +500,18 @@ namespace Astrogator {
 					null, ResetViewBackground, null
 				);
 			}
+		}
+
+		/// <summary>
+		/// Tear down the window (saves the position as a side effect).
+		///
+		/// When changing scenes, OnDisable happens too late; the dialog is destroyed before
+		/// we have a chance to save its position, and the infamous "Unity null override"
+		/// tells us our reference to it has become null.
+		/// </summary>
+		private void BeforeSceneChange(GameEvents.FromToAction<GameScenes, GameScenes> evt)
+		{
+			HideMainWindow(false);
 		}
 
 		private void CheckIfNodesDisappeared()
