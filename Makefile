@@ -10,7 +10,7 @@ CONFIGS=$(wildcard $(ASSETDIR)/*.cfg) $(wildcard $(ASSETDIR)/*.ltp)
 LANGUAGES=$(ASSETDIR)/lang
 README=README.md
 GAMELINK=$(SOURCEDIR)/KSP_Data
-DEFAULTGAMEDIR=$(HOME)/.local/share/Steam/SteamApps/common/Kerbal Space Program
+DEFAULTGAMEDIR=$(HOME)/.local/share/Steam/steamapps/common/Kerbal Space Program
 
 DEBUGDLL=$(SOURCEDIR)/bin/Debug/$(PROJECT).dll
 RELEASEDLL=$(SOURCEDIR)/bin/Release/$(PROJECT).dll

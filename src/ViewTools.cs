@@ -1097,7 +1097,9 @@ namespace Astrogator {
 	public class DateTimeParts {
 		private const double
 			minutesPerHour   =  60,
-			secondsPerMinute =  60;
+			secondsPerMinute =  60,
+			hoursPerDayEarth =  24,
+			daysPerYearEarth = 365;
 
 		private static readonly double
 			hoursPerDay = solarDayLength(FlightGlobals.GetHomeBody()) / secondsPerMinute / minutesPerHour,
@@ -1130,10 +1132,17 @@ namespace Astrogator {
 			UT /= secondsPerMinute;
 			minutes = mod(UT, minutesPerHour);
 			UT /= minutesPerHour;
-			hours = mod(UT, hoursPerDay);
-			UT /= hoursPerDay;
-			days = mod(UT, daysPerYear);
-			UT /= daysPerYear;
+			if (GameSettings.KERBIN_TIME) {
+				hours = mod(UT, hoursPerDay);
+				UT /= hoursPerDay;
+				days = mod(UT, daysPerYear);
+				UT /= daysPerYear;
+			} else {
+				hours = mod(UT, hoursPerDayEarth);
+				UT /= hoursPerDayEarth;
+				days = mod(UT, daysPerYearEarth);
+				UT /= daysPerYearEarth;
+			}
 			years = (int)Math.Floor(UT);
 		}
 
