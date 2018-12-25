@@ -97,17 +97,12 @@ namespace Astrogator {
 		}
 
 		/// <summary>
-		/// True if the craft is sitting on a surface (solid or liquid) rather than on an orbit.
-		/// </summary>
-		public bool notOrbiting { get { return Landed(origin); } }
-
-		/// <summary>
 		/// Re-initialize a model object for the given origin objects.
 		/// </summary>
 		/// <param name="org">Body or vessel to start at</param>
 		public void Reset(ITargetable org)
 		{
-			origin = org;
+			origin    = org;
 			transfers = new List<TransferModel>();
 
 			if (!ErrorCondition) {
@@ -239,6 +234,17 @@ namespace Astrogator {
 		{
 			for (int i = 0; i < transfers.Count; ++i) {
 				transfers[i].CheckIfNodesDisappeared();
+			}
+		}
+
+		/// <summary>
+		/// Tell all the transfers to refresh their duration values,
+		/// since the delta V calcs have upated.
+		/// </summary>
+		public void GetDurations()
+		{
+			for (int i = 0; i < transfers.Count; ++i) {
+				transfers[i].GetDuration();
 			}
 		}
 

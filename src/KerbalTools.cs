@@ -158,6 +158,19 @@ namespace Astrogator {
 		}
 
 		/// <summary>
+		/// Check whether a vessel can be controlled,
+		/// for example to decide whether to show maneuver creation icons
+		/// </summary>
+		/// <param name="v">The vessel to check</param>
+		/// <returns>
+		/// True if controllable, false otherwise
+		/// </returns>
+		public static bool vesselControllable(Vessel v)
+		{
+			return v != null && v.CurrentControlLevel == Vessel.ControlLevel.FULL;
+		}
+
+		/// <summary>
 		/// Choose an radius for an orbit around the given body.
 		/// </summary>
 		/// <param name="body">The body for which to suggest a radius</param>

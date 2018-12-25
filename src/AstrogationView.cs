@@ -24,7 +24,7 @@ namespace Astrogator {
 		/// <param name="close">Function to call when the user clicks a close button</param>
 		public AstrogationView(AstrogationModel m, ResetCallback reset, UnityAction close)
 			: base(
-				mainWindowMinWidth,
+				FlightGlobals.ActiveVessel != null ? mainWindowMinWidthWithVessel : mainWindowMinWidthWithoutVessel,
 				mainWindowMinHeight,
 				mainWindowSpacing,
 				mainWindowPadding,
@@ -35,13 +35,15 @@ namespace Astrogator {
 			resetCallback = reset;
 			closeCallback = close;
 
+			int width = FlightGlobals.ActiveVessel != null ? RowWidthWithVessel : RowWidthWithoutVessel;
+
 			if (Settings.Instance.ShowSettings) {
-				AddChild(new SettingsView(resetCallback));
+				AddChild(new SettingsView(resetCallback, width));
 			} else if (!ErrorCondition) {
 				createHeaders();
 				createRows();
 				AddChild(new DialogGUIHorizontalLayout(
-					RowWidth, 10,
+					width, 10,
 					0, wrenchPadding,
 					TextAnchor.UpperRight,
 					new DialogGUILabel(getMessage, notificationStyle, true, true)
@@ -89,8 +91,12 @@ namespace Astrogator {
 				if (col.vesselSpecific && FlightGlobals.ActiveVessel == null) {
 					continue;
 				}
-				if (col.requiresPatchedConics
-						&& (!patchedConicsUnlocked() || model.origin == null || model.notOrbiting)) {
+				if (col.requiresPatchedConics && (
+					!patchedConicsUnlocked()
+						|| !vesselControllable(FlightGlobals.ActiveVessel)
+						|| model.origin == null
+						|| Landed(model.origin)
+				)) {
 					continue;
 				}
 				float width = 0;
@@ -199,7 +205,8 @@ namespace Astrogator {
 				return new Rect(
 					pos.x / GameSettings.UI_SCALE,
 					pos.y / GameSettings.UI_SCALE,
-					mainWindowMinWidth, mainWindowMinHeight);
+					FlightGlobals.ActiveVessel != null ? mainWindowMinWidthWithVessel : mainWindowMinWidthWithoutVessel,
+					mainWindowMinHeight);
 			}
 			set {
 				Settings.Instance.MainWindowPosition = new Vector2(
@@ -215,7 +222,8 @@ namespace Astrogator {
 				return new Rect(
 					rt.x / GameSettings.UI_SCALE / Screen.width  + 0.5f,
 					rt.y / GameSettings.UI_SCALE / Screen.height + 0.5f,
-					mainWindowMinWidth, mainWindowMinHeight);
+					FlightGlobals.ActiveVessel != null ? mainWindowMinWidthWithVessel : mainWindowMinWidthWithoutVessel,
+					mainWindowMinHeight);
 			}
 		}
 
@@ -324,7 +332,8 @@ namespace Astrogator {
 			if (dialog != null) {
 				geometry = new Rect(
 					currentGeometry.x, currentGeometry.y,
-					mainWindowMinWidth,	mainWindowMinHeight
+					FlightGlobals.ActiveVessel ? mainWindowMinWidthWithVessel : mainWindowMinWidthWithoutVessel,
+					mainWindowMinHeight
 				);
 				dialog.Dismiss();
 				dialog = null;

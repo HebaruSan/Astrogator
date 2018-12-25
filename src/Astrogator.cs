@@ -71,6 +71,12 @@ namespace Astrogator {
 			// Save window position before Unity pre-emptively destroys it
 			GameEvents.onGameSceneSwitchRequested.Add(BeforeSceneChange);
 
+			// Reset the view when craft changes
+			GameEvents.onVesselStandardModification.Add(OnVesselStandardModification);
+
+			// Recalculate model when delta V numbers are updated
+			GameEvents.onDeltaVCalcsCompleted.Add(OnDeltaVCalcsCompleted);
+
 			// This event fires on SOI change
 			if (FlightGlobals.ActiveVessel != null) {
 				VesselMode = true;
@@ -114,6 +120,12 @@ namespace Astrogator {
 
 			// Save window position before Unity pre-emptively destroys it
 			GameEvents.onGameSceneSwitchRequested.Remove(BeforeSceneChange);
+
+			// Reset the view when craft changes
+			GameEvents.onVesselStandardModification.Remove(OnVesselStandardModification);
+
+			// Recalculate model when delta V numbers are updated
+			GameEvents.onDeltaVCalcsCompleted.Remove(OnDeltaVCalcsCompleted);
 
 			// The launcher destroyed event doesn't always fire when we need it (?)
 			RemoveLauncher();
@@ -419,8 +431,22 @@ namespace Astrogator {
 					prevTarget = FlightGlobals.fetch.VesselTarget;
 				}
 
+				// Show/hide the maneuver icons when gaining/losing control
+				if (FlightGlobals.ActiveVessel.CurrentControlLevel != prevControl) {
+					ResetView(false);
+					prevControl = FlightGlobals.ActiveVessel.CurrentControlLevel;
+				}
+
 			}
 		}
+
+		private void OnDeltaVCalcsCompleted()
+		{
+			// Reload burn times because they may have changed
+			model.GetDurations();
+		}
+
+		private Vessel.ControlLevel prevControl { get; set; }
 
 		private ITargetable prevTarget { get; set; }
 		private bool TargetChanged()
@@ -447,7 +473,7 @@ namespace Astrogator {
 		{
 			return VesselMode
 				&& model.origin != null
-				&& !model.notOrbiting
+				&& !Landed(model.origin)
 				&& (prevOrbit == null
 					|| !prevOrbit.Equals(FlightGlobals.ActiveVessel.orbit));
 		}
@@ -467,6 +493,11 @@ namespace Astrogator {
 					e.host ?? (ITargetable)FlightGlobals.ActiveVessel ?? (ITargetable)FlightGlobals.getMainBody(),
 					null, ResetViewBackground, null);
 			}
+		}
+
+		private void OnVesselStandardModification(Vessel v)
+		{
+			ResetView(false);
 		}
 
 		/// <summary>

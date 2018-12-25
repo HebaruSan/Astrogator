@@ -69,6 +69,7 @@ namespace Astrogator {
 						a?.ejectionBurn?.atTime?.CompareTo(b?.ejectionBurn?.atTime ?? 0) ?? 0);
 					break;
 				case SortEnum.DeltaV:
+				case SortEnum.Duration:
 					transfers.Sort((a, b) =>
 						a?.ejectionBurn?.totalDeltaV.CompareTo(b?.ejectionBurn?.totalDeltaV) ?? 0);
 					break;
@@ -314,7 +315,7 @@ namespace Astrogator {
 			highlight	= settingsHoverStyleState,
 			active	= settingsHoverStyleState,
 			disabled	= settingsStyleState,
-			alignment	 = TextAnchor.UpperRight,
+			alignment	= TextAnchor.UpperRight,
 		};
 
 		/// <summary>
@@ -351,7 +352,7 @@ namespace Astrogator {
 			highlight	= backHoverStyleState,
 			active	= backHoverStyleState,
 			disabled	= backStyleState,
-			alignment	 = TextAnchor.UpperRight,
+			alignment	= TextAnchor.UpperRight,
 		};
 
 		/// <value>
@@ -597,6 +598,16 @@ namespace Astrogator {
 			DeltaV,
 
 			/// <summary>
+			/// Burn duration minutes column
+			/// </summary>
+			DurationMinutes,
+
+			/// <summary>
+			/// Burn duration seconds column
+			/// </summary>
+			DurationSeconds,
+
+			/// <summary>
 			/// Maneuver node creation button column
 			/// </summary>
 			CreateManeuverNodeButton,
@@ -632,7 +643,12 @@ namespace Astrogator {
 			/// <summary>
 			/// Sort by delta V
 			/// </summary>
-			DeltaV
+			DeltaV,
+
+			/// <summary>
+			/// Sort by burn duration
+			/// </summary>
+			Duration,
 		}
 
 		/// <summary>
@@ -708,7 +724,7 @@ namespace Astrogator {
 				contentStyle	= planetStyle,
 				content	= ContentEnum.PlanetName,
 				sortKey	= SortEnum.Position,
-				monospaceWidth	= 6
+				monospaceWidth	= 6,
 			}, new ColumnDefinition() {
 				header	= Localizer.Format("astrogator_timeColumnHeader"),
 				width	= 30,
@@ -717,7 +733,7 @@ namespace Astrogator {
 				contentStyle	= numberStyle,
 				content	= ContentEnum.YearsTillBurn,
 				sortKey	= SortEnum.Time,
-				monospaceWidth	= 4
+				monospaceWidth	= 4,
 			}, new ColumnDefinition() {
 				header	= "",
 				width	= 30,
@@ -725,7 +741,7 @@ namespace Astrogator {
 				headerStyle	= rightHdrStyle,
 				contentStyle	= numberStyle,
 				content	= ContentEnum.DaysTillBurn,
-				monospaceWidth	= 4
+				monospaceWidth	= 4,
 			}, new ColumnDefinition() {
 				header	= "",
 				width	= 20,
@@ -733,7 +749,7 @@ namespace Astrogator {
 				headerStyle	= rightHdrStyle,
 				contentStyle	= numberStyle,
 				content	= ContentEnum.HoursTillBurn,
-				monospaceWidth = 3
+				monospaceWidth	= 3,
 			}, new ColumnDefinition() {
 				header	= "",
 				width	= 25,
@@ -741,7 +757,7 @@ namespace Astrogator {
 				headerStyle	= rightHdrStyle,
 				contentStyle	= numberStyle,
 				content	= ContentEnum.MinutesTillBurn,
-				monospaceWidth	= 3
+				monospaceWidth	= 3,
 			}, new ColumnDefinition() {
 				header	= "",
 				width	= 25,
@@ -758,7 +774,26 @@ namespace Astrogator {
 				contentStyle	= numberStyle,
 				content	= ContentEnum.DeltaV,
 				sortKey	= SortEnum.DeltaV,
-				monospaceWidth	= 9
+				monospaceWidth	= 9,
+			}, new ColumnDefinition() {
+				header	= Localizer.Format("astrogator_durationColumnHeader"),
+				width	= 35,
+				headerColSpan	= 2,
+				headerStyle	= midHdrStyle,
+				contentStyle	= numberStyle,
+				content	= ContentEnum.DurationMinutes,
+				sortKey	= SortEnum.Duration,
+				vesselSpecific	= true,
+				requiresTime	= true,
+				monospaceWidth	= 0,
+			}, new ColumnDefinition() {
+				header	= "",
+				width	= 25,
+				contentStyle	= numberStyle,
+				content	= ContentEnum.DurationSeconds,
+				vesselSpecific	= true,
+				requiresTime	= true,
+				monospaceWidth	= 0,
 			}, new ColumnDefinition() {
 				header	= "",
 				width	= buttonIconWidth,
@@ -777,8 +812,8 @@ namespace Astrogator {
 				headerStyle	= rightHdrStyle,
 				contentStyle	= warpStyle,
 				content	= ContentEnum.WarpToBurnButton,
-				monospaceWidth = 0,
 				requiresTime	= true,
+				monospaceWidth	= 0,
 			},
 		};
 
@@ -786,12 +821,22 @@ namespace Astrogator {
 		/// The width of a row and/or the window.
 		/// Calculated from the widths of the columns and the padding.
 		/// </summary>
-		public static readonly int RowWidth = Columns.Select(x => x.width + 6).Sum();
+		public static readonly int RowWidthWithVessel = Columns.Select(c => c.width + 6).Sum();
+
+		/// <summary>
+		/// Width of row without vessel
+		/// </summary>
+		public static readonly int RowWidthWithoutVessel = Columns.Where(c => !c.vesselSpecific).Select(c => c.width + 6).Sum();
 
 		/// <summary>
 		/// Minimum width of the main window.
 		/// </summary>
-		public static readonly int mainWindowMinWidth = RowWidth;
+		public static readonly int mainWindowMinWidthWithVessel = RowWidthWithVessel;
+
+		/// <summary>
+		/// Minimum width of the main window without a vessel.
+		/// </summary>
+		public static readonly int mainWindowMinWidthWithoutVessel = RowWidthWithoutVessel;
 
 		/// <summary>
 		/// Minimum height of the main window.
@@ -822,7 +867,12 @@ namespace Astrogator {
 		/// <summary>
 		/// Distance from the left inner margin to the right inner margin of main window
 		/// </summary>
-		public static readonly float mainWindowInternalWidth = mainWindowMinWidth - mainWindowPadding.left - 2 * mainWindowPadding.right;
+		public static readonly float mainWindowInternalWidthWithVessel = mainWindowMinWidthWithVessel - mainWindowPadding.left - 2 * mainWindowPadding.right;
+
+		/// <summary>
+		/// Distance from the left inner margin to the right inner margin of main window without a vessel
+		/// </summary>
+		public static readonly float mainWindowInternalWidthWithoutVessel = mainWindowMinWidthWithoutVessel - mainWindowPadding.left - 2 * mainWindowPadding.right;
 
 		/// <summary>
 		/// Pixels between elements of the settings
@@ -895,11 +945,9 @@ namespace Astrogator {
 		/// <param name="nullString">String to substitute when val is 0 and forceShow is false</param>
 		public static string TimePieceString(string fmt, double val, bool forceShow = false, string nullString = "")
 		{
-			if (!forceShow && val == 0) {
-				return nullString;
-			} else {
-				return Localizer.Format(fmt, val);
-			}
+			return !forceShow && val == 0
+				? nullString
+				: Localizer.Format(fmt, val);
 		}
 
 		/// <summary>
@@ -1126,25 +1174,46 @@ namespace Astrogator {
 		/// <summary>
 		/// Construct an object for the given timestamp.
 		/// </summary>
+		/// <param name="UT">Seconds since game start</param>
 		public DateTimeParts(double UT)
 		{
-			seconds = mod(UT, secondsPerMinute);
-			UT /= secondsPerMinute;
-			minutes = mod(UT, minutesPerHour);
-			UT /= minutesPerHour;
-			if (GameSettings.KERBIN_TIME) {
-				hours = mod(UT, hoursPerDay);
-				UT /= hoursPerDay;
-				days = mod(UT, daysPerYear);
-				UT /= daysPerYear;
+			if (UT == double.PositiveInfinity) {
+				Infinite = true;
+			} else if (UT == double.NaN) {
+				Invalid = true;
 			} else {
-				hours = mod(UT, hoursPerDayEarth);
-				UT /= hoursPerDayEarth;
-				days = mod(UT, daysPerYearEarth);
-				UT /= daysPerYearEarth;
+				totalSeconds = UT;
+				seconds = mod(UT, secondsPerMinute);
+				UT /= secondsPerMinute;
+				totalMinutes = (int)Math.Floor(UT);
+				minutes = mod(UT, minutesPerHour);
+				UT /= minutesPerHour;
+				if (GameSettings.KERBIN_TIME) {
+					hours = mod(UT, hoursPerDay);
+					UT /= hoursPerDay;
+					days = mod(UT, daysPerYear);
+					UT /= daysPerYear;
+				} else {
+					hours = mod(UT, hoursPerDayEarth);
+					UT /= hoursPerDayEarth;
+					days = mod(UT, daysPerYearEarth);
+					UT /= daysPerYearEarth;
+				}
+				years = (int)Math.Floor(UT);
 			}
-			years = (int)Math.Floor(UT);
 		}
+
+		/// <summary>
+		/// Whether the time represented is infinite,
+		/// e.g. for burn duration when we don't have enough delta V
+		/// </summary>
+		public bool Infinite { get; private set; }
+
+		/// <summary>
+		/// Whether the time represented is invalid,
+		/// e.g. for burn duration without a vessel
+		/// </summary>
+		public bool Invalid  { get; private set; }
 
 		/// <summary>
 		/// The year component of the given time.
@@ -1165,6 +1234,16 @@ namespace Astrogator {
 		/// The minute component of the given time.
 		/// </summary>
 		public int minutes { get; private set; }
+
+		/// <summary>
+		/// Total time in minutes (includes hours, days, etc.)
+		/// </summary>
+		public int totalMinutes { get; private set; }
+
+		/// <summary>
+		/// Seconds including fraction
+		/// </summary>
+		public double totalSeconds { get; private set; }
 
 		/// <summary>
 		/// The second component of the given time.

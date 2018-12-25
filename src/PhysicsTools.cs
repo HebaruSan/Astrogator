@@ -22,10 +22,15 @@ namespace Astrogator {
 		public const double Tau = 2.0 * Math.PI;
 
 		/// <summary>
-		/// How long before a burn to abort time warp by default.
-		/// Should be roughly half the longest reasonble burn time.
+		/// How long before a burn-minus-half-duration to time warp.
+		/// Should give player time to orient craft to maneuver node / prograde.
 		/// </summary>
-		public const double BURN_PADDING = 5 * 60;
+		public const double BURN_PADDING = 1 * 60;
+
+		/// <summary>
+		/// Multiply specific impulse by this to get exhaust velocity
+		/// </summary>
+		public const double EarthGeeASL = 9.80665;
 
 		/// <summary>
 		/// Force an angle to be within 0 and Tau (2PI)
@@ -643,8 +648,8 @@ namespace Astrogator {
 		/// Return the UT of the AN or DN, whichever is sooner
 		public static double TimeOfPlaneChange(Orbit currentOrbit, Orbit targetOrbit, double minTime, out bool ascending)
 		{
-			double ascTime = currentOrbit.TimeOfTrueAnomaly(currentOrbit.AscendingNodeTrueAnomaly(targetOrbit), minTime),
-			 	descTime = currentOrbit.TimeOfTrueAnomaly(currentOrbit.DescendingNodeTrueAnomaly(targetOrbit), minTime);
+			double ascTime  = currentOrbit.TimeOfTrueAnomaly(currentOrbit.AscendingNodeTrueAnomaly(targetOrbit),  minTime),
+			       descTime = currentOrbit.TimeOfTrueAnomaly(currentOrbit.DescendingNodeTrueAnomaly(targetOrbit), minTime);
 			if (ascTime > minTime && ascTime < descTime) {
 				ascending = true;
 				return ascTime;

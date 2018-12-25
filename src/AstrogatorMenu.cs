@@ -181,86 +181,90 @@ namespace Astrogator {
 			for (int i = 0; i < Columns.Length; ++i) {
 				ColumnDefinition col = Columns[i];
 
-				switch (col.content) {
-					case ContentEnum.PlanetName:
-						sb.AppendFormat(
-							colContentFormat(col),
-							(destLabel.Length > col.monospaceWidth ? destLabel.Substring(0, col.monospaceWidth) : destLabel)
-						);
-						break;
+				if (col.monospaceWidth > 0) {
 
-					case ContentEnum.YearsTillBurn:
-						if (dt == null) {
-							sb.AppendFormat(colContentFormat(col), LoadingText);
-						} else {
+					switch (col.content) {
+						case ContentEnum.PlanetName:
 							sb.AppendFormat(
 								colContentFormat(col),
-								TimePieceString("astrogator_yearsValue", dt.years, dt.needYears)
+								(destLabel.Length > col.monospaceWidth ? destLabel.Substring(0, col.monospaceWidth) : destLabel)
 							);
-						}
-						break;
+							break;
 
-					case ContentEnum.DaysTillBurn:
-						if (dt == null) {
-							sb.AppendFormat(colContentFormat(col), LoadingText);
-						} else {
-							sb.AppendFormat(
-								colContentFormat(col),
-								TimePieceString("astrogator_daysValue", dt.days, dt.needDays)
-							);
-						}
-						break;
+						case ContentEnum.YearsTillBurn:
+							if (dt == null) {
+								sb.AppendFormat(colContentFormat(col), LoadingText);
+							} else {
+								sb.AppendFormat(
+									colContentFormat(col),
+									TimePieceString("astrogator_yearsValue", dt.years, dt.needYears)
+								);
+							}
+							break;
 
-					case ContentEnum.HoursTillBurn:
-						if (dt == null) {
-							sb.AppendFormat(colContentFormat(col), LoadingText);
-						} else {
-							sb.AppendFormat(
-								colContentFormat(col),
-								TimePieceString("astrogator_hoursValue", dt.hours, dt.needHours)
-							);
-						}
-						break;
+						case ContentEnum.DaysTillBurn:
+							if (dt == null) {
+								sb.AppendFormat(colContentFormat(col), LoadingText);
+							} else {
+								sb.AppendFormat(
+									colContentFormat(col),
+									TimePieceString("astrogator_daysValue", dt.days, dt.needDays)
+								);
+							}
+							break;
 
-					case ContentEnum.MinutesTillBurn:
-						if (dt == null) {
-							sb.AppendFormat(colContentFormat(col), LoadingText);
-						} else {
-							sb.AppendFormat(
-								colContentFormat(col),
-								TimePieceString("astrogator_minutesValue", dt.minutes, dt.needMinutes)
-							);
-						}
-						break;
+						case ContentEnum.HoursTillBurn:
+							if (dt == null) {
+								sb.AppendFormat(colContentFormat(col), LoadingText);
+							} else {
+								sb.AppendFormat(
+									colContentFormat(col),
+									TimePieceString("astrogator_hoursValue", dt.hours, dt.needHours)
+								);
+							}
+							break;
 
-					case ContentEnum.SecondsTillBurn:
-						if (dt == null) {
-							sb.AppendFormat(colContentFormat(col), LoadingText);
-						} else {
-							sb.AppendFormat(
-								colContentFormat(col),
-								TimePieceString("astrogator_secondsValue", dt.seconds, true)
-							);
-						}
-						break;
+						case ContentEnum.MinutesTillBurn:
+							if (dt == null) {
+								sb.AppendFormat(colContentFormat(col), LoadingText);
+							} else {
+								sb.AppendFormat(
+									colContentFormat(col),
+									TimePieceString("astrogator_minutesValue", dt.minutes, dt.needMinutes)
+								);
+							}
+							break;
 
-					case ContentEnum.DeltaV:
-						if (dt == null) {
-							sb.AppendFormat(colContentFormat(col), LoadingText);
-						} else {
-							sb.AppendFormat(
-								colContentFormat(col),
-								FormatSpeed(
-									((m.planeChangeBurn == null || !Settings.Instance.AddPlaneChangeDeltaV)
-										? m.ejectionBurn?.totalDeltaV
-										: (m.ejectionBurn?.totalDeltaV + m.planeChangeBurn.totalDeltaV)) ?? 0,
-									Settings.Instance.DisplayUnits)
-							);
-						}
-						break;
+						case ContentEnum.SecondsTillBurn:
+							if (dt == null) {
+								sb.AppendFormat(colContentFormat(col), LoadingText);
+							} else {
+								sb.AppendFormat(
+									colContentFormat(col),
+									TimePieceString("astrogator_secondsValue", dt.seconds, true)
+								);
+							}
+							break;
 
+						case ContentEnum.DeltaV:
+							if (dt == null) {
+								sb.AppendFormat(colContentFormat(col), LoadingText);
+							} else {
+								sb.AppendFormat(
+									colContentFormat(col),
+									FormatSpeed(
+										((m.planeChangeBurn == null || !Settings.Instance.AddPlaneChangeDeltaV)
+											? m.ejectionBurn?.totalDeltaV
+											: (m.ejectionBurn?.totalDeltaV + m.planeChangeBurn.totalDeltaV)) ?? 0,
+										Settings.Instance.DisplayUnits)
+								);
+							}
+							break;
+
+					}
+
+					sb.Append(" ");
 				}
-				sb.Append(" ");
 			}
 		}
 

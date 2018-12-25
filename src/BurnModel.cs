@@ -4,6 +4,7 @@ using UnityEngine;
 namespace Astrogator {
 
 	using static DebugTools;
+	using static PhysicsTools;
 
 	/// An object representing a maneuver, but without creating an
 	/// actual maneuver node, so we can store the data and use it later.
@@ -93,6 +94,50 @@ namespace Astrogator {
 				return node;
 			} else {
 				return null;
+			}
+		}
+
+		/// <summary>
+		/// Calculate the burn time for a given vessel and delta V amount
+		/// </summary>
+		/// <param name="dvCalc">Stock delta V object from a vessel</param>
+		/// <returns>
+		/// null if not ready yet;
+		/// PositiveInfinity if not enough fuel to do the burn;
+		/// NaN if we can't burn at all;
+		/// otherwise number of seconds required for the burn
+		/// </returns>
+		public double? Duration(VesselDeltaV dvCalc)
+		{
+			if (dvCalc != null && totalDeltaV > 0) {
+				if (!dvCalc.IsReady) {
+					return null;
+				} else if (totalDeltaV > dvCalc.TotalDeltaVActual) {
+					return double.PositiveInfinity;
+				} else {
+					double remaining = totalDeltaV;
+					double t         = 0;
+					for (int i = 0; i < dvCalc.OperatingStageInfo.Count; ++i) {
+						DeltaVStageInfo stg = dvCalc.OperatingStageInfo[i];
+						double exhVel = stg.ispActual * EarthGeeASL;
+						if (remaining >= stg.deltaVActual) {
+							// We need to expend this whole stage, so just add its complete time
+							remaining -= stg.deltaVActual;
+							t         += stg.stageBurnTime;
+						} else {
+							// We only need part of this stage, so appeal to Tsiolkovsky
+							t += exhVel
+								* stg.startMass
+								* (1.0 - Math.Exp(-remaining / exhVel))
+								/ stg.thrustActual;
+							break;
+						}
+					}
+					return t;
+				}
+			} else {
+				// No such burn
+				return double.NaN;
 			}
 		}
 

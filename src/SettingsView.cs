@@ -17,27 +17,29 @@ namespace Astrogator {
 		/// <summary>
 		/// Construct a GUI object that allows the user to edit the settings.
 		/// </summary>
-		public SettingsView(AstrogationView.ResetCallback reset)
+		public SettingsView(AstrogationView.ResetCallback reset, int width)
 			: base(
-				mainWindowMinWidth, 10,
+				width, 10,
 				settingsSpacing,    settingsPadding,
 				TextAnchor.UpperLeft
 			)
 		{
 			resetCallback = reset;
 
+			int internalWidth = width - mainWindowPadding.left - 2 * mainWindowPadding.right;
+
 			try {
 
 				AddChild(headerButton(
 					Localizer.Format("astrogator_manualLink"),
-					linkStyle, Localizer.Format("astrogator_manualLinkTooltip"), RowWidth, rowHeight,
+					linkStyle, Localizer.Format("astrogator_manualLinkTooltip"), RowWidthWithoutVessel, rowHeight,
 					() => { Application.OpenURL(docsURL); }
 				));
 
 				AddChild(LabelWithStyleAndSize(
 					Localizer.Format("astrogator_settingsSectionHeader"),
 					midHdrStyle,
-					mainWindowMinWidth
+					width
 				));
 
 				AddChild(new WrappingToggle(
@@ -51,7 +53,7 @@ namespace Astrogator {
 							Settings.Instance.AddPlaneChangeDeltaV    = false;
 						}
 					},
-					mainWindowInternalWidth
+					internalWidth
 				));
 
 				AddChild(new WrappingToggle(
@@ -65,41 +67,41 @@ namespace Astrogator {
 							resetCallback(true);
 						}
 					},
-					mainWindowInternalWidth
+					internalWidth
 				));
 
 				AddChild(new WrappingToggle(
 					() => Settings.Instance.DeleteExistingManeuvers,
 					Localizer.Format("astrogator_autoDeleteNodesSetting"),
 					(bool b) => { Settings.Instance.DeleteExistingManeuvers = b; },
-					mainWindowInternalWidth
+					internalWidth
 				));
 
 				AddChild(new WrappingToggle(
 					() => Settings.Instance.ShowTrackedAsteroids,
 					Localizer.Format("astrogator_asteroidsSetting"),
 					(bool b) => { Settings.Instance.ShowTrackedAsteroids = b; resetCallback(true); },
-					mainWindowInternalWidth
+					internalWidth
 				));
 
 				AddChild(LabelWithStyleAndSize(
 					Localizer.Format("astrogator_maneuverCreationHeader"),
 					midHdrStyle,
-					mainWindowMinWidth
+					width
 				));
 
 				AddChild(new WrappingToggle(
 					() => Settings.Instance.AutoTargetDestination,
 					Localizer.Format("astrogator_autoTargetDestSetting"),
 					(bool b) => { Settings.Instance.AutoTargetDestination = b; },
-					mainWindowInternalWidth
+					internalWidth
 				));
 
 				AddChild(new WrappingToggle(
 					() => Settings.Instance.AutoFocusDestination,
 					Localizer.Format("astrogator_autoFocusDestSetting"),
 					(bool b) => { Settings.Instance.AutoFocusDestination = b; },
-					mainWindowInternalWidth
+					internalWidth
 				));
 
 				AddChild(new WrappingToggle(
@@ -111,7 +113,7 @@ namespace Astrogator {
 							Settings.Instance.AutoEditPlaneChangeNode = false;
 						}
 					},
-					mainWindowInternalWidth
+					internalWidth
 				));
 
 				AddChild(new WrappingToggle(
@@ -124,41 +126,41 @@ namespace Astrogator {
 							Settings.Instance.AutoEditEjectionNode = false;
 						}
 					},
-					mainWindowInternalWidth
+					internalWidth
 				));
 
 				AddChild(new WrappingToggle(
 					() => Settings.Instance.AutoSetSAS,
 					Localizer.Format("astrogator_autoSetSASSetting"),
 					(bool b) => { Settings.Instance.AutoSetSAS = b; },
-					mainWindowInternalWidth
+					internalWidth
 				));
 
 				AddChild(new WrappingToggle(
 					() => Settings.Instance.TranslationAdjust,
 					Localizer.Format("astrogator_adjustNodesSetting"),
 					(bool b) => { Settings.Instance.TranslationAdjust = b; },
-					mainWindowInternalWidth
+					internalWidth
 				));
 
 				AddChild(LabelWithStyleAndSize(
 					Localizer.Format("astrogator_unitsHeader"),
 					midHdrStyle,
-					mainWindowMinWidth
+					width
 				));
 
 				AddChild(new WrappingToggle(
 					() => Settings.Instance.DisplayUnits == DisplayUnitsEnum.Metric,
 					Localizer.Format("astrogator_metricSetting"),
 					(bool b) => { if (b) Settings.Instance.DisplayUnits = DisplayUnitsEnum.Metric; resetCallback(false); },
-					mainWindowInternalWidth
+					internalWidth
 				));
 
 				AddChild(new WrappingToggle(
 					() => Settings.Instance.DisplayUnits == DisplayUnitsEnum.UnitedStatesCustomary,
 					Localizer.Format("astrogator_imperialSetting"),
 					(bool b) => { if (b) Settings.Instance.DisplayUnits = DisplayUnitsEnum.UnitedStatesCustomary; resetCallback(false); },
-					mainWindowInternalWidth
+					internalWidth
 				));
 
 			} catch (Exception ex) {

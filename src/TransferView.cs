@@ -24,9 +24,10 @@ namespace Astrogator {
 			CreateLayout();
 		}
 
-		private TransferModel                 model             { get; set; }
-		private double                        lastUniversalTime { get; set; }
-		private DateTimeParts                 timeToWait        { get; set; }
+		private TransferModel model             { get; set; }
+		private double        lastUniversalTime { get; set; }
+		private DateTimeParts timeToWait        { get; set; }
+		private DateTimeParts duration          { get; set; }
 
 		private void CreateLayout()
 		{
@@ -39,8 +40,12 @@ namespace Astrogator {
 				}
 
 				// Skip columns that require maneuver nodes if they're not available
-				if (col.requiresPatchedConics
-						&& (!patchedConicsUnlocked() || model.origin == null || Landed(model.origin))) {
+				if (col.requiresPatchedConics && (
+					   !patchedConicsUnlocked()
+					|| !vesselControllable(FlightGlobals.ActiveVessel)
+					|| model.origin == null
+					|| Landed(model.origin)
+				)) {
 					continue;
 				}
 
@@ -89,6 +94,16 @@ namespace Astrogator {
 							col.contentStyle, col.width));
 						break;
 
+					case ContentEnum.DurationMinutes:
+						AddChild(LabelWithStyleAndSize(getBurnDurationMinutesValue,
+							col.contentStyle, col.width));
+						break;
+
+					case ContentEnum.DurationSeconds:
+						AddChild(LabelWithStyleAndSize(getBurnDurationSecondsValue,
+							col.contentStyle, col.width));
+						break;
+
 					case ContentEnum.CreateManeuverNodeButton:
 						AddChild(iconButton(maneuverIcon,
 							col.contentStyle, Localizer.Format("astrogator_maneuverButtonTooltip"), model.CreateManeuvers));
@@ -114,11 +129,12 @@ namespace Astrogator {
 			double now = Math.Floor(Planetarium.GetUniversalTime());
 
 			if (lastUniversalTime != now && model.ejectionBurn != null) {
-				if (model.ejectionBurn.atTime != null) {
-					timeToWait = new DateTimeParts((model.ejectionBurn.atTime ?? 0) - Planetarium.GetUniversalTime());
-				} else {
-					timeToWait = null;
-				}
+				timeToWait = model.ejectionBurn.atTime != null
+					? new DateTimeParts((model.ejectionBurn.atTime ?? 0) - Planetarium.GetUniversalTime())
+					: null;
+				duration = model.ejectionBurnDuration.HasValue
+					? new DateTimeParts(model.ejectionBurnDuration.Value)
+					: null;
 				lastUniversalTime = now;
 				return true;
 			}
@@ -141,11 +157,8 @@ namespace Astrogator {
 		public string getYearValue()
 		{
 			Refresh();
-			if (showLoadingText) {
-				return LoadingText;
-			} else {
-				return TimePieceString("astrogator_yearsValue", timeToWait.years, timeToWait.needYears);
-			}
+			return showLoadingText ? LoadingText
+				: TimePieceString("astrogator_yearsValue", timeToWait.years, timeToWait.needYears);
 		}
 
 		/// <returns>
@@ -154,11 +167,8 @@ namespace Astrogator {
 		public string getDayValue()
 		{
 			Refresh();
-			if (showLoadingText) {
-				return LoadingText;
-			} else {
-				return TimePieceString("astrogator_daysValue", timeToWait.days, timeToWait.needDays);
-			}
+			return showLoadingText ? LoadingText
+				: TimePieceString("astrogator_daysValue", timeToWait.days, timeToWait.needDays);
 		}
 
 		/// <returns>
@@ -167,11 +177,8 @@ namespace Astrogator {
 		public string getHourValue()
 		{
 			Refresh();
-			if (showLoadingText) {
-				return LoadingText;
-			} else {
-				return TimePieceString("astrogator_hoursValue", timeToWait.hours, timeToWait.needHours);
-			}
+			return showLoadingText ? LoadingText
+				: TimePieceString("astrogator_hoursValue", timeToWait.hours, timeToWait.needHours);
 		}
 
 		/// <returns>
@@ -180,11 +187,8 @@ namespace Astrogator {
 		public string getMinuteValue()
 		{
 			Refresh();
-			if (showLoadingText) {
-				return LoadingText;
-			} else {
-				return TimePieceString("astrogator_minutesValue", timeToWait.minutes, timeToWait.needMinutes);
-			}
+			return showLoadingText ? LoadingText
+				: TimePieceString("astrogator_minutesValue", timeToWait.minutes, timeToWait.needMinutes);
 		}
 
 		/// <returns>
@@ -193,11 +197,8 @@ namespace Astrogator {
 		public string getSecondValue()
 		{
 			Refresh();
-			if (showLoadingText) {
-				return LoadingText;
-			} else {
-				return TimePieceString("astrogator_secondsValue", timeToWait.seconds, true);
-			}
+			return showLoadingText ? LoadingText
+				: TimePieceString("astrogator_secondsValue", timeToWait.seconds, true);
 		}
 
 		/// <returns>
@@ -206,18 +207,40 @@ namespace Astrogator {
 		public string getDeltaV()
 		{
 			Refresh();
-
-			if (model.ejectionBurn == null) {
-				return LoadingText;
-			} else if (model.planeChangeBurn == null || !Settings.Instance.AddPlaneChangeDeltaV) {
-				return FormatSpeed(
+			return model.ejectionBurn == null ? LoadingText
+				: (model.planeChangeBurn == null || !Settings.Instance.AddPlaneChangeDeltaV)
+				? FormatSpeed(
 					model.ejectionBurn.totalDeltaV,
-					Settings.Instance.DisplayUnits);
-			} else {
-				return FormatSpeed(
+					Settings.Instance.DisplayUnits)
+				: FormatSpeed(
 					model.ejectionBurn.totalDeltaV + model.planeChangeBurn.totalDeltaV,
 					Settings.Instance.DisplayUnits);
-			}
+		}
+
+		/// <returns>
+		/// String representing minutes of burn duration.
+		/// </returns>
+		public string getBurnDurationMinutesValue()
+		{
+			Refresh();
+			return duration == null ? LoadingText
+				: duration.Invalid  ? ""
+				: duration.Infinite ? ""
+				: TimePieceString("astrogator_minutesValue", duration.totalMinutes, duration.needMinutes);
+		}
+
+		/// <returns>
+		/// String representing seconds of burn duration.
+		/// </returns>
+		public string getBurnDurationSecondsValue()
+		{
+			Refresh();
+			return duration == null ? LoadingText
+				: duration.Invalid  ? ""
+				: duration.Infinite ? "N/A"
+				: duration.totalSeconds < 1
+					? TimePieceString("astrogator_secondsValue", Math.Round(duration.totalSeconds, 1), true)
+				: TimePieceString("astrogator_secondsValue", duration.seconds, true);
 		}
 
 	}

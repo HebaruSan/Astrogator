@@ -18,46 +18,51 @@ namespace Astrogator {
 		/// </summary>
 		public TransferModel(ITargetable org, ITargetable dest)
 		{
-			origin = org;
+			origin      = org;
 			destination = dest;
 		}
 
 		/// <summary>
 		/// The body we're transferring to.
 		/// </summary>
-		public ITargetable   destination         { get; private set; }
+		public ITargetable   destination          { get; private set; }
 
 		/// <summary>
 		/// The SOI that we're aiming at, possibly an ancestor of our ultimate
 		/// destination if the user targeted a distant moon.
 		/// </summary>
-		public ITargetable   transferDestination { get; private set; }
+		public ITargetable   transferDestination  { get; private set; }
 
 		/// <summary>
 		/// The reference body of the transfer portion of our route.
 		/// </summary>
-		public CelestialBody transferParent      { get; private set; }
+		public CelestialBody transferParent       { get; private set; }
 
 		/// <summary>
 		/// True if the transfer portion of this trajectory is retrograde, false otherwise.
 		/// So for a retrograde Kerbin orbit, this is true for Mun and false for Duna.
 		/// </summary>
-		public bool          retrogradeTransfer  { get; private set; }
+		public bool          retrogradeTransfer   { get; private set; }
 
 		/// <summary>
 		/// The body we're transferring from.
 		/// </summary>
-		public ITargetable   origin              { get; private set; }
+		public ITargetable   origin               { get; private set; }
 
 		/// <summary>
 		/// Representation of the initial burn to start the transfer.
 		/// </summary>
-		public BurnModel     ejectionBurn        { get; private set; }
+		public BurnModel     ejectionBurn         { get; private set; }
 
 		/// <summary>
 		/// Representation of the burn to change into the destination's orbital plane.
 		/// </summary>
-		public BurnModel     planeChangeBurn     { get; private set; }
+		public BurnModel     planeChangeBurn      { get; private set; }
+
+		/// <summary>
+		/// Number of seconds to complete this burn for current vessel
+		/// </summary>
+		public double?       ejectionBurnDuration { get; private set; }
 
 		private BurnModel PlotCaptureBurn(Orbit currentOrbit)
 		{
@@ -536,10 +541,13 @@ namespace Astrogator {
 
 		private BurnModel GenerateEjectionBurn(Orbit currentOrbit)
 		{
+			if (currentOrbit == null) {
+				return null;
+
 			// Are we:
 			// 1. With a vessel, on a solid surface; or
 			// 2. Without a vessel, at a body with a solid surface
-			if (Landed(origin) || solidBodyWithoutVessel(origin)) {
+			} else if (Landed(origin) || solidBodyWithoutVessel(origin)) {
 
 				// Are we:
 				// 3. Aiming at a target in the same SOI
@@ -562,11 +570,8 @@ namespace Astrogator {
 		/// </summary>
 		public void CalculateEjectionBurn()
 		{
-			if (origin != null) {
-				ejectionBurn = GenerateEjectionBurn(origin.GetOrbit());
-			} else {
-				ejectionBurn = null;
-			}
+			ejectionBurn = GenerateEjectionBurn(origin?.GetOrbit());
+			GetDuration();
 
 			if (planeChangeBurn != null && ejectionBurn != null) {
 				if (planeChangeBurn.atTime < ejectionBurn.atTime) {
@@ -574,6 +579,14 @@ namespace Astrogator {
 					planeChangeBurn = null;
 				}
 			}
+		}
+
+		/// <summary>
+		/// Calculate ejection burn duration
+		/// </summary>
+		public void GetDuration()
+		{
+			ejectionBurnDuration = ejectionBurn?.Duration(origin?.GetVessel()?.VesselDeltaV);
 		}
 
 		/// <summary>
@@ -775,12 +788,12 @@ namespace Astrogator {
 
 		/// <summary>
 		/// Warp to (near) the burn.
-		/// Since you usually need to start burning before the actual node,
+		/// You want to start burning before the actual node, so
 		/// we use some simple padding logic to determine how far to warp.
-		/// If you're more than five minutes from the burn, then we warp
-		/// to that five minute mark. This should allow for most of the long burns.
-		/// If you're closer than five minutes from the burn, then we warp
-		/// right up to the moment of the actual burn.
+		/// If you're more than half-duration-plus-one-minute from the burn, then we warp
+		/// to that point. This should allow players to orient the craft and start burn on time.
+		/// If you're closer than that but further than half the burn time, we warp to half the burn time.
+		/// Otherwise we warp right up to the moment of the actual burn.
 		/// If you're _already_ warping, cancel the warp (suggested by Kottabos).
 		/// </summary>
 		public void WarpToBurn()
@@ -793,9 +806,14 @@ namespace Astrogator {
 				DbgFmt("Can't warp to null time");
 			} else {
 				DbgFmt("Attempting to warp to burn from {0} to {1}", Planetarium.GetUniversalTime(), ejectionBurn.atTime);
-				if (Planetarium.GetUniversalTime() < (ejectionBurn.atTime ?? 0) - BURN_PADDING ) {
-					DbgFmt("Warping to burn minus offset");
-					TimeWarp.fetch.WarpTo((ejectionBurn.atTime ?? 0) - BURN_PADDING);
+				double unpaddedTime = (ejectionBurn.atTime ?? 0) - GameSettings.DELTAV_BURN_PERCENTAGE * (ejectionBurnDuration ?? 0);
+				double paddedTime   = unpaddedTime - BURN_PADDING;
+				if (Planetarium.GetUniversalTime() < paddedTime) {
+					DbgFmt("Warping to burn minus half burn duration minus one minute");
+					TimeWarp.fetch.WarpTo(paddedTime);
+				} else if (Planetarium.GetUniversalTime() < unpaddedTime) {
+					DbgFmt("Warping to burn minus half burn duration");
+					TimeWarp.fetch.WarpTo(unpaddedTime);
 				} else if (Planetarium.GetUniversalTime() < (ejectionBurn.atTime ?? 0)) {
 					DbgFmt("Already within offset; warping to burn");
 					TimeWarp.fetch.WarpTo(ejectionBurn.atTime ?? 0);
