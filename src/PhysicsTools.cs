@@ -28,11 +28,6 @@ namespace Astrogator {
 		public const double BURN_PADDING = 1 * 60;
 
 		/// <summary>
-		/// Multiply specific impulse by this to get exhaust velocity
-		/// </summary>
-		public const double EarthGeeASL = 9.80665;
-
-		/// <summary>
 		/// Force an angle to be within 0 and Tau (2PI)
 		/// </summary>
 		/// <param name="angle">Angle in radians to clamp</param>

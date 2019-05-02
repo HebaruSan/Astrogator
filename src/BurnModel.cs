@@ -119,7 +119,7 @@ namespace Astrogator {
 					double t         = 0;
 					for (int i = 0; i < dvCalc.OperatingStageInfo.Count; ++i) {
 						DeltaVStageInfo stg = dvCalc.OperatingStageInfo[i];
-						double exhVel = stg.ispActual * EarthGeeASL;
+						double exhVel = stg.ispActual * PhysicsGlobals.GravitationalAcceleration;
 						if (remaining >= stg.deltaVActual) {
 							// We need to expend this whole stage, so just add its complete time
 							remaining -= stg.deltaVActual;
