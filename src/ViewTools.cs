@@ -59,19 +59,28 @@ namespace Astrogator {
 			switch (how) {
 				case SortEnum.Name:
 					transfers.Sort((a, b) =>
-						a?.destination?.GetName().CompareTo(b?.destination?.GetName()) ?? 0);
+						  a?.destination == null && b?.destination == null ? 0
+						: a?.destination == null ?  1
+						: b?.destination == null ? -1
+						: a.destination.GetName().CompareTo(b.destination.GetName()));
 					break;
 				case SortEnum.Position:
 					// Use the natural/default ordering in the model
 					break;
 				case SortEnum.Time:
 					transfers.Sort((a, b) =>
-						a?.ejectionBurn?.atTime?.CompareTo(b?.ejectionBurn?.atTime ?? 0) ?? 0);
+						  a?.ejectionBurn?.atTime == null && b?.ejectionBurn?.atTime == null ? 0
+						: a?.ejectionBurn?.atTime == null ?  1
+						: b?.ejectionBurn?.atTime == null ? -1
+						: a.ejectionBurn.atTime.Value.CompareTo(b.ejectionBurn.atTime.Value));
 					break;
 				case SortEnum.DeltaV:
 				case SortEnum.Duration:
 					transfers.Sort((a, b) =>
-						a?.ejectionBurn?.totalDeltaV.CompareTo(b?.ejectionBurn?.totalDeltaV) ?? 0);
+						  a?.ejectionBurn == null && b?.ejectionBurn == null ? 0
+						: a?.ejectionBurn == null ?  1
+						: b?.ejectionBurn == null ? -1
+						: a.ejectionBurn.totalDeltaV.CompareTo(b.ejectionBurn.totalDeltaV));
 					break;
 				default:
 					DbgFmt("Bad sort argument: {0}", how.ToString());
