@@ -20,8 +20,7 @@
         { "name": "GravityTurn"             },
         { "name": "Trajectories"            },
         { "name": "BetterBurnTime"          },
-        { "name": "PreciseManeuver"         },
-        { "name": "LandingHeight"           },
+        { "name": "PreciseNode"             },
         { "name": "NavballDockingIndicator" },
         { "name": "WarpEverywhere"          },
         { "name": "ManeuverQueue"           }
