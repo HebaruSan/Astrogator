@@ -22,7 +22,86 @@ namespace Astrogator {
 		{
 			model = m;
 			CreateLayout();
+
+			// Create objects for caching view strings when unchanged
+			// (saves on lots of garbage)
+			yearFormatter = new TidyFormatter<int>(
+				v => showLoadingText || !v.HasValue ? LoadingText
+					: TimePieceString("astrogator_yearsValue", v.Value, timeToWait.needYears)
+			);
+			dayFormatter = new TidyFormatter<int>(
+				v => showLoadingText || !v.HasValue ? LoadingText
+					: TimePieceString("astrogator_daysValue", v.Value, timeToWait.needDays)
+			);
+			hourFormatter = new TidyFormatter<int>(
+				v => showLoadingText || !v.HasValue ? LoadingText
+					: TimePieceString("astrogator_hoursValue", v.Value, timeToWait.needHours)
+			);
+			minuteFormatter = new TidyFormatter<int>(
+				v => showLoadingText || !v.HasValue ? LoadingText
+					: TimePieceString("astrogator_minutesValue", v.Value, timeToWait.needMinutes)
+			);
+			secondFormatter = new TidyFormatter<int>(
+				v => showLoadingText || !v.HasValue ? LoadingText
+					: TimePieceString("astrogator_secondsValue", v.Value, true)
+			);
+			deltaVFormatter = new TidyFormatter<double>(
+				v => model.ejectionBurn == null || !v.HasValue ? LoadingText
+					: FormatSpeed(v.Value, Settings.Instance.DisplayUnits),
+				DoublesFurtherThanPointOne
+			);
+			durationMinuteFormatter = new TidyFormatter<int>(
+				v =>  duration == null || !v.HasValue ? LoadingText
+					: duration.Invalid  ? ""
+					: duration.Infinite ? ""
+					: TimePieceString("astrogator_minutesValue", v.Value, duration.needMinutes)
+			);
+			durationSecondFormatter = new TidyFormatter<int>(
+				v =>  duration == null || !v.HasValue ? LoadingText
+					: duration.Invalid  ? ""
+					: duration.Infinite ? "N/A"
+					: TimePieceString("astrogator_secondsValue", v.Value, true)
+			);
+			durationTotalSecondFormatter = new TidyFormatter<double>(
+				v =>  duration == null || !v.HasValue ? LoadingText
+					: duration.Invalid  ? ""
+					: duration.Infinite ? "N/A"
+					: TimePieceString("astrogator_secondsValue", Math.Round(v.Value, 1), true),
+				(prev, next) => DoublesSmallerThanOne(prev, next)
+					         && DoublesFurtherThanPointOne(prev, next)
+			);
+
 		}
+
+		/// <summary>
+		/// Check whether either number is smaller than 1
+		/// </summary>
+		/// <param name="a">One number</param>
+		/// <param name="b">The other number</param>
+		/// <returns>
+		/// True if either one is less than 1, false otherwise
+		/// </returns>
+		private static bool DoublesSmallerThanOne(double? a, double? b)
+		{
+			return (a ?? 0) < 1.0 || (b ?? 0) < 1.0;
+		}
+
+		/// <summary>
+		/// Check whether the numbers are more than 0.1 apart
+		/// </summary>
+		/// <param name="a">One number</param>
+		/// <param name="b">The other number</param>
+		/// <returns>
+		/// False if both null, true if one null and the other not,
+		/// true if difference is > 0.1.
+		/// </returns>
+		private static bool DoublesFurtherThanPointOne(double? a, double? b)
+		{
+			return a == null && b == null ? false
+				 : a == null ? true
+				 : b == null ? true
+				 : Math.Abs(a.Value - b.Value) > 0.1;
+ 		}
 
 		private TransferModel model             { get; set; }
 		private double        lastUniversalTime { get; set; }
@@ -151,14 +230,24 @@ namespace Astrogator {
 			}
 		}
 
+		private TidyFormatter<int>    yearFormatter;
+		private TidyFormatter<int>    dayFormatter;
+		private TidyFormatter<int>    hourFormatter;
+		private TidyFormatter<int>    minuteFormatter;
+		private TidyFormatter<int>    secondFormatter;
+		private TidyFormatter<double> deltaVFormatter;
+		private TidyFormatter<int>    durationMinuteFormatter;
+		private TidyFormatter<int>    durationSecondFormatter;
+		private TidyFormatter<double> durationTotalSecondFormatter;
+
 		/// <returns>
 		/// String representing years till burn.
 		/// </returns>
 		public string getYearValue()
 		{
 			Refresh();
-			return showLoadingText ? LoadingText
-				: TimePieceString("astrogator_yearsValue", timeToWait.years, timeToWait.needYears);
+			yearFormatter.Update(timeToWait.years);
+			return yearFormatter.ToString();
 		}
 
 		/// <returns>
@@ -167,8 +256,8 @@ namespace Astrogator {
 		public string getDayValue()
 		{
 			Refresh();
-			return showLoadingText ? LoadingText
-				: TimePieceString("astrogator_daysValue", timeToWait.days, timeToWait.needDays);
+			dayFormatter.Update(timeToWait.days);
+			return dayFormatter.ToString();
 		}
 
 		/// <returns>
@@ -177,8 +266,8 @@ namespace Astrogator {
 		public string getHourValue()
 		{
 			Refresh();
-			return showLoadingText ? LoadingText
-				: TimePieceString("astrogator_hoursValue", timeToWait.hours, timeToWait.needHours);
+			hourFormatter.Update(timeToWait.hours);
+			return hourFormatter.ToString();
 		}
 
 		/// <returns>
@@ -187,8 +276,8 @@ namespace Astrogator {
 		public string getMinuteValue()
 		{
 			Refresh();
-			return showLoadingText ? LoadingText
-				: TimePieceString("astrogator_minutesValue", timeToWait.minutes, timeToWait.needMinutes);
+			minuteFormatter.Update(timeToWait.minutes);
+			return minuteFormatter.ToString();
 		}
 
 		/// <returns>
@@ -197,8 +286,8 @@ namespace Astrogator {
 		public string getSecondValue()
 		{
 			Refresh();
-			return showLoadingText ? LoadingText
-				: TimePieceString("astrogator_secondsValue", timeToWait.seconds, true);
+			secondFormatter.Update(timeToWait.seconds);
+			return secondFormatter.ToString();
 		}
 
 		/// <returns>
@@ -207,14 +296,11 @@ namespace Astrogator {
 		public string getDeltaV()
 		{
 			Refresh();
-			return model.ejectionBurn == null ? LoadingText
-				: (model.planeChangeBurn == null || !Settings.Instance.AddPlaneChangeDeltaV)
-				? FormatSpeed(
-					model.ejectionBurn.totalDeltaV,
-					Settings.Instance.DisplayUnits)
-				: FormatSpeed(
-					model.ejectionBurn.totalDeltaV + model.planeChangeBurn.totalDeltaV,
-					Settings.Instance.DisplayUnits);
+			double dv = (model.planeChangeBurn == null || !Settings.Instance.AddPlaneChangeDeltaV)
+				? model.ejectionBurn.totalDeltaV
+				: model.ejectionBurn.totalDeltaV + model.planeChangeBurn.totalDeltaV;
+			deltaVFormatter.Update(dv);
+			return deltaVFormatter.ToString();
 		}
 
 		/// <returns>
@@ -223,10 +309,9 @@ namespace Astrogator {
 		public string getBurnDurationMinutesValue()
 		{
 			Refresh();
+			durationMinuteFormatter.Update(duration?.totalMinutes);
 			return duration == null ? LoadingText
-				: duration.Invalid  ? ""
-				: duration.Infinite ? ""
-				: TimePieceString("astrogator_minutesValue", duration.totalMinutes, duration.needMinutes);
+				: durationMinuteFormatter.ToString();
 		}
 
 		/// <returns>
@@ -235,12 +320,11 @@ namespace Astrogator {
 		public string getBurnDurationSecondsValue()
 		{
 			Refresh();
+			durationSecondFormatter.Update(duration?.seconds);
+			durationTotalSecondFormatter.Update(duration?.totalSeconds);
 			return duration == null ? LoadingText
-				: duration.Invalid  ? ""
-				: duration.Infinite ? "N/A"
-				: duration.totalSeconds < 1
-					? TimePieceString("astrogator_secondsValue", Math.Round(duration.totalSeconds, 1), true)
-				: TimePieceString("astrogator_secondsValue", duration.seconds, true);
+				: duration.totalSeconds < 1 ? durationTotalSecondFormatter.ToString()
+				: durationSecondFormatter.ToString();
 		}
 
 	}
