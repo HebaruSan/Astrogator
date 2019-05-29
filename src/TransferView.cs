@@ -225,7 +225,7 @@ namespace Astrogator {
 		private bool showLoadingText {
 			get {
 				return timeToWait == null
-					|| model.ejectionBurn.atTime == null
+					|| model.ejectionBurn?.atTime == null
 					|| model.ejectionBurn.atTime < Planetarium.GetUniversalTime();
 			}
 		}
@@ -246,7 +246,7 @@ namespace Astrogator {
 		public string getYearValue()
 		{
 			Refresh();
-			yearFormatter.Update(timeToWait.years);
+			yearFormatter.Update(timeToWait?.years);
 			return yearFormatter.ToString();
 		}
 
@@ -256,7 +256,7 @@ namespace Astrogator {
 		public string getDayValue()
 		{
 			Refresh();
-			dayFormatter.Update(timeToWait.days);
+			dayFormatter.Update(timeToWait?.days);
 			return dayFormatter.ToString();
 		}
 
@@ -266,7 +266,7 @@ namespace Astrogator {
 		public string getHourValue()
 		{
 			Refresh();
-			hourFormatter.Update(timeToWait.hours);
+			hourFormatter.Update(timeToWait?.hours);
 			return hourFormatter.ToString();
 		}
 
@@ -276,7 +276,7 @@ namespace Astrogator {
 		public string getMinuteValue()
 		{
 			Refresh();
-			minuteFormatter.Update(timeToWait.minutes);
+			minuteFormatter.Update(timeToWait?.minutes);
 			return minuteFormatter.ToString();
 		}
 
@@ -286,7 +286,7 @@ namespace Astrogator {
 		public string getSecondValue()
 		{
 			Refresh();
-			secondFormatter.Update(timeToWait.seconds);
+			secondFormatter.Update(timeToWait?.seconds);
 			return secondFormatter.ToString();
 		}
 
@@ -296,8 +296,8 @@ namespace Astrogator {
 		public string getDeltaV()
 		{
 			Refresh();
-			double dv = (model.planeChangeBurn == null || !Settings.Instance.AddPlaneChangeDeltaV)
-				? model.ejectionBurn.totalDeltaV
+			double? dv = (model.planeChangeBurn == null || !Settings.Instance.AddPlaneChangeDeltaV)
+				? model.ejectionBurn?.totalDeltaV
 				: model.ejectionBurn.totalDeltaV + model.planeChangeBurn.totalDeltaV;
 			deltaVFormatter.Update(dv);
 			return deltaVFormatter.ToString();
