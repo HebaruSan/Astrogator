@@ -126,7 +126,7 @@ Special thanks to all those who have helped to translate Astrogator to other lan
 | --- | --- |
 | Spanish | Iván ([hashashin](https://github.com/hashashin)), [Deltathiago98](https://github.com/Deltathiago98) |
 | Chinese | [QAQdong](https://github.com/QAQdong) |
-| Russian | [Niev](https://github.com/Niev) |
+| Russian | [Niev](https://github.com/Niev), [Sooll3](https://github.com/Sooll3) |
 | French  | [valens](https://forum.kerbalspaceprogram.com/index.php?/profile/163224-valens/) |
 
 - AN/DN logic and plane change calculations borrowed from MechJeb
