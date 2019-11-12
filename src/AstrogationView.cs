@@ -194,55 +194,96 @@ namespace Astrogator {
 				}
 			}
 		}
-
-		private bool           needUIScaleOffsetUpdate = false;
-		private static float   prevUIScale             = 1f;
-		private static Vector2 uiScaleOffset           = Vector2.zero;
-
-		private static Rect geometry {
+		
+		private Rect geometry {
 			get {
+				// UI_SCALE is handled by calculating distance from this Y coordinate,
+				// then scaling it, then converting back to position so as to
+				// increase the minimum value.
+				const float fakeTop = 1f;
+				const float margin = 0.05f;
+
 				Vector2 pos = Settings.Instance.MainWindowPosition;
+				float sc = uiScale;
+				// UI_SCALE chops off some of the left and right edges of the screen
+				float leftEdge = (float)estimateLeftEdgeLogarithmic(sc);
+				float rightEdge = 1f - leftEdge;
+				float between = rightEdge - leftEdge;
 				return new Rect(
-					pos.x / GameSettings.UI_SCALE,
-					pos.y / GameSettings.UI_SCALE,
+					Math.Min(Math.Max(pos.x, leftEdge), rightEdge),
+					// UI_SCALE chops off some of the bottom of the screen
+					Math.Max(
+						fakeTop - (fakeTop - margin) / sc,
+						fakeTop - (fakeTop - pos.y)  / sc
+					),
 					FlightGlobals.ActiveVessel != null ? mainWindowMinWidthWithVessel : mainWindowMinWidthWithoutVessel,
-					mainWindowMinHeight);
-			}
-			set {
-				Settings.Instance.MainWindowPosition = new Vector2(
-					value.x * GameSettings.UI_SCALE,
-					value.y * GameSettings.UI_SCALE
+					mainWindowMinHeight
 				);
 			}
+			set { Settings.Instance.MainWindowPosition = value.position; }
 		}
 
 		private Rect currentGeometry {
 			get {
-				Vector3 rt = dialog.GetComponent<RectTransform>().position;
+				RectTransform[] inParents = dialog.GetComponentsInParent<RectTransform>();
+				Rect    winRect   = inParents[0].rect;
+				Rect    scrRect   = inParents[1].rect;
+				Vector3 winLocPos = inParents[0].localPosition;
 				return new Rect(
-					rt.x / GameSettings.UI_SCALE / Screen.width  + 0.5f,
-					rt.y / GameSettings.UI_SCALE / Screen.height + 0.5f,
+					(winLocPos.x - scrRect.x) / scrRect.width,
+					(winLocPos.y - scrRect.y) / scrRect.height,
 					FlightGlobals.ActiveVessel != null ? mainWindowMinWidthWithVessel : mainWindowMinWidthWithoutVessel,
-					mainWindowMinHeight);
+					mainWindowMinHeight
+				);
 			}
 		}
 
-		private void replaceScratchWindowWithRealView()
-		{
-			// Update the offsets and note the applicable UI Scale
-			prevUIScale = GameSettings.UI_SCALE;
-			uiScaleOffset = new Vector2(
-				currentGeometry.x - geometry.x,
-				currentGeometry.y - geometry.y
-			);
-
-			// Get rid of the scratch window
-			Dismiss();
-
-			// Open a new window using the new offset
-			Show();
+		/// <summary>
+		/// Get the active UI scale setting.
+		/// I've been seeing a bug in KSP 1.8.0 and 1.8.1 where stock settings,
+		/// UI Scale included, aren't applied at startup unless I go into the
+		/// settings and click Apply or Accept. To work around this, we check
+		/// the rect transform associated with the active dialog first, only falling
+		/// back to the setting if there isn't one.
+		/// </summary>
+		/// <returns>
+		/// UI scale fraction (1 for 100%, 0.8 for 80%, 1.5 for 150%, etc.)
+		/// </returns>
+		private float uiScale {
+			get {
+				RectTransform[] inParents = dialog?.GetComponentsInParent<RectTransform>();
+				return inParents?[1].localScale.x ?? GameSettings.UI_SCALE;
+			}
 		}
 
+		/// <summary>
+		/// MultiOptionDialog's Rect param expects strangely different values
+		/// depending on the UI scale. If the scale is 100%, then (0.5,0.1) is at
+		/// the bottom middle of the screen, but at 200% it is off the bottom of
+		/// the screen (which is at Y=0.5). Similarly, (0.05,0.6) is at the left
+		/// middle at 100%, but off the left edge at 200% (when the left boundary is
+		/// around X=0.33). To make sure our window is visible, we need to account
+		/// for this quirk, but I have not found anything provided by stock to help.
+		///
+		/// In desperation, I measured the values for the the left and right edges
+		/// of the screen at various scales, plugged them into a spreadsheet,
+		/// and solved for a logarithmic formula (R² ≈ 0.986). This allows us to
+		/// guess whether a given coordinate will be on-screen when opening a dialog.
+		///
+		/// XXX: This might be resolution-dependent!
+		/// </summary>
+		/// <param name="scale">The current UI_SCALE setting</param>
+		/// <returns>
+		/// Value representing the left edge of the screen for MultiOptionDialog's
+		/// rect parameter at the given UI scale
+		/// </returns>
+		private static double estimateLeftEdgeLogarithmic(double scale)
+		{
+			const double estimateCoeff = 0.407367910114971;
+			const double estimateConst = 0.072429060773288;
+			return estimateCoeff * Math.Log(scale) + estimateConst;
+		}
+		
 		/// <summary>
 		/// Launch a PopupDialog containing the view.
 		/// Use Dismiss() to get rid of it.
@@ -250,78 +291,59 @@ namespace Astrogator {
 		public PopupDialog Show()
 		{
 			if (dialog == null) {
-				if (Math.Abs(prevUIScale - GameSettings.UI_SCALE) > 0.05) {
-					// New UI Scale setting, so we can't open the real window yet.
-					// Instead, we open a scratch window to see how much
-					// distortion is applied at this level of scaling.
-					dialog = PopupDialog.SpawnPopupDialog(
-						mainWindowAnchorMin,
-						mainWindowAnchorMax,
-						new MultiOptionDialog("", "", "",
-							AstrogatorSkin,
-							geometry,
-							new DialogGUIHorizontalLayout() {
-								OnUpdate = () => {
-									if (needUIScaleOffsetUpdate) {
-										needUIScaleOffsetUpdate = false;
-										replaceScratchWindowWithRealView();
-									}
-								}
-							}
-						),
-						false,
-						AstrogatorSkin,
-						false
-					);
-					needUIScaleOffsetUpdate = true;
-
-				} else {
-
-					// Calculate where the new window should go based on the
-					// difference between where we said the scratch window should
-					// go and where it actually went.
-					Rect offsetGeometry = geometry;
-					offsetGeometry.x -= uiScaleOffset.x;
-					offsetGeometry.y -= uiScaleOffset.y;
-
-					dialog = PopupDialog.SpawnPopupDialog(
-						mainWindowAnchorMin,
-						mainWindowAnchorMax,
-						new MultiOptionDialog(
-							Localizer.Format("astrogator_mainTitle"),
-							ModelDescription(model),
-							Localizer.Format("astrogator_mainTitle") + " " + versionString,
-							skinToUse,
-							offsetGeometry,
-							this
-						),
-						false,
+				dialog = PopupDialog.SpawnPopupDialog(
+					mainWindowAnchorMin,
+					mainWindowAnchorMax,
+					new MultiOptionDialog(
+						Localizer.Format("astrogator_mainTitle"),
+						ModelDescription(model),
+						Localizer.Format("astrogator_mainTitle") + " " + versionString,
 						skinToUse,
-						false
-					);
+						geometry,
+						this
+					),
+					false,
+					skinToUse,
+					false
+				);
 
-					// Add the close button in the upper right corner after the PopupDialog has been created.
-					AddFloatingButton(
-						dialog.transform,
-						-mainWindowPadding.right - mainWindowSpacing, -mainWindowPadding.top,
-						closeStyle,
-						"astrogator_closeButtonTooltip",
-						closeCallback
-					);
+				// Save position and deactivate app launcher on Esc
+				dialog.OnDismiss = onDismiss;
 
-					// Add the settings button next to the close button.
-					// If the settings are visible it's a back '<' icon, otherwise a wrench+screwdriver.
-					AddFloatingButton(
-						dialog.transform,
-						-mainWindowPadding.right - 3 * mainWindowSpacing - buttonIconWidth,
-						-mainWindowPadding.top,
-						settingsToggleStyle,
-						settingsToggleTooltip,
-						toggleSettingsVisible
-					);
-				}
+				// Add the close button in the upper right corner after the PopupDialog has been created.
+				AddFloatingButton(
+					dialog.transform,
+					-mainWindowPadding.right - mainWindowSpacing, -mainWindowPadding.top,
+					closeStyle,
+					"astrogator_closeButtonTooltip",
+					closeCallback
+				);
+
+				// Add the settings button next to the close button.
+				// If the settings are visible it's a back '<' icon, otherwise a wrench+screwdriver.
+				AddFloatingButton(
+					dialog.transform,
+					-mainWindowPadding.right - 3 * mainWindowSpacing - buttonIconWidth,
+					-mainWindowPadding.top,
+					settingsToggleStyle,
+					settingsToggleTooltip,
+					toggleSettingsVisible
+				);
 			}
 			return dialog;
+		}
+		
+		/// <summary>
+		/// React to the user closing all dialogs with Esc,
+		/// doesn't get called when dismissing programmatically
+		/// </summary>
+		private void onDismiss()
+		{
+			geometry = currentGeometry;
+			dialog = null;
+			if (closeCallback != null) {
+				closeCallback();
+			}
 		}
 
 		/// <summary>
@@ -330,11 +352,7 @@ namespace Astrogator {
 		public void Dismiss()
 		{
 			if (dialog != null) {
-				geometry = new Rect(
-					currentGeometry.x, currentGeometry.y,
-					FlightGlobals.ActiveVessel ? mainWindowMinWidthWithVessel : mainWindowMinWidthWithoutVessel,
-					mainWindowMinHeight
-				);
+				geometry = currentGeometry;
 				dialog.Dismiss();
 				dialog = null;
 			}
