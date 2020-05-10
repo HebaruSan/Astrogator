@@ -1,3 +1,4 @@
+using System;
 using System.Linq;
 using KSP;
 
@@ -286,8 +287,16 @@ namespace Astrogator {
 		public static void ClearManeuverNodes()
 		{
 			PatchedConicSolver solver = FlightGlobals.ActiveVessel.patchedConicSolver;
-			while (solver.maneuverNodes.Count > 0) {
-				solver.maneuverNodes.First().RemoveSelf();
+			try
+			{
+				while (solver.maneuverNodes.Count > 0) {
+					solver.maneuverNodes.First().RemoveSelf();
+				}
+			}
+			catch (IndexOutOfRangeException)
+			{
+				// This can be thrown if another thread clears it before us.
+				// *Shrug*
 			}
 		}
 
