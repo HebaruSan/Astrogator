@@ -83,29 +83,15 @@ namespace Astrogator {
 			}
 		}
 
-		private BurnModel PlotTransferBurn(Orbit currentOrbit)
+		private BurnModel PlotTransferBurn(Orbit currentOrbit, bool retrograde)
 		{
 			// Normal prograde orbits
 			double now = Planetarium.GetUniversalTime();
-			double optimalPhaseAngle = clamp(Math.PI * (
-				1 - Math.Pow(
-					(currentOrbit.semiMajorAxis + transferDestination.GetOrbit().semiMajorAxis)
-						/ (2 * transferDestination.GetOrbit().semiMajorAxis),
-					1.5)
-			));
-			double currentPhaseAngle = clamp(
-				  AbsolutePhaseAngle(transferDestination.GetOrbit(), now)
-				- AbsolutePhaseAngle(currentOrbit, now));
-			double angleToMakeUp = currentPhaseAngle - optimalPhaseAngle;
+			// This is how fast the angle between the planets changes
+			// Positive if destination is slower, negative if current is slower
 			double phaseAnglePerSecond =
 				  (Tau / transferDestination.GetOrbit().period)
-				- (Tau / currentOrbit.period);
-			// This whole section borrowed from Kerbal Alarm Clock; thanks, TriggerAu!
-			if (angleToMakeUp > 0 && phaseAnglePerSecond > 0)
-				angleToMakeUp -= Tau;
-			if (angleToMakeUp < 0 && phaseAnglePerSecond < 0)
-				angleToMakeUp += Tau;
-
+				- (Tau / currentOrbit.period) * (retrograde ? -1 : 1);
 			if (phaseAnglePerSecond == 0) {
 				// Can't launch to surface-stationary target because
 				// we'll never reach a good relative phase angle for it.
@@ -114,80 +100,16 @@ namespace Astrogator {
 				// relative angular velocities.
 				return null;
 			}
-
-			// This is the launch time used by Kerbal Alarm Clock
-			double timeTillOptimalPhaseAngle = Math.Abs(angleToMakeUp / phaseAnglePerSecond);
 			// We'll search a time span this wide for the best burn time
 			double searchInterval = 0.5 * Math.PI / Math.Abs(phaseAnglePerSecond);
+
+			// Start searching immediately, will look at the next PI/2 and so on if not found
 			double ejectionBurnTime = BurnTimeSearch(
-				currentOrbit,
-				transferDestination.GetOrbit(),
-				Math.Max(now, now + timeTillOptimalPhaseAngle - 0.5 * searchInterval),
-				now + timeTillOptimalPhaseAngle + 0.5 * searchInterval
+				currentOrbit, transferDestination.GetOrbit(),
+				now, now + searchInterval
 			);
 			double arrivalTime = ejectionBurnTime + TransferTravelTime(
 				currentOrbit, transferDestination.GetOrbit(), ejectionBurnTime
-			);
-
-			if (currentOrbit.semiMajorAxis < transferDestination.GetOrbit().semiMajorAxis) {
-				return new BurnModel(
-					ejectionBurnTime,
-					BurnToNewAp(
-						currentOrbit,
-						ejectionBurnTime,
-						RadiusAtTime(transferDestination.GetOrbit(), arrivalTime)
-							- 0.25 * SphereOfInfluence(transferDestination)
-					)
-				);
-			} else {
-				return new BurnModel(
-					ejectionBurnTime,
-					BurnToNewPe(
-						currentOrbit,
-						ejectionBurnTime,
-						RadiusAtTime(transferDestination.GetOrbit(), arrivalTime)
-							+ 0.25 * SphereOfInfluence(transferDestination)
-					)
-				);
-			}
-		}
-
-		private BurnModel PlotRetrogradeTransferBurn(Orbit currentOrbit)
-		{
-			// Special logic needed for retrograde orbits
-			double now = Planetarium.GetUniversalTime();
-			// The phase angle is the opposite part of the unit circle
-			double optimalPhaseAngle = Tau - clamp(Math.PI * (
-				1 - Math.Pow(
-					(currentOrbit.semiMajorAxis + transferDestination.GetOrbit().semiMajorAxis)
-						/ (2 * transferDestination.GetOrbit().semiMajorAxis),
-					1.5)
-			));
-			double currentPhaseAngle = Tau - clamp(
-				  AbsolutePhaseAngle(transferDestination.GetOrbit(), now)
-				- AbsolutePhaseAngle(currentOrbit, now));
-			// Angle to make up is always positive
-			double angleToMakeUp = clamp(currentPhaseAngle - optimalPhaseAngle);
-			// The phase angle always decreases by the sum of the angular velocities
-			double phaseAnglePerSecond =
-				  (Tau / transferDestination.GetOrbit().period)
-				+ (Tau / currentOrbit.period);
-
-			if (phaseAnglePerSecond == 0) {
-				// Can't launch to surface-stationary target because
-				// we'll never reach a good relative phase angle for it.
-				// Ideally we'd check <Epsilon here, but that risks breaking
-				// normal transfers to asteroids, since they have very low
-				// relative angular velocities.
-				return null;
-			}
-
-			double timeTillBurn = Math.Abs(angleToMakeUp / phaseAnglePerSecond);
-			double ejectionBurnTime = now + timeTillBurn;
-			double arrivalTime = ejectionBurnTime + 0.5 * OrbitalPeriod(
-				transferDestination.GetOrbit().referenceBody,
-				transferDestination.GetOrbit().semiMajorAxis,
-				currentOrbit.semiMajorAxis
 			);
 
 			if (currentOrbit.semiMajorAxis < transferDestination.GetOrbit().semiMajorAxis) {
@@ -524,11 +446,7 @@ namespace Astrogator {
 					// Base case - calculate a simple Hohmann transfer
 
 					retrogradeTransfer = (currentOrbit.GetRelativeInclination(transferDestination.GetOrbit()) > 90f);
-					if (!retrogradeTransfer) {
-						return PlotTransferBurn(currentOrbit);
-					} else {
-						return PlotRetrogradeTransferBurn(currentOrbit);
-					}
+					return PlotTransferBurn(currentOrbit, retrogradeTransfer);
 
 				} else {
 					// Recursive case - get an orbit from the parent body and adjust it for ejection from here
