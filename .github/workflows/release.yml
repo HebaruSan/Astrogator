@@ -1,0 +1,39 @@
+name: Build release
+on:
+    release:
+        types:
+            - created
+
+jobs:
+    Release:
+        runs-on: ubuntu-latest
+        container:
+            image: mono:latest
+        steps:
+            - name: Check out code
+              uses: actions/checkout@v2
+
+            - name: Decrypt/unpack dependencies and build
+              env:
+                  AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+                  AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+                  AWS_REGION: us-east-2
+                  AWS_DEFAULT_REGION: us-east-2
+
+              run: |
+                  apt-get update
+                  apt-get install -y jq gpg awscli
+                  KSP_VERSION=$(jq -rM '"\(.KSP_VERSION_MIN.MAJOR).\(.KSP_VERSION_MIN.MINOR)"' GameData/Astrogator/Astrogator.version)
+                  aws s3 cp s3://hebarusan/KSP_Data-${KSP_VERSION}.tar.gz.gpg - | gpg --batch --no-tty --yes --passphrase ${{ secrets.GPG_KEY }} -d | tar xzf - -C Source
+                  msbuild /r
+                  msbuild /t:MakeZip
+
+            - name: Upload to GitHub
+              uses: actions/upload-release-asset@main
+              env:
+                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+              with:
+                  upload_url: ${{ github.event.release.upload_url }}
+                  asset_path: ./Astrogator.zip
+                  asset_name: Astrogator.zip
+                  asset_content_type: application/zip

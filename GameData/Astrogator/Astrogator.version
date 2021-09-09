@@ -1,6 +1,6 @@
 {
 	"NAME": "Astrogator",
-	"URL": "https://raw.githubusercontent.com/HebaruSan/Astrogator/master/Astrogator.version",
+	"URL": "https://raw.githubusercontent.com/HebaruSan/Astrogator/master/GameData/Astrogator/Astrogator.version",
 	"DOWNLOAD" : "https://github.com/HebaruSan/Astrogator/releases",
 	"GITHUB": {
 		"USERNAME": "HebaruSan",
@@ -10,11 +10,11 @@
 	"VERSION": {
 		"MAJOR": 0,
 		"MINOR": 10,
-		"PATCH": 2
+		"PATCH": 3
 	},
 	"KSP_VERSION_MIN": {
 		"MAJOR": 1,
-		"MINOR": 8
+		"MINOR": 12
 	},
 	"KSP_VERSION_MAX": {
 		"MAJOR": 1,

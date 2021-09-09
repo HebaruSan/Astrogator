@@ -1,62 +1,72 @@
-.PHONY: all clean
+.PHONY: all clean install-dev test s3-deps
 
-PROJECT=Astrogator
+PROJECT:=Astrogator
 
-SOURCEDIR=src
-SOURCE=$(wildcard $(SOURCEDIR)/*.cs) $(wildcard $(SOURCEDIR)/*.csproj)
-ASSETDIR=assets
-ICONS=$(wildcard $(ASSETDIR)/*.png)
-CONFIGS=$(wildcard $(ASSETDIR)/*.cfg) $(wildcard $(ASSETDIR)/*.ltp)
-LANGUAGES=$(ASSETDIR)/lang
-README=README.md
-GAMELINK=$(SOURCEDIR)/KSP_Data
-DEFAULTGAMEDIR=$(HOME)/.local/share/Steam/steamapps/common/Kerbal Space Program
+SOURCEDIR:=Source
+SOURCE:=$(wildcard $(SOURCEDIR)/*.cs $(SOURCEDIR)/*/*.cs $(SOURCEDIR)/*.csproj)
+GAMELINK:=$(SOURCEDIR)/KSP_Data
+DEFAULTGAMEDIR:=$(HOME)/.local/share/Steam/steamapps/common/Kerbal Space Program
 
-DEBUGDLL=$(SOURCEDIR)/bin/Debug/$(PROJECT).dll
-RELEASEDLL=$(SOURCEDIR)/bin/Release/$(PROJECT).dll
-DISTDIR=$(PROJECT)
-RELEASEZIP=$(PROJECT).zip
-DLLDOCS=$(SOURCEDIR)/bin/Release/$(PROJECT).xml
-DLLSYMBOLS=$(SOURCEDIR)/bin/Debug/$(PROJECT).pdb
-LICENSE=LICENSE
-INTERNALCKAN=$(PROJECT).ckan
-VERSION=$(PROJECT).version
-TAGS=tags
+DISTDIR:=GameData/$(PROJECT)
+STATICS:=$(wildcard $(DISTDIR)/* $(DISTDIR)/*/*)
+DLL:=$(DISTDIR)/Plugins/$(PROJECT).dll
+ZIP:=$(PROJECT).zip
 
-TARGETS=$(DEBUGDLL) $(RELEASEDLL) $(RELEASEZIP)
+TESTINGDIR:=$(DEFAULTGAMEDIR)/GameData/$(PROJECT)
 
-all: $(TAGS) $(TARGETS)
+all: $(ZIP)
 
-$(TAGS): $(SOURCE)
-	ctags -f $@ $^
+$(ZIP): $(DLL) $(STATICS)
+	msbuild /t:MakeZip
 
-$(DLLDOCS): $(RELEASEDLL)
-
-$(DEBUGDLL) $(DLLSYMBOLS): $(SOURCE) $(GAMELINK)
-	cd $(SOURCEDIR) && msbuild /p:Configuration=Debug
-
-$(RELEASEDLL): $(SOURCE) $(GAMELINK)
-	cd $(SOURCEDIR) && msbuild /p:Configuration=Release
-
-$(RELEASEZIP): $(RELEASEDLL) $(ICONS) $(README) $(LICENSE) $(INTERNALCKAN) $(VERSION) $(CONFIGS) $(LANGUAGES)
-	mkdir -p $(DISTDIR)
-	cp -a $^ $(DISTDIR)
-	zip -qr -9 $@ $(DISTDIR) -x \*.settings
+$(DLL): $(GAMELINK) $(PROCPARTSLINK) $(SOURCE)
+	msbuild /r
 
 $(GAMELINK):
 	if [ -x "$(DEFAULTGAMEDIR)" ]; \
 	then \
-		ln -s "$(DEFAULTGAMEDIR)"/KSP_Data $(GAMELINK); \
+		ln -s "$(DEFAULTGAMEDIR)"/KSP_Data $@; \
 	else \
-		echo "$(GAMELINK) not found."; \
+		echo "$@ not found."; \
 		echo 'This must be a symlink to Kerbal Space Program/KSP_Data.'; \
 		exit 2; \
 	fi
 
 clean:
-	cd $(SOURCEDIR) && msbuild /t:Clean
-	rm -f $(TARGETS) $(TAGS)
-	rm -rf $(SOURCEDIR)/bin $(SOURCEDIR)/obj $(DISTDIR)
+	msbuild /t:Clean
+	rm -f *.gpg
 
-install-dev: $(RELEASEZIP)
+install-dev: $(TESTINGDIR)
+
+$(TESTINGDIR):
 	ln -sf "$$(pwd)/$(DISTDIR)" "$(DEFAULTGAMEDIR)/GameData"
+
+test: $(TESTINGDIR) $(DLL)
+	steam steam://rungameid/220200
+
+ifdef GITHUB_TOKEN
+
+# These use = instead of := to avoid setting them if DEFAULTGAMEDIR doesn't exist
+
+KSP_VERSION=$(shell egrep -o '^Version [0-9]+\.[0-9]+' "$(DEFAULTGAMEDIR)"/readme.txt | awk '{print $$2}')
+DEP_FILE=KSP_Data-$(KSP_VERSION).tar.gz.gpg
+KSP_DEPENDS=$(shell hxselect -c -s '\n' HintPath < $(SOURCEDIR)/$(PROJECT).csproj | tr '\\' /)
+
+$(DEP_FILE): $(GAMELINK)
+	mkdir -p KSP_Data/Managed
+	for F in $(KSP_DEPENDS); do cp -a "$(SOURCEDIR)/$$F" "$$F" ; done
+	tar czf - KSP_Data | gpg --batch --passphrase $$GITHUB_TOKEN -c > $@
+	rm -r KSP_Data
+
+ifdef AWS_ACCESS_KEY_ID
+ifdef AWS_SECRET_ACCESS_KEY
+ifdef AWS_DEFAULT_REGION
+
+s3-deps: $(DEP_FILE)
+	aws s3 cp $^ s3://hebarusan/$^
+
+endif
+endif
+endif
+
+endif

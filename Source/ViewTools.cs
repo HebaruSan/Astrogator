@@ -95,7 +95,7 @@ namespace Astrogator {
 		/// <value>
 		/// The icon to show for this mod in the app launcher.
 		/// </value>
-		public static readonly Texture2D AppIcon = GetImage(FilePath("Astrogator"));
+		public static readonly Texture2D AppIcon = GetImage(FilePath("Icons/Astrogator"));
 
 		/// <returns>
 		/// A texture object for the image file at the given path.
@@ -293,7 +293,7 @@ namespace Astrogator {
 		/// <value>
 		/// Icon for normal state of settings button.
 		/// </value>
-		public static readonly Sprite settingsIcon = GetSprite(FilePath("settings"));
+		public static readonly Sprite settingsIcon = GetSprite(FilePath("Icons/settings"));
 
 		/// <value>
 		/// Icon for normal state of settings button.
@@ -306,7 +306,7 @@ namespace Astrogator {
 		/// <value>
 		/// Icon for hovered state of settings button.
 		/// </value>
-		public static readonly Sprite settingsHoverIcon = GetSprite(FilePath("settingsHover"));
+		public static readonly Sprite settingsHoverIcon = GetSprite(FilePath("Icons/settingsHover"));
 
 		/// <value>
 		/// Icon for hovered state of settings button.
@@ -330,7 +330,7 @@ namespace Astrogator {
 		/// <summary>
 		/// Icon for the normal state of the back button.
 		/// </summary>
-		public static readonly Sprite backIcon = GetSprite(FilePath("back"));
+		public static readonly Sprite backIcon = GetSprite(FilePath("Icons/back"));
 
 		/// <summary>
 		/// Icon for the normal state of the back button.
@@ -343,7 +343,7 @@ namespace Astrogator {
 		/// <summary>
 		/// Icon for the hovered state of the back button.
 		/// </summary>
-		public static readonly Sprite backHoverIcon = GetSprite(FilePath("backHover"));
+		public static readonly Sprite backHoverIcon = GetSprite(FilePath("Icons/backHover"));
 
 		/// <summary>
 		/// Icon for the hovered state of the back button.
@@ -367,7 +367,7 @@ namespace Astrogator {
 		/// <value>
 		/// Icon for normal state of maneuver node creation button.
 		/// </value>
-		public static readonly Sprite maneuverIcon = GetSprite(FilePath("maneuver"));
+		public static readonly Sprite maneuverIcon = GetSprite(FilePath("Icons/maneuver"));
 
 		/// <value>
 		/// Icon for normal state of maneuver creation button.
@@ -380,7 +380,7 @@ namespace Astrogator {
 		/// <value>
 		/// Icon for hovered state of maneuver node creation button.
 		/// </value>
-		public static readonly Sprite maneuverHoverIcon = GetSprite(FilePath("maneuverHover"));
+		public static readonly Sprite maneuverHoverIcon = GetSprite(FilePath("Icons/maneuverHover"));
 
 		/// <value>
 		/// Icon for hovered state of maneuver creation button.
@@ -403,7 +403,7 @@ namespace Astrogator {
 		/// <value>
 		/// Icon for normal state of warp button.
 		/// </value>
-		public static readonly Sprite warpIcon = GetSprite(FilePath("warp"));
+		public static readonly Sprite warpIcon = GetSprite(FilePath("Icons/warp"));
 
 		/// <value>
 		/// Icon for normal state of warp button.
@@ -416,7 +416,7 @@ namespace Astrogator {
 		/// <value>
 		/// Icon for hovered state of warp button.
 		/// </value>
-		public static readonly Sprite warpHoverIcon = GetSprite(FilePath("warpHover"));
+		public static readonly Sprite warpHoverIcon = GetSprite(FilePath("Icons/warpHover"));
 
 		/// <value>
 		/// Icon for hovered state of warp button.
@@ -439,7 +439,7 @@ namespace Astrogator {
 		/// <summary>
 		/// Icon for close X button when not hovered.
 		/// </summary>
-		public static readonly Sprite closeIcon = GetSprite(FilePath("close"));
+		public static readonly Sprite closeIcon = GetSprite(FilePath("Icons/close"));
 
 		/// <summary>
 		/// Icon for close X button when not hovered.
@@ -452,7 +452,7 @@ namespace Astrogator {
 		/// <summary>
 		/// Icon for close X button when hovered.
 		/// </summary>
-		public static readonly Sprite closeHoverIcon = GetSprite(FilePath("closeHover"));
+		public static readonly Sprite closeHoverIcon = GetSprite(FilePath("Icons/closeHover"));
 
 		/// <summary>
 		/// Icon for close X button when hovered.

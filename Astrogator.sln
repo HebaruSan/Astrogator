@@ -1,0 +1,27 @@
+
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+Project("{F10FE7BA-866A-4EB3-89BB-09E9A12CA987}") = "Astrogator", "Source\Astrogator.csproj", "{F10FE7BA-866A-4EB3-89BB-09E9A12CA987}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{F10FE7BA-866A-4EB3-89BB-09E9A12CA987}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F10FE7BA-866A-4EB3-89BB-09E9A12CA987}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(MonoDevelopProperties) = preSolution
+		Policies = $0
+		$0.DotNetNamingPolicy = $1
+		$1.DirectoryNamespaceAssociation = PrefixedHierarchical
+		$0.TextStylePolicy = $2
+		$2.inheritsSet = null
+		$2.scope = text/x-csharp
+		$0.CSharpFormattingPolicy = $3
+		$3.scope = text/x-csharp
+		$0.TextStylePolicy = $4
+		$4.FileWidth = 80
+		$4.scope = text/plain
+	EndGlobalSection
+EndGlobal

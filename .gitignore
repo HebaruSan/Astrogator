@@ -163,7 +163,7 @@ $RECYCLE.BIN/
 Astrogator/*
 
 # Our special symlink to the game DLLs
-src/KSP_Data
+Source/KSP_Data
 
 # Index of names in source code
 tags
