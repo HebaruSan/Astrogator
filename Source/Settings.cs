@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using System.Reflection;
+using System.Linq;
 using UnityEngine;
 
 namespace Astrogator {
@@ -17,26 +18,49 @@ namespace Astrogator {
 
 		private Settings()
 		{
-			if (File.Exists(path)) {
+			ConfigNode[] nodes = GameDatabase.Instance.GetConfigNodes(configNodeName);
+			if (nodes.Length > 0) {
+				for (int n = 0; n < nodes.Length; ++n) {
+					ConfigNode.LoadObjectFromConfig(this, nodes[n]);
+				}
+			} else if (File.Exists(legacyPath)) {
 				// ConfigNode.Load can return null if the file is empty,
 				// and this crashes LoadObjectFromConfig.
 				try {
-					ConfigNode.LoadObjectFromConfig(this, ConfigNode.Load(path));
+					ConfigNode.LoadObjectFromConfig(this, ConfigNode.Load(legacyPath));
 				} catch (Exception ex) {
 					DbgExc("Failed to load settings file", ex);
 				}
 			}
 		}
 
-		private const           string settingsSuffix = "settings";
-		private static readonly string path = $"{Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)}/{Astrogator.Name}.{settingsSuffix}";
+		private const           string configNodeName = "ASTROGATORSETTINGS";
+		private static readonly string legacyPath = $"{Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)}/{Astrogator.Name}.settings";
 
 		/// <summary>
 		/// Save current settings to disk.
 		/// </summary>
 		public void Save()
 		{
-			ConfigNode.CreateConfigFromObject(this, new ConfigNode(GetType().Name)).Save(path);
+			UrlDir.UrlFile settingsFile = null;
+			UrlDir.UrlConfig[] configs = GameDatabase.Instance.GetConfigs(configNodeName);
+			if (configs.Length > 0) {
+				// Already have a cfg file with settings, overwrite
+				settingsFile = configs[0].parent;
+				settingsFile.configs.Clear();
+			} else {
+				// Make a new file
+				var modFolder = GameDatabase.Instance.root.children
+					.First(d => d.type == UrlDir.DirectoryType.GameData)
+					.GetDirectory(Astrogator.Name);
+				settingsFile = new UrlDir.UrlFile(modFolder,
+					new FileInfo($"{modFolder.path}/AstrogatorSettings.cfg"));
+			}
+			settingsFile.configs.Add(new UrlDir.UrlConfig(
+				settingsFile,
+				ConfigNode.CreateConfigFromObject(this, new ConfigNode(configNodeName))
+			));
+			settingsFile.SaveConfigs();
 		}
 
 		/// <summary>
