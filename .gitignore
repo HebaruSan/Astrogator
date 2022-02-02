@@ -160,10 +160,15 @@ $RECYCLE.BIN/
 
 # Compiled mod file
 *.zip
-Astrogator/*
 
 # Our special symlink to the game DLLs
 Source/KSP_Data
+
+# Encrypted game DLL archive
+*.tar.gz.gpg
+
+# Settings file generated in game
+AstrogatorSettings.cfg
 
 # Index of names in source code
 tags
