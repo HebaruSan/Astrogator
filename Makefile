@@ -19,7 +19,7 @@ all: $(ZIP)
 $(ZIP): $(DLL) $(STATICS)
 	msbuild /t:MakeZip
 
-$(DLL): $(GAMELINK) $(PROCPARTSLINK) $(SOURCE)
+$(DLL): $(GAMELINK) $(SOURCE)
 	msbuild /r
 
 $(GAMELINK):
