@@ -33,3 +33,4 @@ using System.Runtime.InteropServices;
 // by using the '*' as shown below:
 [assembly: AssemblyVersion("0.10.4.0")]
 [assembly: AssemblyFileVersion("0.10.4.0")]
+[assembly: KSPAssembly("Astrogator", 0, 10)]

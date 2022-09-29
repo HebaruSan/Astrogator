@@ -172,3 +172,6 @@ AstrogatorSettings.cfg
 
 # Index of names in source code
 tags
+
+# Visual Studio 2022 project files
+.vs/
