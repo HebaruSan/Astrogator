@@ -16,7 +16,7 @@ jobs:
             image: mono:latest
         steps:
             - name: Check out code
-              uses: actions/checkout@v2
+              uses: actions/checkout@v3
 
             - name: Decrypt/unpack dependencies and build
               env:
