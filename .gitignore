@@ -5,6 +5,7 @@
 *.suo
 *.user
 *.sln.docstates
+copyToKSP.bat
 
 # Build results
 
@@ -167,3 +168,6 @@ Source/KSP_Data
 
 # Index of names in source code
 tags
+
+# Visual Studio 2022 project files
+.vs/
