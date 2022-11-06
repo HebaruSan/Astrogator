@@ -520,14 +520,16 @@ namespace Astrogator {
 				bool ejectionAlreadyActive = false;
 
 				if (FlightGlobals.ActiveVessel.patchedConicSolver.maneuverNodes.Count > 0) {
-					if (Settings.Instance.DeleteExistingManeuvers) {
-
-						ClearManeuverNodes();
-
-					} else if (FlightGlobals.ActiveVessel.patchedConicSolver.maneuverNodes.Count == 1
+					if (FlightGlobals.ActiveVessel.patchedConicSolver.maneuverNodes.Count == 1
 							&& ejectionBurn.node != null) {
 
+						DbgFmt("Ejection burn is already active");
 						ejectionAlreadyActive = true;
+
+					} else if (Settings.Instance.DeleteExistingManeuvers) {
+
+						DbgFmt("Clearing nodes");
+						ClearManeuverNodes();
 
 					} else {
 						// At least one unrelated maneuver is active, and we're not allowed to delete them.
@@ -540,6 +542,7 @@ namespace Astrogator {
 
 					ManeuverNode eNode;
 					if (ejectionAlreadyActive) {
+						DbgFmt("Using existing ejection burn");
 						eNode = ejectionBurn.node;
 					} else {
 						DbgFmt("Temporarily activating ejection burn to {0}", destination.GetName());
@@ -591,6 +594,7 @@ namespace Astrogator {
 
 					if (!ejectionAlreadyActive) {
 						// Clean up the node since we're just doing calculations, not intending to set things up for the user
+						DbgFmt("Removing temporary ejection burn");
 						ejectionBurn.RemoveNode();
 					}
 					DbgFmt("Released completed transfer to {0}", destination.GetName());
