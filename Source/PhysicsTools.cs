@@ -441,10 +441,8 @@ namespace Astrogator {
 		/// Speed change in m/s needed
 		/// </returns>
 		public static double BurnToEscape(CelestialBody parent, double periapsis, double speedAtInfinity)
-		{
-			double preBurnSpeed = SpeedAtPeriapsis(parent, periapsis, periapsis);
-			return SpeedToExitSOI(parent, periapsis, speedAtInfinity) - preBurnSpeed;
-		}
+		=> SpeedToExitSOI(parent, periapsis, speedAtInfinity)
+			- SpeedAtPeriapsis(parent, periapsis, periapsis);
 
 		/// <summary>
 		/// Calculate the absolute time when a satellite will be a given angle away from
@@ -647,7 +645,7 @@ namespace Astrogator {
 	internal static class MuUtils
 	{
 		// acosh(x) = log(x + sqrt(x^2 - 1))
-		internal static double Acosh(double x)
+		public static double Acosh(double x)
 			=> Math.Log(x + Math.Sqrt(x * x - 1));
 	}
 
@@ -665,7 +663,11 @@ namespace Astrogator {
 			=> new Vector3d(v.x, v.z, v.y);
 	}
 
-	internal static class MuMech_OrbitExtensions
+	/// <summary>
+	/// Extensions to calculate the AN and DN.
+	/// Borrowed from KAC's borrowing from r4m0n's MJ plugin.
+	/// </summary>
+	public static class MuMech_OrbitExtensions
 	{
 
 		/// <summary>
@@ -708,19 +710,53 @@ namespace Astrogator {
 		// These "Swapped" functions translate preexisting Orbit class functions into world space.
 		// The Orbit class uses a coordinate system in which the Y and Z coordinates are swapped.
 
-		// Normalized vector perpendicular to the orbital plane
-		// convention: as you look down along the orbit normal, the satellite revolves counterclockwise
-		internal static Vector3d SwappedOrbitNormal(this Orbit o)
+		/// <summary>
+		/// Normalized vector perpendicular to the orbital plane
+		/// convention: as you look down along the orbit normal, the satellite revolves counterclockwise
+		/// </summary>
+		/// <param name="o">An orbit</param>
+		/// <returns>Normal vector of the orbit in world space</returns>
+		public static Vector3d SwappedOrbitNormal(this Orbit o)
 			=> -o.GetOrbitNormal().SwapYZ().normalized;
 
+		/// <summary>
+		/// Returns the next time at which a will cross its ascending node with b.
+		/// For elliptical orbits this is a time between UT and UT + a.period.
+		/// For hyperbolic orbits this can be any time, including a time in the past if
+		/// the ascending node is in the past.
+		/// NOTE: this function will throw an ArgumentException if a is a hyperbolic orbit and the "ascending node"
+		/// occurs at a true anomaly that a does not actually ever attain
+		/// </summary>
+		/// <param name="a">Our orbit</param>
+		/// <param name="b">The other orbit</param>
+		/// <param name="UT">Minimum time of AN</param>
+		/// <returns>Time of AN</returns>
+		public static double TimeOfAscendingNode(this Orbit a, Orbit b, double UT)
+			=> a.TimeOfTrueAnomaly(a.AscendingNodeTrueAnomaly(b), UT);
+
+		/// <summary>
+		/// Returns the next time at which a will cross its descending node with b.
+		/// For elliptical orbits this is a time between UT and UT + a.period.
+		/// For hyperbolic orbits this can be any time, including a time in the past if
+		/// the descending node is in the past.
+		/// NOTE: this function will throw an ArgumentException if a is a hyperbolic orbit and the "descending node"
+		/// occurs at a true anomaly that a does not actually ever attain
+		/// </summary>
+		/// <param name="a">Our orbit</param>
+		/// <param name="b">The other orbit</param>
+		/// <param name="UT">Minimum time of DN</param>
+		/// <returns>Time of DN</returns>
+		public static double TimeOfDescendingNode(this Orbit a, Orbit b, double UT)
+			=> a.TimeOfTrueAnomaly(a.DescendingNodeTrueAnomaly(b), UT);
+
 		// Mean motion is rate of increase of the mean anomaly
-		internal static double MeanMotion(this Orbit o)
+		private static double MeanMotion(this Orbit o)
 			=> Math.Sqrt(o.referenceBody.gravParameter / Math.Abs(Math.Pow(o.semiMajorAxis, 3)));
 
 		// The mean anomaly of the orbit.
 		// For elliptical orbits, the value return is always between 0 and Tau
 		// For hyperbolic orbits, the value can be any number.
-		internal static double MeanAnomalyAtUT(this Orbit o, double UT)
+		private static double MeanAnomalyAtUT(this Orbit o, double UT)
 			=> o.eccentricity < 1
 				? clamp(o.meanAnomalyAtEpoch + o.MeanMotion() * (UT - o.epoch))
 				: o.meanAnomalyAtEpoch + o.MeanMotion() * (UT - o.epoch);
@@ -729,7 +765,7 @@ namespace Astrogator {
 		// For elliptical orbits, this will be a time between UT and UT + o.period
 		// For hyperbolic orbits, this can be any time, including a time in the past, if
 		// the given mean anomaly occurred in the past
-		internal static double UTAtMeanAnomaly(this Orbit o, double meanAnomaly, double UT)
+		private static double UTAtMeanAnomaly(this Orbit o, double meanAnomaly, double UT)
 		{
 			double currentMeanAnomaly = o.MeanAnomalyAtUT(UT);
 			double meanDifference = meanAnomaly - currentMeanAnomaly;
@@ -740,18 +776,18 @@ namespace Astrogator {
 
 		// True anomaly (in a's orbit) at which a crosses its ascending node
 		// with b's orbit.
-		internal static double AscendingNodeTrueAnomaly(this Orbit a, Orbit b)
+		private static double AscendingNodeTrueAnomaly(this Orbit a, Orbit b)
 			=> a.TrueAnomalyFromVector(Vector3d.Cross(b.SwappedOrbitNormal(), a.SwappedOrbitNormal()));
 
 		// True anomaly (in a's orbit) at which a crosses its descending node
 		// with b's orbit.
-		internal static double DescendingNodeTrueAnomaly(this Orbit a, Orbit b)
+		private static double DescendingNodeTrueAnomaly(this Orbit a, Orbit b)
 			=> a.TrueAnomalyFromVector(Vector3d.Cross(a.SwappedOrbitNormal(), b.SwappedOrbitNormal()));
 
 		// Converts a direction, specified by a Vector3d, into a true anomaly.
 		// The vector is projected into the orbital plane and then the true anomaly is
 		// computed as the angle this vector makes with the vector pointing to the periapsis.
-		internal static double TrueAnomalyFromVector(this Orbit o, Vector3d vec)
+		private static double TrueAnomalyFromVector(this Orbit o, Vector3d vec)
 			=> clamp(o.GetTrueAnomalyOfZupVector(vec));
 
 		// Originally by Zool, revised by The_Duck
@@ -760,7 +796,7 @@ namespace Astrogator {
 		// For hyperbolic orbits the returned value can be any number.
 		// NOTE: For a hyperbolic orbit, if a true anomaly is requested that does not exist (a true anomaly
 		// past the true anomaly of the asymptote) then an ArgumentException is thrown
-		internal static double GetEccentricAnomalyAtTrueAnomaly(this Orbit o, double trueAnomaly)
+		private static double GetEccentricAnomalyAtTrueAnomaly(this Orbit o, double trueAnomaly)
 		{
 			double e = o.eccentricity;
 			double cosTA = Math.Cos(trueAnomaly);
@@ -789,42 +825,24 @@ namespace Astrogator {
 			}
 		}
 
-		///Originally by Zool, revised by The_Duck
-		///Converts an eccentric anomaly into a mean anomaly.
-		///For an elliptical orbit, the returned value is between 0 and Tau
-		///For a hyperbolic orbit, the returned value is any number
-		internal static double GetMeanAnomalyAtEccentricAnomaly(this Orbit o, double E)
+		// Originally by Zool, revised by The_Duck
+		// Converts an eccentric anomaly into a mean anomaly.
+		// For an elliptical orbit, the returned value is between 0 and Tau
+		// For a hyperbolic orbit, the returned value is any number
+		private static double GetMeanAnomalyAtEccentricAnomaly(this Orbit o, double E)
 			=> o.eccentricity < 1
 				// Elliptical orbits
 				? clamp(E - (o.eccentricity * Math.Sin(E)))
 				// Hyperbolic orbits
 				: (o.eccentricity * Math.Sinh(E)) - E;
 
-		///NOTE: this function can throw an ArgumentException, if o is a hyperbolic orbit with an eccentricity
-		///large enough that it never attains the given true anomaly
-		internal static double TimeOfTrueAnomaly(this Orbit o, double trueAnomaly, double UT)
+		// NOTE: this function can throw an ArgumentException, if o is a hyperbolic orbit with an eccentricity
+		// large enough that it never attains the given true anomaly
+		private static double TimeOfTrueAnomaly(this Orbit o, double trueAnomaly, double UT)
 			=> o.UTAtMeanAnomaly(
 				o.GetMeanAnomalyAtEccentricAnomaly(
 					o.GetEccentricAnomalyAtTrueAnomaly(trueAnomaly)),
 				UT);
-
-		///Returns the next time at which a will cross its ascending node with b.
-		///For elliptical orbits this is a time between UT and UT + a.period.
-		///For hyperbolic orbits this can be any time, including a time in the past if
-		///the ascending node is in the past.
-		///NOTE: this function will throw an ArgumentException if a is a hyperbolic orbit and the "ascending node"
-		///occurs at a true anomaly that a does not actually ever attain
-		public static double TimeOfAscendingNode(this Orbit a, Orbit b, double UT)
-			=> a.TimeOfTrueAnomaly(a.AscendingNodeTrueAnomaly(b), UT);
-
-		///Returns the next time at which a will cross its descending node with b.
-		///For elliptical orbits this is a time between UT and UT + a.period.
-		///For hyperbolic orbits this can be any time, including a time in the past if
-		///the descending node is in the past.
-		///NOTE: this function will throw an ArgumentException if a is a hyperbolic orbit and the "descending node"
-		///occurs at a true anomaly that a does not actually ever attain
-		public static double TimeOfDescendingNode(this Orbit a, Orbit b, double UT)
-			=> a.TimeOfTrueAnomaly(a.DescendingNodeTrueAnomaly(b), UT);
 
 		// End code copied from Kerbal Alarm Clock
 	}
