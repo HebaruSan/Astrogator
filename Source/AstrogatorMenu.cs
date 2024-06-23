@@ -20,8 +20,8 @@ namespace Astrogator {
 			: base()
 		{
 			model = new AstrogationModel(
-				   (ITargetable)FlightGlobals.ActiveVessel
-				?? (ITargetable)FlightGlobals.getMainBody());
+				DefaultIfThrows<ITargetable>(() => FlightGlobals.ActiveVessel)
+				?? FlightGlobals.getMainBody());
 			loader = new AstrogationLoadBehaviorette(model, null);
 			timeToWait = new List<DateTimeParts>();
 			cursorTransfer = 0;

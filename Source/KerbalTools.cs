@@ -316,5 +316,24 @@ namespace Astrogator {
 			}
 		}
 
+		/// <summary>Discard annoying exceptions</summary>
+		/// <param name="func">The function to evaluate</param>
+		/// <returns>
+		///   The return value of func
+		///   or the default of its return type (typically null)
+		///   if it throws an exception
+		/// </returns>
+		public static T DefaultIfThrows<T>(Func<T> func)
+		{
+			try
+			{
+				return func();
+			}
+			catch
+			{
+				return default;
+			}
+		}
+
 	}
 }
