@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics;
 using UnityEngine;
 using KSP;
 using KSP.Localization;
@@ -17,7 +18,7 @@ namespace Astrogator {
 		/// </summary>
 		/// <param name="format">String.Format format string</param>
 		/// <param name="args">Parameters for the format string, if any</param>
-		[System.Diagnostics.Conditional("DEBUG")]
+		[Conditional("DEBUG")]
 		public static void DbgFmt(string format, params object[] args)
 		{
 			string formattedMessage = string.Format(format, args);
@@ -31,7 +32,7 @@ namespace Astrogator {
 		/// </summary>
 		/// <param name="description">Explanation of the context in which the exception was raised</param>
 		/// <param name="ex">The exception to log</param>
-		[System.Diagnostics.Conditional("DEBUG")]
+		[Conditional("DEBUG")]
 		public static void DbgExc(string description, Exception ex) {
 			DbgFmt(
 				"{0}: {1}\n{2}",
@@ -45,7 +46,7 @@ namespace Astrogator {
 		/// List the components associated with a Unityu GameObject
 		/// </summary>
 		/// <param name="gameObj">The object to examine</param>
-		[System.Diagnostics.Conditional("DEBUG")]
+		[Conditional("DEBUG")]
 		public static void printComponentNames(GameObject gameObj)
 		{
 			Component[] comps = gameObj.GetComponents<Component>();
@@ -54,7 +55,7 @@ namespace Astrogator {
 			}
 		}
 
-		[System.Diagnostics.Conditional("DEBUG")]
+		[Conditional("DEBUG")]
 		private static void printPartModules(Part part)
 		{
 			for (int i = 0; i < part.Modules.Count; ++i) {
@@ -62,7 +63,7 @@ namespace Astrogator {
 			}
 		}
 
-		[System.Diagnostics.Conditional("DEBUG")]
+		[Conditional("DEBUG")]
 		private static void printResoures(Part part)
 		{
 			for (int i = 0; i < part.Resources.Count; ++i) {
