@@ -19,9 +19,7 @@ namespace Astrogator {
 		AstrogatorMenu()
 			: base()
 		{
-			model = new AstrogationModel(
-				DefaultIfThrows<ITargetable>(() => FlightGlobals.ActiveVessel)
-				?? FlightGlobals.getMainBody());
+			model = new AstrogationModel(GetBestOrigin());
 			loader = new AstrogationLoadBehaviorette(model, null);
 			timeToWait = new List<DateTimeParts>();
 			cursorTransfer = 0;

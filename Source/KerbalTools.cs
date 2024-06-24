@@ -246,6 +246,14 @@ namespace Astrogator {
 		}
 
 		/// <summary>
+		/// Get the active vessel, or the home world, or just the first world in the list, or null.
+		/// Works around FlightGlobals' broken singleton implementation.
+		/// </summary>
+		public static ITargetable GetBestOrigin()
+			=> (ITargetable)FlightGlobals.fetch?.activeVessel
+				?? FlightGlobals.fetch?.bodies?.FirstOrDefaultOrFirst(b => b?.isHomeWorld ?? false);
+
+		/// <summary>
 		/// Find the orbit that contains the given orbit.
 		/// Wrapper around Orbit.referenceBody that returns
 		/// null for the sun instead of the sun.
@@ -313,25 +321,6 @@ namespace Astrogator {
 				return string.Format("{0}/{1}",
 					System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location),
 					filename);
-			}
-		}
-
-		/// <summary>Discard annoying exceptions</summary>
-		/// <param name="func">The function to evaluate</param>
-		/// <returns>
-		///   The return value of func
-		///   or the default of its return type (typically null)
-		///   if it throws an exception
-		/// </returns>
-		public static T DefaultIfThrows<T>(Func<T> func)
-		{
-			try
-			{
-				return func();
-			}
-			catch
-			{
-				return default;
 			}
 		}
 
