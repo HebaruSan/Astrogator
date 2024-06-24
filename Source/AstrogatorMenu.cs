@@ -16,17 +16,6 @@ namespace Astrogator {
 	/// </summary>
 	public class AstrogatorMenu : InternalModule {
 
-		AstrogatorMenu()
-			: base()
-		{
-			model = new AstrogationModel(GetBestOrigin());
-			loader = new AstrogationLoadBehaviorette(model, null);
-			timeToWait = new List<DateTimeParts>();
-			cursorTransfer = 0;
-
-			loader.TryStartLoad(model.origin, null, null, null);
-		}
-
 		/// <summary>
 		/// Key code for the upward pointing wedge button, overridable by RPM configuration.
 		/// We use it to move the selection up by one row.
@@ -78,9 +67,9 @@ namespace Astrogator {
 
 		private AstrogationModel            model             { get; set; }
 		private AstrogationLoadBehaviorette loader            { get; set; }
-		private List<DateTimeParts>         timeToWait        { get; set; }
+		private List<DateTimeParts>         timeToWait        { get; set; } = new List<DateTimeParts>();
 		private double                      lastUniversalTime { get; set; }
-		private int                         cursorTransfer    { get; set; }
+		private int                         cursorTransfer    { get; set; } = 0;
 		private bool                        cursorMoved       { get; set; }
 		private string                      menu              { get; set; }
 		private int?                        activeButton      { get; set; }
@@ -282,6 +271,13 @@ namespace Astrogator {
 		/// </returns>
 		public string ShowMenu(int columns, int rows)
 		{
+			if (model == null) {
+				model = new AstrogationModel(GetBestOrigin());
+				loader = new AstrogationLoadBehaviorette(model, null);
+				loader.OnDisplayOpened();
+				loader.TryStartLoad(model.origin, null, null, null);
+			}
+
 			if ((RefreshTransfers() || cursorMoved)) {
 				StringBuilder sb = new StringBuilder();
 
@@ -334,10 +330,10 @@ namespace Astrogator {
 		public void PageActive(bool pageActive, int pageNumber)
 		{
 			if (pageActive) {
-				loader.OnDisplayOpened();
-				loader.TryStartLoad(model.origin, null, null, null);
+				loader?.OnDisplayOpened();
+				loader?.TryStartLoad(model.origin, null, null, null);
 			} else {
-				loader.OnDisplayClosed();
+				loader?.OnDisplayClosed();
 			}
 		}
 
