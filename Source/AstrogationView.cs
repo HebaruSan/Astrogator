@@ -109,7 +109,7 @@ namespace Astrogator {
 					if (col.header != "") {
 						ColumnHeaders.AddChild(headerButton(
 							col.header + columnSortIndicator(col),
-							col.headerStyle, Localizer.Format("astrogator_columnHeaderTooltip"), width, rowHeight, () => {
+							col.headerStyle, Localizer.Format("astrogator_columnHeaderTooltip"), width, -1, () => {
 								SortClicked(col.sortKey);
 							}
 						));
@@ -194,7 +194,7 @@ namespace Astrogator {
 				}
 			}
 		}
-		
+
 		private Rect geometry {
 			get {
 				// UI_SCALE is handled by calculating distance from this Y coordinate,
@@ -283,7 +283,7 @@ namespace Astrogator {
 			const double estimateConst = 0.072429060773288;
 			return estimateCoeff * Math.Log(scale) + estimateConst;
 		}
-		
+
 		/// <summary>
 		/// Launch a PopupDialog containing the view.
 		/// Use Dismiss() to get rid of it.
@@ -332,7 +332,7 @@ namespace Astrogator {
 			}
 			return dialog;
 		}
-		
+
 		/// <summary>
 		/// React to the user closing all dialogs with Esc,
 		/// doesn't get called when dismissing programmatically

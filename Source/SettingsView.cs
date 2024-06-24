@@ -32,7 +32,7 @@ namespace Astrogator {
 
 				AddChild(headerButton(
 					Localizer.Format("astrogator_manualLink"),
-					linkStyle, Localizer.Format("astrogator_manualLinkTooltip"), RowWidthWithoutVessel, rowHeight,
+					linkStyle, Localizer.Format("astrogator_manualLinkTooltip"), RowWidthWithoutVessel, -1,
 					() => { Application.OpenURL(docsURL); }
 				));
 

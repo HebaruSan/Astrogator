@@ -23,7 +23,7 @@ namespace Astrogator {
 		/// <value>
 		/// Height of a row of our table.
 		/// </value>
-		public const int rowHeight = 16;
+		private const int rowHeight = 16;
 
 		/// <value>
 		/// Size of font to use in our table.

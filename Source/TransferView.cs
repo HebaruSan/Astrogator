@@ -140,32 +140,32 @@ namespace Astrogator {
 					case ContentEnum.PlanetName:
 						AddChild(LabelWithStyleAndSize(
 							Localizer.Format("astrogator_planetLabel", TheName(model.destination)),
-							col.contentStyle, col.width, rowHeight));
+							col.contentStyle, col.width));
 						break;
 
 					case ContentEnum.YearsTillBurn:
 						AddChild(LabelWithStyleAndSize(getYearValue,
-							col.contentStyle, col.width, rowHeight));
+							col.contentStyle, col.width));
 						break;
 
 					case ContentEnum.DaysTillBurn:
 						AddChild(LabelWithStyleAndSize(getDayValue,
-							col.contentStyle, col.width, rowHeight));
+							col.contentStyle, col.width));
 						break;
 
 					case ContentEnum.HoursTillBurn:
 						AddChild(LabelWithStyleAndSize(getHourValue,
-							col.contentStyle, col.width, rowHeight));
+							col.contentStyle, col.width));
 						break;
 
 					case ContentEnum.MinutesTillBurn:
 						AddChild(LabelWithStyleAndSize(getMinuteValue,
-							col.contentStyle, col.width, rowHeight));
+							col.contentStyle, col.width));
 						break;
 
 					case ContentEnum.SecondsTillBurn:
 						AddChild(LabelWithStyleAndSize(getSecondValue,
-							col.contentStyle, col.width, rowHeight));
+							col.contentStyle, col.width));
 						break;
 
 					case ContentEnum.DeltaV:
